@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# promote-workerpool — STUB (v1 capture-only). WorkerPool is an npm-global Node app, not a git tree.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+print_context
+banner "promote-workerpool (STUB — not implemented in v1)"
+cat >&2 <<'PLAN'
+WorkerPool deploy model: system npm-global /usr/lib/node_modules/workerpool (currently 2026.6.5),
+multiple instances differ by HOME+port (workerpool.service :18789, workerpool-party.service :19001).
+
+Planned promotion (implement after confirming the npm/source distribution):
+  1. Stage target version under staging/workerpool/<version>/ (npm pack / tarball).
+  2. Install into a versioned guest path (e.g. /opt/agent-npm/<version>).
+  3. Atomically flip /usr/local/bin/workerpool (or the node_modules symlink) to that version.
+  4. Restart affected instances; verify `workerpool --version` + service states.
+  5. Record the prior version as rollback_target in state/runtimes.md.
+
+For now, run control-plane/status-pkg to capture current state.
+PLAN
+exit 0

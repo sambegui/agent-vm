@@ -1,0 +1,14 @@
+version: 2
+ethernets:
+  agent0:
+    match:
+      macaddress: "52:54:00:00:00:01"
+    set-name: enp1s0
+    addresses:
+      - 10.0.0.60/24
+    routes:
+      - to: default
+        via: 10.0.0.1
+    nameservers:
+      addresses:
+        - 10.0.0.1

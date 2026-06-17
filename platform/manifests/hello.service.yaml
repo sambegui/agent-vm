@@ -1,0 +1,12 @@
+apiVersion: agent-platform/v1alpha1
+kind: AgentService
+metadata:
+  name: hello
+  environment: dev
+role: backend
+spec:
+  image: 127.0.0.1:5000/hello-agent@sha256:90c85155c939ec116351c3a8437efb99174ea0cf0d7ee3ff95f2b7cd7a0053ae
+  runtime: { tier: 1, supervisor: systemd-quadlet, user: agent }
+  ports: [ { name: http, containerPort: 8080, internalOnly: true } ]
+  health: { liveness: { httpGet: /healthz, port: 8080 } }
+  egress: { default: deny }

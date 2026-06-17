@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# unmount-guest — tear down the sshfs mounts under mounts/.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+print_context
+banner "unmount guest sshfs mounts"
+for mp in "$AGENT_VM_ROOT"/mounts/*; do
+  [ -d "$mp" ] || continue
+  if mountpoint -q "$mp"; then
+    log "unmount: $mp"
+    fusermount3 -u "$mp" 2>/dev/null || fusermount -u "$mp" 2>/dev/null || umount "$mp"
+  fi
+done
+log "done."

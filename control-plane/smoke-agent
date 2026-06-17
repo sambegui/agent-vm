@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# smoke-agent — read-only post-promote sanity checks against the live runtime.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+print_context
+banner "agent smoke checks"
+CUR="/opt/agent/current"
+release="$(guest_ssh "readlink -f '$CUR'")" || die "cannot resolve $CUR"
+log "release : $release"
+st="$(guest_ssh "systemctl is-active agentd.service" || true)"
+log "service : agentd.service=$st"
+pid="$(guest_ssh "systemctl show -p MainPID --value agentd.service" 2>/dev/null || true)"
+pp="$(guest_sudo "cat /proc/${pid}/environ 2>/dev/null | tr '\0' '\n' | grep '^PYTHONPATH=' | head -1" || true)"
+log "env     : ${pp:-<unreadable without sudo>}"
+sha="$(guest_ssh "sed -n 's/.*\"sha\":\"\\([0-9a-f]*\\)\".*/\\1/p' '$release/.release.json' 2>/dev/null" || true)"
+log "sourceSHA: ${sha:-<no .release.json>}"
+[ "$st" = active ] || die "service not active"
+log "smoke ok."

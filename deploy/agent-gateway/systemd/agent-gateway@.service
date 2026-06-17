@@ -1,0 +1,37 @@
+[Unit]
+Description=Agent gateway profile: %i
+Documentation=file:/opt/agent/gateways/%i/env
+After=network-online.target
+Wants=network-online.target
+# Refuse to start with no profile config or no runtime selected (fail loudly, never run stale):
+AssertPathExists=/opt/agent/gateways/%i/env
+AssertPathIsSymbolicLink=/opt/agent/gateways/%i/current
+# NOTE: deliberately NO Requires=/Wants=/PartOf=/BindsTo= on other gateway profiles.
+# Each profile starts, stops, and fails completely independently.
+
+[Service]
+Type=simple
+User=agent
+Group=agent
+
+# Optional shared overlays load FIRST; the per-profile env is authoritative and loads LAST
+# (systemd: a later EnvironmentFile wins on conflict). The runtime-source vars live ONLY in the
+# profile env, so this ordering keeps that file as the single source of truth.
+EnvironmentFile=-/etc/agent/model.env
+EnvironmentFile=/opt/agent/gateways/%i/env
+WorkingDirectory=/opt/agent/gateways/%i/current
+
+# Shared launcher: logs an alignment banner (pid/cwd/PYTHONPATH/runtime/sha), then exec()s the
+# resolved entrypoint. It does NOT set the runtime — it only reads it from the env file.
+ExecStart=/opt/agent/_lib/launch
+
+Restart=on-failure
+RestartSec=2
+TimeoutStartSec=60
+SyslogIdentifier=agent-gw-%i
+StandardOutput=append:/opt/agent/gateways/%i/logs/gateway.log
+StandardError=append:/opt/agent/gateways/%i/logs/gateway.err
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

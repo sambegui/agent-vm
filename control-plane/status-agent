@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# status-agent — read-only live truth for the agent runtime. Mutates nothing on the
+# guest. Compares live state to state/runtimes.md and flags drift. `--update` rewrites the
+# host-local state file markers only (never the runtime).
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+print_context
+banner "agent runtime status"
+
+CUR="/opt/agent/current"
+release="$(guest_ssh "readlink -f '$CUR'" 2>/dev/null || true)"
+[ -n "$release" ] || die "cannot resolve $CUR on $GUEST_SSH"
+rel_base="$(basename "$release")"
+log "current : $CUR -> $release"
+
+sha=""; via=""
+json="$(guest_ssh "cat '$release/.release.json' 2>/dev/null" || true)"
+if [ -n "$json" ]; then
+  sha="$(printf '%s' "$json" | sed -n 's/.*"sha"[[:space:]]*:[[:space:]]*"\([0-9a-f]\{7,40\}\)".*/\1/p')"
+  via="release.json"
+fi
+if [ -z "$sha" ]; then
+  sha="$(guest_ssh "git -C '$release' rev-parse HEAD 2>/dev/null" || true)"
+  [ -n "$sha" ] && via="git"
+fi
+if [ -z "$sha" ]; then
+  # release dirs follow the <sha>-<label> convention; recover the sha from the name
+  case "$rel_base" in
+    [0-9a-f][0-9a-f][0-9a-f]*-*) sha="${rel_base%%-*}"; via="dirname";;
+  esac
+fi
+log "sourceSHA: ${sha:-unknown} (via ${via:-none})"
+
+log "releases:"
+guest_ssh "ls -1 /opt/agent/releases 2>/dev/null" | sed 's/^/   - /' >&2 || true
+
+svc="$(guest_ssh "systemctl is-active agentd.service" 2>/dev/null || true)"
+log "service : agentd.service=${svc:-unknown}"
+
+recorded="$(sed -n 's/^- *current_release:[[:space:]]*//p' "$AGENT_VM_ROOT/state/runtimes.md" 2>/dev/null | head -1)"
+if [ -n "$recorded" ] && [ "$recorded" != "$rel_base" ]; then
+  log "DRIFT : recorded current_release=$recorded != live=$rel_base (someone re-promoted)"
+elif [ -n "$recorded" ]; then
+  log "ok    : live matches recorded current_release=$recorded"
+else
+  log "note  : no current_release recorded yet"
+fi
+
+if [ "${1:-}" = "--update" ]; then
+  ts="$(date -u +%FT%TZ)"
+  f="$AGENT_VM_ROOT/state/runtimes.md"; tmp="$(mktemp)"
+  sed -e "s|^- *current_release:.*|- current_release: $rel_base|" \
+      -e "s|^- *current_sha:.*|- current_sha: ${sha:-unknown}|" \
+      -e "s|^- *last_verified:.*|- last_verified: $ts (status-agent --update)|" \
+      "$f" > "$tmp" && mv "$tmp" "$f"
+  log "updated state/runtimes.md (current_release=$rel_base)"
+fi

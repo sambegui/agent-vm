@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# rollback-agent — repoint agent-current to a prior release and restart.
+# DEFAULT dry-run. Usage: rollback-agent --to <release-dirname|abs-path> [--apply]
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+TARGET=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --to) TARGET="$2"; shift 2;;
+    --apply) APPLY=1; shift;;
+    --dry-run) APPLY=0; shift;;
+    *) die "unknown arg: $1";;
+  esac
+done
+[ -n "$TARGET" ] || die "need --to <release dirname or absolute path>"
+case "$TARGET" in /*) RELDIR="$TARGET";; *) RELDIR="/opt/agent/releases/$TARGET";; esac
+CUR="/opt/agent/current"
+print_context
+banner "rollback agent -> $RELDIR"
+guest_ssh "test -d '$RELDIR'" || die "target release not found on guest: $RELDIR"
+log "current : $(guest_ssh "readlink -f '$CUR'" || true)"
+log "target  : $RELDIR"
+applying || { log "DRY-RUN: no changes. Re-run with --apply."; exit 0; }
+guest_sudo "ln -sfn '$RELDIR' '$CUR'"
+guest_sudo "systemctl restart agentd.service"
+sleep 2
+state="$(guest_ssh "systemctl is-active agentd.service" || true)"
+live="$(guest_ssh "readlink -f '$CUR'")"
+log "post: service=$state current=$live"
+{ [ "$state" = active ] && [ "$live" = "$RELDIR" ]; } || die "rollback verification failed"
+log "rollback complete."

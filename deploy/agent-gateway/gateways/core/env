@@ -1,0 +1,12 @@
+# Agent gateway profile: core  (primary multi-channel gateway; CLI entrypoint)
+AGENT_PROFILE=core
+AGENT_GATEWAY_MODE=cli
+# --- runtime source: declared exactly ONCE ---
+AGENT_ROOT=/opt/agent/gateways/core/current
+PYTHONPATH=/opt/agent/gateways/core/current
+# --- profile identity / home ---
+AGENT_HOME=/opt/agent/gateways/core/home
+AGENT_PY=/opt/agent/venv/bin/python
+HOME=/var/lib/agent
+PYTHONDONTWRITEBYTECODE=1
+# Secrets/tokens live in AGENT_HOME/.env (0600) or /etc/agent/*.env — never in this file.

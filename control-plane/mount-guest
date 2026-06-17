@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# mount-guest — read-only sshfs windows onto the guest runtime trees, under mounts/.
+# Refuses to auto-install sshfs. Never the live runtime; never written through.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+print_context
+banner "read-only sshfs mount of guest trees"
+
+if ! command -v sshfs >/dev/null 2>&1; then
+  log "sshfs is NOT installed on this host."
+  log "Install (sudo, no VM restart):  sudo apt-get install -y sshfs"
+  die "refusing to auto-install; re-run after installing sshfs"
+fi
+
+# name -> guest path (read-only)
+mounts="guest-agent-runtime:/opt/agent guest-workerpool:/usr/lib/node_modules/workerpool"
+for pair in $mounts; do
+  name="${pair%%:*}"; src="${pair#*:}"
+  mp="$AGENT_VM_ROOT/mounts/$name"
+  mkdir -p "$mp"
+  if mountpoint -q "$mp"; then log "already mounted: $mp"; continue; fi
+  log "mount (ro): $GUEST_SSH:$src -> $mp"
+  sshfs -o ro,reconnect,ServerAliveInterval=15 "$GUEST_SSH:$src" "$mp"
+done
+log "done. Browse $AGENT_VM_ROOT/mounts/ (read-only)."

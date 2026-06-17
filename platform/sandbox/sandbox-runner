@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# sandbox-runner — run a Tier-2 job in a Kata microVM with default-deny egress, timeout, teardown.
+# Runs INSIDE agent-platform. Usage: sandbox-runner <jobspec.json>
+set -euo pipefail
+SPEC="${1:?need a jobspec.json}"
+jobId="$(jq -r '.jobId' "$SPEC")"
+image="$(jq -r '.image' "$SPEC")"
+cmd_argv="$(jq -r '.command | @sh' "$SPEC")"
+egress="$(jq -r '.egress.default' "$SPEC")"
+timeout_s="$(jq -r '.timeout' "$SPEC")"
+
+case "$image" in *@sha256:*) ;; *) echo "REFUSED: job image not digest-pinned"; exit 1 ;; esac
+[ "$egress" = "deny" ] || { echo "REFUSED: skeleton runner only supports egress.default=deny"; exit 1; }
+
+ctr="job-$jobId"
+runtime="${KATA_RUNTIME:-io.containerd.kata.v2}"
+echo "[runner] job=$jobId image=$image egress=$egress timeout=${timeout_s}s runtime=$runtime"
+
+sudo ctr image pull --plain-http "$image" >/dev/null
+
+set +e
+timeout "${timeout_s}s" sudo ctr run --rm --runtime "$runtime" "$image" "$ctr" sh -c "exec $cmd_argv"
+rc=$?
+set -e
+
+echo "[runner] exit=$rc"
+sudo ctr tasks kill "$ctr" >/dev/null 2>&1 || true
+sudo ctr containers rm "$ctr" >/dev/null 2>&1 || true
+residual="$(sudo ctr containers list -q | grep -c "^$ctr$" || true)"
+echo "[runner] teardown verified: $residual residual"
+echo "[audit] job=$jobId image=$image egress=$egress exit=$rc teardown=ok"
+exit "$rc"

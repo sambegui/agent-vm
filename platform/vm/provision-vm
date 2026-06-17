@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# provision-vm — create the agent-platform VM from code (idempotent). Host-side; needs libvirt group.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VM_NAME=agent-platform
+VM_IP=10.0.0.60
+VM_MAC=52:54:00:00:00:01
+IMGDIR=/var/lib/libvirt/images/agent-platform
+BASE_IMAGE="$IMGDIR/debian-12-genericcloud-amd64.qcow2"
+BASE_URL="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
+PUBKEY="$(cat "$HOME/.ssh/agent-platform.pub")"
+VIRSH="virsh -c qemu:///system"
+SSH_ATTEMPTS="${PROVISION_VM_SSH_ATTEMPTS:-60}"
+SSH_SLEEP="${PROVISION_VM_SSH_SLEEP:-5}"
+
+ensure_static_lease() {
+  local netxml
+  netxml="$($VIRSH net-dumpxml default)"
+  if grep -q "mac='$VM_MAC'.*ip='$VM_IP'" <<<"$netxml"; then
+    return 0
+  fi
+  if grep -q "ip='$VM_IP'" <<<"$netxml"; then
+    echo "ERROR: $VM_IP is already reserved for a different MAC" >&2
+    exit 1
+  fi
+  if grep -q "mac='$VM_MAC'" <<<"$netxml"; then
+    echo "ERROR: $VM_MAC is already reserved for a different IP" >&2
+    exit 1
+  fi
+  $VIRSH net-update default add-last ip-dhcp-host \
+    "<host mac='$VM_MAC' name='$VM_NAME' ip='$VM_IP'/>" --live --config
+}
+
+ensure_host_dns_firewall() {
+  local chain proto comment
+  chain="$(sudo nft list chain inet filter input 2>/dev/null || true)"
+  for proto in udp tcp; do
+    comment="agent-platform-dns-$proto"
+    if grep -q "$comment" <<<"$chain"; then
+      continue
+    fi
+    sudo nft insert rule inet filter input ip saddr "$VM_IP" "$proto" dport 53 accept comment "$comment"
+  done
+}
+
+wait_for_ssh() {
+  echo "waiting for ssh on $VM_IP ..."
+  for i in $(seq 1 "$SSH_ATTEMPTS"); do
+    if ssh -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new "$VM_NAME" true 2>/dev/null; then
+      echo "$VM_NAME is up"
+      return 0
+    fi
+    sleep "$SSH_SLEEP"
+  done
+  echo "ERROR: $VM_NAME did not become reachable" >&2
+  return 1
+}
+
+forget_recreated_host_key() {
+  ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$VM_IP" >/dev/null 2>&1 || true
+}
+
+ensure_static_lease
+ensure_host_dns_firewall
+
+tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+sed "s|REPLACE_WITH_AGENT_PLATFORM_PUBKEY|$PUBKEY|" "$HERE/cloud-init/user-data" > "$tmp/user-data"
+cp "$HERE/cloud-init/meta-data" "$tmp/meta-data"
+cp "$HERE/cloud-init/network-config" "$tmp/network-config"
+
+if $VIRSH dominfo "$VM_NAME" >/dev/null 2>&1; then
+  echo "$VM_NAME already defined; starting if needed"
+  if ! $VIRSH domstate "$VM_NAME" | grep -q '^running$'; then
+    $VIRSH start "$VM_NAME"
+  fi
+  wait_for_ssh
+  exit $?
+fi
+sudo mkdir -p "$IMGDIR"
+sudo test -f "$BASE_IMAGE" || sudo curl -fsSL "$BASE_URL" -o "$BASE_IMAGE"
+if ! sudo test -f "$IMGDIR/agent-platform.qcow2"; then
+  sudo qemu-img create -f qcow2 -F qcow2 -b "$BASE_IMAGE" "$IMGDIR/agent-platform.qcow2" 30G
+  sudo virt-customize --no-network -a "$IMGDIR/agent-platform.qcow2" \
+    --run-command 'mkdir -p /etc/systemd/network /etc/cloud/cloud.cfg.d /var/lib/cloud/seed/nocloud' \
+    --copy-in "$HERE/systemd/10-agent-platform.network:/etc/systemd/network/" \
+    --copy-in "$HERE/cloud-init/99-agent-platform-datasource.cfg:/etc/cloud/cloud.cfg.d/" \
+    --copy-in "$tmp/user-data:/var/lib/cloud/seed/nocloud/" \
+    --copy-in "$tmp/meta-data:/var/lib/cloud/seed/nocloud/" \
+    --copy-in "$tmp/network-config:/var/lib/cloud/seed/nocloud/" \
+    --run-command 'systemctl enable cloud-init-local.service cloud-init.service cloud-config.service cloud-final.service systemd-networkd.service ssh.service' \
+    --run-command 'mkdir -p /etc/systemd/system/multi-user.target.wants && ln -sfn /lib/systemd/system/cloud-init.target /etc/systemd/system/multi-user.target.wants/cloud-init.target'
+fi
+
+( cd "$tmp" && genisoimage -output seed.iso -volid cidata -joliet -rock user-data meta-data network-config >/dev/null 2>&1 )
+sudo cp "$tmp/seed.iso" "$IMGDIR/seed.iso"
+
+$VIRSH define "$HERE/agent-platform.domain.xml"
+$VIRSH start "$VM_NAME"
+forget_recreated_host_key
+wait_for_ssh

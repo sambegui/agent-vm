@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# promote-agent — promote an exact agent commit to a guest release and flip -current.
+# DEFAULT: dry-run (prints the plan, changes nothing). Pass --apply to execute.
+# Usage: promote-agent --sha <sha> --label <label> --worktree <path> [--apply]
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+
+SHA="" LABEL="" WT=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --sha) SHA="$2"; shift 2;;
+    --label) LABEL="$2"; shift 2;;
+    --worktree) WT="$2"; shift 2;;
+    --apply) APPLY=1; shift;;
+    --dry-run) APPLY=0; shift;;
+    *) die "unknown arg: $1";;
+  esac
+done
+[ -n "$SHA" ] && [ -n "$LABEL" ] && [ -n "$WT" ] || die "need --sha, --label, --worktree"
+git -C "$WT" rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "worktree not found: $WT"
+full="$(git -C "$WT" rev-parse "$SHA")" || die "sha not resolvable in worktree"
+short="$(git -C "$WT" rev-parse --short "$full")"
+rel="${short}-${LABEL}"
+RELDIR="/opt/agent/releases/$rel"
+CUR="/opt/agent/current"
+
+print_context
+banner "promote agent $short ($LABEL)"
+log "worktree : $WT"
+log "commit   : $full"
+log "release  : $RELDIR"
+log "symlink  : $CUR -> (new) $RELDIR"
+log "service  : agentd.service (restart after flip)"
+
+applying || { log "DRY-RUN: no changes made. Re-run with --apply to execute."; exit 0; }
+
+prev="$(guest_ssh "readlink -f '$CUR'" || true)"
+log "rollback target (previous): ${prev:-none}"
+
+log "ship: git archive $short | sudo tar -x -C $RELDIR"
+git -C "$WT" archive "$full" | guest_ssh "sudo -n mkdir -p '$RELDIR' && sudo -n tar -x -C '$RELDIR'"
+
+remote="$(git -C "$WT" remote get-url origin 2>/dev/null || echo unknown)"
+branch="$(git -C "$WT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo detached)"
+ts="$(date -u +%FT%TZ)"
+guest_ssh "sudo -n tee '$RELDIR/.release.json' >/dev/null" <<EOF
+{"sha":"$full","label":"$LABEL","remote":"$remote","branch":"$branch","promoter":"agent-vm","promoted_at":"$ts"}
+EOF
+
+guest_sudo "chown -R root:agent '$RELDIR'"
+guest_sudo "chmod -R g+rX '$RELDIR'"
+guest_sudo "ln -sfn '$RELDIR' '$CUR'"          # atomic symlink replace
+guest_sudo "systemctl restart agentd.service"
+sleep 2
+state="$(guest_ssh "systemctl is-active agentd.service" || true)"
+live="$(guest_ssh "readlink -f '$CUR'")"
+log "post: service=$state current=$live"
+[ "$state" = "active" ] || die "service not active after promote"
+[ "$live" = "$RELDIR" ] || die "symlink did not flip to $RELDIR"
+log "OK. Now update state/releases.md + runtimes.md (prev rollback target: ${prev:-none})."

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# acceptance — runs the walking-skeleton acceptance subset against agent-platform. Host-side.
+set -euo pipefail
+P="ssh agent-platform"
+BUSYBOX_DIGEST="sha256:7b9a320334d446845c17edcfad9bdd1d54ad05c84c35b117e8fa7d830b9fcce5"
+
+$P "cat > /tmp/egress-job.json <<JSON
+{ \"jobId\":\"egress-001\",\"requester\":\"hello\",\"image\":\"127.0.0.1:5000/busybox@$BUSYBOX_DIGEST\",
+  \"command\":[\"sh\",\"-c\",\"wget -T 5 -q -O- http://1.1.1.1 2>/dev/null && echo REACHED || echo BLOCKED\"],
+  \"egress\":{\"default\":\"deny\"},\"timeout\":30 }
+JSON"
+
+pass=0
+fail=0
+check() {
+  if eval "$2"; then
+    echo "PASS $1"
+    pass=$((pass + 1))
+  else
+    echo "FAIL $1"
+    fail=$((fail + 1))
+  fi
+}
+
+check "tier1.health"        "$P 'curl -fsS http://127.0.0.1:18080/healthz | grep -q ok'"
+check "alignment.aligned"   "$P '~/platform/control/align ~/platform/manifests/hello.service.yaml | grep -q ALIGNED'"
+check "tier2.microvm_boots" "$P '~/platform/sandbox/sandbox-runner ~/platform/sandbox/jobspec.example.json | grep -q hello-from-microvm'"
+check "tier2.egress_deny"   "$P '~/platform/sandbox/sandbox-runner /tmp/egress-job.json | grep -q BLOCKED'"
+check "tier2.teardown"      "$P '~/platform/sandbox/sandbox-runner ~/platform/sandbox/jobspec.example.json | grep -q \"0 residual\"'"
+echo "---"
+echo "PASS=$pass FAIL=$fail"
+[ "$fail" -eq 0 ]

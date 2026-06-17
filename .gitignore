@@ -1,0 +1,14 @@
+# Derived / transient / local — never part of the published reference architecture
+repos/
+worktrees/
+mounts/
+staging/
+__pycache__/
+*.pyc
+
+# Secrets — never commit (the tracked per-profile gateway `env` files contain refs only, no values)
+*.env
+*.key
+*.pem
+*.token
+.secrets/

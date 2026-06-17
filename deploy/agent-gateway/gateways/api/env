@@ -1,0 +1,17 @@
+# Agent gateway profile: api  (HTTP API-server profile gateway; bespoke script entrypoint)
+AGENT_PROFILE=api
+AGENT_GATEWAY_MODE=script
+AGENT_PROFILE_EXEC=/opt/agent/gateways/api/home/api_gateway.py
+# --- runtime source: declared exactly ONCE ---
+AGENT_ROOT=/opt/agent/gateways/api/current
+PYTHONPATH=/opt/agent/gateways/api/current
+# --- profile identity / home ---
+AGENT_HOME=/opt/agent/gateways/api/home
+AGENT_PY=/opt/agent/venv/bin/python
+HOME=/var/lib/agent
+PYTHONUNBUFFERED=1
+PYTHONDONTWRITEBYTECODE=1
+HTTP_PROXY=http://10.0.0.1:3128
+HTTPS_PROXY=http://10.0.0.1:3128
+NO_PROXY=127.0.0.1,localhost,10.0.0.1
+# Secrets/tokens live in AGENT_HOME/.env (0600) or /etc/agent/*.env — never in this file.

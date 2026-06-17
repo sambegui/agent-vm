@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# build-sign-push — build hello-agent, sign with cosign, push to the local registry, print digest.
+# Runs INSIDE agent-platform. Usage: build-sign-push <version>
+set -euo pipefail
+VER="${1:?need a version, e.g. 1}"
+REG=127.0.0.1:5000
+REF="$REG/hello-agent:v$VER"
+cd "$(dirname "${BASH_SOURCE[0]}")/hello-agent"
+podman build --isolation chroot --build-arg "AGENT_VERSION=$VER" -t "$REF" .
+podman push --tls-verify=false "$REF"
+DIGEST="$(podman image inspect "$REF" --format '{{.Digest}}')"
+COSIGN_PASSWORD= cosign sign --allow-insecure-registry --tlog-upload=false --yes --key "$HOME/cosign.key" "$REG/hello-agent@$DIGEST"
+echo "DIGEST=$REG/hello-agent@$DIGEST"

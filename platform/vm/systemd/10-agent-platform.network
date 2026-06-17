@@ -1,0 +1,8 @@
+[Match]
+MACAddress=52:54:00:00:00:01
+
+[Network]
+Address=10.0.0.60/24
+Gateway=10.0.0.1
+DNS=10.0.0.1
+Domains=~.

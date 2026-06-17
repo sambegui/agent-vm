@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# agent-pr — safe PR-head Agent runtime helpers.
+#
+# This is the repo-owned implementation used by workerpool-ctl. It delegates to
+# the narrower promote/smoke/status/rollback scripts so those remain the source
+# of truth and can be tested directly.
+set -euo pipefail
+
+SCRIPT_DIR="${AGENT_PR_SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  agent-pr status
+  agent-pr smoke
+  agent-pr verify --sha <sha>
+  agent-pr promote --sha <sha> --label <label> --worktree <path> [--apply]
+  agent-pr rollback --to <release-dirname|abs-path> [--apply]
+
+All mutating operations are dry-run unless --apply is passed through.
+EOF
+}
+
+require_tool() {
+  local name="$1"
+  [ -x "$SCRIPT_DIR/$name" ] || die "missing helper: $SCRIPT_DIR/$name"
+}
+
+cmd_status() {
+  require_tool status-agent
+  "$SCRIPT_DIR/status-agent"
+}
+
+cmd_smoke() {
+  require_tool smoke-agent
+  "$SCRIPT_DIR/smoke-agent"
+}
+
+cmd_verify() {
+  local expected=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --sha) expected="$2"; shift 2 ;;
+      -h|--help) usage; exit 0 ;;
+      *) die "unknown verify arg: $1" ;;
+    esac
+  done
+  [ -n "$expected" ] || die "verify needs --sha <sha>"
+  require_tool smoke-agent
+  local out live
+  out="$("$SCRIPT_DIR/smoke-agent")"
+  printf '%s\n' "$out"
+  live="$(printf '%s\n' "$out" | sed -n 's/.*sourceSHA:[[:space:]]*\([0-9a-f]\{7,40\}\).*/\1/p' | tail -1)"
+  [ -n "$live" ] || die "could not read sourceSHA from smoke output"
+  case "$live" in
+    "$expected"|"$expected"*) printf 'verified sourceSHA %s\n' "$expected" ;;
+    *) die "sourceSHA mismatch: expected $expected, got $live" ;;
+  esac
+}
+
+cmd_promote() {
+  local sha="" label="" worktree="" apply=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --sha) sha="$2"; shift 2 ;;
+      --label) label="$2"; shift 2 ;;
+      --worktree) worktree="$2"; shift 2 ;;
+      --apply) apply=1; shift ;;
+      --dry-run) apply=0; shift ;;
+      -h|--help) usage; exit 0 ;;
+      *) die "unknown promote arg: $1" ;;
+    esac
+  done
+  [ -n "$sha" ] && [ -n "$label" ] && [ -n "$worktree" ] || die "promote needs --sha, --label, and --worktree"
+  require_tool promote-agent
+  local args=(--sha "$sha" --label "$label" --worktree "$worktree")
+  [ "$apply" = 1 ] && args+=(--apply)
+  "$SCRIPT_DIR/promote-agent" "${args[@]}"
+  if [ "$apply" = 1 ]; then
+    cmd_verify --sha "$sha"
+  fi
+}
+
+cmd_rollback() {
+  local target="" apply=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --to) target="$2"; shift 2 ;;
+      --apply) apply=1; shift ;;
+      --dry-run) apply=0; shift ;;
+      -h|--help) usage; exit 0 ;;
+      *) die "unknown rollback arg: $1" ;;
+    esac
+  done
+  [ -n "$target" ] || die "rollback needs --to <release>"
+  require_tool rollback-agent
+  local args=(--to "$target")
+  [ "$apply" = 1 ] && args+=(--apply)
+  "$SCRIPT_DIR/rollback-agent" "${args[@]}"
+  if [ "$apply" = 1 ]; then
+    cmd_smoke
+  fi
+}
+
+case "${1:-help}" in
+  status) shift; cmd_status "$@" ;;
+  smoke) shift; cmd_smoke "$@" ;;
+  verify) shift; cmd_verify "$@" ;;
+  promote) shift; cmd_promote "$@" ;;
+  rollback) shift; cmd_rollback "$@" ;;
+  help|-h|--help) usage ;;
+  *) usage >&2; die "unknown command: ${1:-}" ;;
+esac

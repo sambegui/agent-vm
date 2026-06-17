@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# reconcile — render a Quadlet .container unit from a manifest's pinned digest and restart it.
+# Runs INSIDE agent-platform. Usage: reconcile <manifest.yaml>
+set -euo pipefail
+M="${1:?need a manifest path}"
+name="$(grep -E '^  name:' "$M" | head -1 | awk '{print $2}')"
+image="$(grep -E '^  image:' "$M" | head -1 | awk '{print $2}')"
+[ -n "$name" ] && [ -n "$image" ] || { echo "bad manifest"; exit 1; }
+case "$image" in *@sha256:*) ;; *) echo "REFUSED: image is not digest-pinned"; exit 1 ;; esac
+
+net=agent-tier1-internal
+podman network exists "$net" || podman network create --internal "$net"
+
+write_fallback_service() {
+  local service_dir
+  service_dir="$HOME/.config/systemd/user"
+  mkdir -p "$service_dir"
+  cat > "$service_dir/$name.service" <<UNIT
+[Unit]
+Description=agent-platform Tier-1: $name
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStartPre=-/usr/bin/podman rm -f systemd-$name
+ExecStart=/usr/bin/podman run --replace --name systemd-$name --network $net -p 127.0.0.1:18080:8080 $image
+ExecStop=/usr/bin/podman stop -t 10 systemd-$name
+ExecStopPost=-/usr/bin/podman rm -f systemd-$name
+
+[Install]
+WantedBy=default.target
+UNIT
+}
+
+UNIT_DIR="$HOME/.config/containers/systemd"
+mkdir -p "$UNIT_DIR"
+cat > "$UNIT_DIR/$name.container" <<UNIT
+[Unit]
+Description=agent-platform Tier-1: $name
+
+[Container]
+Image=$image
+ContainerName=systemd-$name
+PublishPort=127.0.0.1:18080:8080
+Network=$net
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+UNIT
+
+if ! command -v podman-system-generator >/dev/null 2>&1; then
+  write_fallback_service
+fi
+systemctl --user daemon-reload
+if ! systemctl --user cat "$name.service" >/dev/null 2>&1; then
+  write_fallback_service
+  systemctl --user daemon-reload
+fi
+systemctl --user restart "$name.service"
+echo "reconciled $name -> $image"

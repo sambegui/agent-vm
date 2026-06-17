@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Shared launcher for agent-gateway@<profile>. systemd has already exported the per-profile
+# EnvironmentFile. This script ONLY reads it, prints an alignment banner, and exec()s the real
+# process (so the agent becomes the unit MainPID). It never sets the runtime source.
+#
+# Local validation: set AGENT_LAUNCH_DRYRUN=1 to print the resolved command + runtime/sha and
+# exit 0 WITHOUT exec'ing anything (used to prove alignment off-host).
+set -euo pipefail
+: "${AGENT_PROFILE:?env not loaded (AGENT_PROFILE missing)}"
+: "${AGENT_HOME:?missing AGENT_HOME}"
+: "${AGENT_ROOT:?missing AGENT_ROOT}"
+PY="${AGENT_PY:-/opt/agent/venv/bin/python}"
+
+runtime="$(readlink -f "$AGENT_ROOT" 2>/dev/null || echo "$AGENT_ROOT")"
+sha="unknown"
+if [ -f "$runtime/.release.json" ]; then
+  sha="$(sed -n 's/.*"sha":"\([0-9a-f]\{7,40\}\)".*/\1/p' "$runtime/.release.json")"
+fi
+if [ "$sha" = unknown ]; then
+  case "$(basename "$runtime")" in [0-9a-f][0-9a-f][0-9a-f]*-*) sha="$(basename "$runtime")"; sha="${sha%%-*}";; esac
+fi
+
+# Resolve the entrypoint command.
+cmd=( "$PY" )
+case "${AGENT_GATEWAY_MODE:-cli}" in
+  cli)    cmd+=( -m agent_cli.main gateway run --replace ) ;;
+  script) : "${AGENT_PROFILE_EXEC:?script mode requires AGENT_PROFILE_EXEC}"; cmd+=( "$AGENT_PROFILE_EXEC" ) ;;
+  *)      echo "unknown AGENT_GATEWAY_MODE='${AGENT_GATEWAY_MODE}' for profile $AGENT_PROFILE" >&2; exit 64 ;;
+esac
+
+# Alignment banner — appears in gateway.log at every (re)start. Ties pid/cwd/runtime/sha together.
+echo "[agent-gw:$AGENT_PROFILE] pid=$$ mode=${AGENT_GATEWAY_MODE:-cli} cwd=$(pwd)" \
+     "AGENT_HOME=$AGENT_HOME PYTHONPATH=${PYTHONPATH:-<unset>} runtime=$runtime sha=$sha"
+
+if [ "${AGENT_LAUNCH_DRYRUN:-0}" = "1" ]; then
+  echo "[agent-gw:$AGENT_PROFILE] DRYRUN resolved: ${cmd[*]}"; exit 0
+fi
+
+exec "${cmd[@]}"

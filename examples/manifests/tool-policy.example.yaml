@@ -1,0 +1,22 @@
+# Illustrative MCP tool policy for a read-only conversation-plane agent endpoint.
+# Denied tools must be ABSENT from tools/list, not merely rejected on invocation. Fictional hashes.
+policy_version: 1
+allowed_tools:
+  - { name: conversations_list, schema_hash: "sha256:aaaaaaaa", risk: L1, side_effects: none }
+  - { name: conversation_get,   schema_hash: "sha256:bbbbbbbb", risk: L1, side_effects: none }
+  - { name: messages_read,      schema_hash: "sha256:cccccccc", risk: L1, side_effects: none }
+denied_tools_absent_from_list:
+  - messages_send
+  - permissions_respond
+  - attachments_fetch
+forbidden_capability_classes:
+  - shell/terminal
+  - file mutation
+  - work-plane dispatch
+  - browser control
+  - cron mutation
+  - spend/payment
+fail_closed:
+  unknown_allowed_tool: true
+  schema_hash_drift_blocks: true
+  policy_load_failure_refuses_to_serve: true

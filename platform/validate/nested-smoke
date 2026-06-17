@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# nested-smoke — prove a HW-backed microVM boots on the CURRENT host (or inside a guest).
+# Non-destructive: downloads Firecracker + a demo kernel/rootfs into a scratch dir and boots a
+# microVM that prints its kernel, then tears it down. Requires /dev/kvm.
+set -euo pipefail
+WORK="$(mktemp -d /tmp/nested-smoke.XXXXXX)"
+trap 'pkill -f "firecracker --api-sock $WORK" 2>/dev/null || true; rm -rf "$WORK"' EXIT
+cd "$WORK"
+[ -e /dev/kvm ] || { echo "FAIL: /dev/kvm missing"; exit 1; }
+ARCH="$(uname -m)"
+FC_VER="v1.7.0"
+base="https://github.com/firecracker-microvm/firecracker/releases/download/${FC_VER}"
+echo "[smoke] downloading firecracker ${FC_VER} (${ARCH})"
+curl -fsSL "${base}/firecracker-${FC_VER}-${ARCH}.tgz" -o fc.tgz
+tar -xzf fc.tgz
+fc="$(find . -name "firecracker-${FC_VER}-${ARCH}" -type f | head -1)"; chmod +x "$fc"
+ci="https://s3.amazonaws.com/spec.ccfc.min/img/quickstart_guide/${ARCH}"
+echo "[smoke] downloading demo kernel + rootfs"
+curl -fsSL "${ci}/kernels/vmlinux.bin" -o vmlinux.bin
+curl -fsSL "${ci}/rootfs/bionic.rootfs.ext4" -o rootfs.ext4
+cat > vmconfig.json <<JSON
+{ "boot-source": { "kernel_image_path": "vmlinux.bin", "boot_args": "console=ttyS0 reboot=k panic=1 pci=off init=/bin/true" },
+  "drives": [ { "drive_id": "rootfs", "path_on_host": "rootfs.ext4", "is_root_device": true, "is_read_only": false } ],
+  "machine-config": { "vcpu_count": 1, "mem_size_mib": 128 } }
+JSON
+# init=/bin/true makes the guest boot, run true, then panic + reboot=k (a clean fast exit). So success
+# is detected from LOG EVIDENCE of a hardware-backed KVM boot, not from the process staying alive.
+echo "[smoke] booting microVM"
+timeout 20 "$fc" --no-api --config-file vmconfig.json >fc.log 2>&1 || true
+if grep -q "Booting paravirtualized kernel on KVM" fc.log \
+   && grep -qiE "Successfully started microvm|Firecracker exiting successfully" fc.log; then
+  echo "[smoke] HW-backed KVM boot confirmed via log"
+  echo "PASS: nested HW-backed microVM boots"
+else
+  echo "[smoke] firecracker log:"; cat fc.log; echo "FAIL: microVM did not boot HW-backed"; exit 1
+fi

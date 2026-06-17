@@ -1,0 +1,13 @@
+# Agent gateway profile: mcp  (Model Context Protocol / SSE endpoint; bespoke script entrypoint)
+AGENT_PROFILE=mcp
+AGENT_GATEWAY_MODE=script
+AGENT_PROFILE_EXEC=/opt/agent/gateways/mcp/home/mcp_sse.py
+# --- runtime source: declared exactly ONCE ---
+AGENT_ROOT=/opt/agent/gateways/mcp/current
+PYTHONPATH=/opt/agent/gateways/mcp/current
+# --- profile identity / home ---
+AGENT_HOME=/opt/agent/gateways/mcp/home
+AGENT_PY=/opt/agent/venv/bin/python
+HOME=/var/lib/agent
+PYTHONDONTWRITEBYTECODE=1
+# Bearer token is provided as a REF via AGENT_HOME/.env (0600) — never a literal value here.

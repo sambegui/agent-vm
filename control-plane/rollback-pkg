@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# rollback-workerpool — STUB (v1 capture-only). Mirror of promote-workerpool in reverse.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+print_context
+banner "rollback-workerpool (STUB — not implemented in v1)"
+cat >&2 <<'PLAN'
+Planned rollback (after promote-workerpool exists):
+  1. Read rollback_target (prior npm version) from state/runtimes.md.
+  2. Flip /usr/local/bin/workerpool back to that version's install path.
+  3. Restart affected instances; verify `workerpool --version` + service states.
+PLAN
+exit 0

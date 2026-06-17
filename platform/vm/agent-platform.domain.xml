@@ -1,0 +1,33 @@
+<domain type='kvm'>
+  <name>agent-platform</name>
+  <memory unit='MiB'>4096</memory>
+  <currentMemory unit='MiB'>4096</currentMemory>
+  <vcpu placement='static'>4</vcpu>
+  <os>
+    <type arch='x86_64' machine='q35'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <features><acpi/><apic/></features>
+  <cpu mode='host-passthrough' check='none' migratable='on'/>
+  <clock offset='utc'/>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/agent-platform/agent-platform.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/var/lib/libvirt/images/agent-platform/seed.iso'/>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+    </disk>
+    <interface type='network'>
+      <mac address='52:54:00:00:00:01'/>
+      <source network='default'/>
+      <model type='virtio'/>
+    </interface>
+    <console type='pty'><target type='serial' port='0'/></console>
+    <channel type='unix'><target type='virtio' name='org.qemu.guest_agent.0'/></channel>
+  </devices>
+</domain>

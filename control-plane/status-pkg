@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# status-workerpool — read-only: workerpool npm version, version skew, and instance service states.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$HERE/lib/common.sh"
+print_context
+banner "workerpool runtime status"
+
+sysver="$(guest_ssh "/usr/local/bin/workerpool --version 2>/dev/null" || true)"
+log "system   : /usr/local/bin/workerpool = ${sysver:-unknown}"
+log "binary   : $(guest_ssh "readlink -f /usr/local/bin/workerpool 2>/dev/null" || true)"
+
+skew="$(guest_ssh "ls -1 /home/admin/.npm-global/lib/node_modules 2>/dev/null | grep -i '^workerpool'" || true)"
+log "adminLoc : ${skew:-none}"
+
+log "instances:"
+for svc in workerpool workerpool-party; do
+  st="$(guest_ssh "systemctl is-active ${svc}.service" 2>/dev/null || true)"
+  log "   - ${svc}.service = ${st:-unknown}"
+done
+log "baseline : /opt/agent-baseline (template; not a service)"
