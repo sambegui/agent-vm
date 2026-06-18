@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="agent-vm is a secure, agent-agnostic platform skeleton for hosting multiple AI agents as untrusted workloads."
+    />
+    <title>agent-vm — secure multi-agent hosting skeleton</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="agent-vm home">
+        <span class="brand-mark" aria-hidden="true">av</span>
+        <span class="brand-copy">
+          <span>agent-vm</span>
+          <small>controlled agent runtime substrate</small>
+        </span>
+      </a>
+      <nav class="nav-links" aria-label="Page sections">
+        <a href="#layers">Layers</a>
+        <a href="#validated">Validated</a>
+        <a href="#docs">Docs</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section id="top" class="hero section-grid" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">trust-boundary architecture · not an agent framework</p>
+          <h1 id="hero-title">Host agents like hostile workloads, not helpful scripts.</h1>
+          <p class="hero-lede">
+            <strong>agent-vm</strong> is a public, employer-facing platform skeleton for running multiple
+            AI agents behind explicit promotion, isolation, and governance controls.
+          </p>
+          <div class="trust-route" aria-label="Primary trust boundary flow">
+            <span>operator</span>
+            <span aria-hidden="true">→</span>
+            <span>control plane</span>
+            <span aria-hidden="true">→</span>
+            <span>substrate</span>
+          </div>
+          <div class="hero-actions">
+            <a class="button primary" href="#architecture">See the boundary</a>
+            <a class="button secondary" href="#validated">View validation scope</a>
+          </div>
+        </div>
+
+        <aside class="hero-panel" aria-labelledby="diagram-title">
+          <div class="panel-toolbar" aria-hidden="true">
+            <span></span><span></span><span></span>
+            <code>boundary.trace</code>
+          </div>
+          <h2 id="diagram-title" class="sr-only">Architecture trust boundary diagram</h2>
+          <img
+            src="assets/trust-boundary.svg"
+            alt="Operator dry-runs through a promotion control plane, then promotes exact commits into a golden VM substrate with Tier-1 signed services, Tier-2 microVM jobs, and a governance overlay."
+          />
+        </aside>
+      </section>
+
+      <section class="proof-strip" aria-label="Walking skeleton validation summary">
+        <div>
+          <span class="proof-kicker">substrate skeleton</span>
+          <strong>PASS=5 FAIL=0</strong>
+          <p>Nested-virt VM, signed Tier-1 service, default-deny Tier-2 microVM, timeout, teardown.</p>
+        </div>
+        <div>
+          <span class="proof-kicker">claim level</span>
+          <strong>validated walking skeleton</strong>
+          <p>Evidence-backed architecture. Not a turnkey production platform.</p>
+        </div>
+        <div>
+          <span class="proof-kicker">identifiers</span>
+          <strong>sanitized examples only</strong>
+          <p><code>10.0.0.0/24</code>, <code>platform-host</code>, <code>agent-runtime</code>.</p>
+        </div>
+      </section>
+
+      <section id="architecture" class="narrative section-grid compact" aria-labelledby="what-title">
+        <div>
+          <p class="eyebrow">what it is</p>
+          <h2 id="what-title">A small platform pattern for agent operations.</h2>
+        </div>
+        <div class="copy-block">
+          <p>
+            The repo models the operational layer around tool-using AI agents: exact-release promotion,
+            rollback proof, signed deployment artifacts, runtime isolation, and controls that scale with
+            blast radius.
+          </p>
+          <p>
+            It is deliberately <em>agent-agnostic</em>. A workload enters as a manifest and a risk tier,
+            then lands in one of two abstract deployment archetypes: immutable-release service or
+            package-install agent pool.
+          </p>
+        </div>
+      </section>
+
+      <section class="risk-section" aria-labelledby="risk-title">
+        <div class="section-heading">
+          <p class="eyebrow">why the boundary exists</p>
+          <h2 id="risk-title">Agents are untrusted because their inputs can become behavior.</h2>
+        </div>
+        <div class="risk-grid">
+          <article>
+            <span class="risk-code">01</span>
+            <h3>Tool calls under model control</h3>
+            <p>Shell, files, network, tickets, messages, and other agents are side effects, not chat.</p>
+          </article>
+          <article>
+            <span class="risk-code">02</span>
+            <h3>Credential-bearing runtime</h3>
+            <p>Secrets are references, never page content. Authority is scoped and auditable.</p>
+          </article>
+          <article>
+            <span class="risk-code">03</span>
+            <h3>Prompt injection surface</h3>
+            <p>External content is treated as data. Tool allowlists fail closed when policy is absent.</p>
+          </article>
+          <article>
+            <span class="risk-code">04</span>
+            <h3>Shared infrastructure drift</h3>
+            <p>Status re-derives truth. Promotion is exact commit; mutation starts as dry-run.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="layers" class="layers" aria-labelledby="layers-title">
+        <div class="section-heading narrow">
+          <p class="eyebrow">three layers + governance</p>
+          <h2 id="layers-title">Every layer assumes the one above it can fail.</h2>
+        </div>
+        <div class="layer-stack">
+          <article class="layer-card control">
+            <span class="layer-number">01</span>
+            <h3>Promotion control plane</h3>
+            <p>
+              Immutable exact-commit releases, dry-run-by-default mutation, drift detection, state as
+              truth, and recorded rollback targets.
+            </p>
+            <ul>
+              <li>exact commit promotion</li>
+              <li>dry-run before apply</li>
+              <li>drift-aware status</li>
+            </ul>
+          </article>
+          <article class="layer-card substrate">
+            <span class="layer-number">02</span>
+            <h3>Isolation substrate</h3>
+            <p>
+              Nested-virt golden VM with Tier-1 cosign-signed, digest-pinned services and Tier-2
+              ephemeral Kata microVM jobs.
+            </p>
+            <ul>
+              <li>reconcile → align</li>
+              <li>default-deny egress</li>
+              <li>verified teardown</li>
+            </ul>
+          </article>
+          <article class="layer-card gateway">
+            <span class="layer-number">03</span>
+            <h3>agent-gateway@&lt;profile&gt;</h3>
+            <p>
+              Per-profile runtime layout with one declared runtime source, OS-level profile isolation,
+              and independently restartable hardened systemd units.
+            </p>
+            <ul>
+              <li>one service per profile</li>
+              <li>Linux user isolation</li>
+              <li>restart blast-radius control</li>
+            </ul>
+          </article>
+          <article class="layer-card governance">
+            <span class="layer-number">G</span>
+            <h3>Governance overlay</h3>
+            <p>
+              Risk tiers L0–L5, SLO/canary, fail-closed MCP tool allowlists, secrets-by-reference,
+              signed supply chain, audit trails, and proven rollback.
+            </p>
+            <ul>
+              <li>risk-tier gates</li>
+              <li>canary before promotion</li>
+              <li>audit evidence</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="validated" class="validated section-grid" aria-labelledby="validated-title">
+        <div>
+          <p class="eyebrow">what is actually validated</p>
+          <h2 id="validated-title">Honest proof, not production theater.</h2>
+          <p class="section-lede">
+            The evidence proves the substrate walking skeleton and selected control-plane flows. It does
+            not claim a turnkey managed platform or a production migration.
+          </p>
+        </div>
+        <div class="validation-card">
+          <div class="scoreline" aria-label="Acceptance result: five pass, zero fail">
+            <span>PASS</span><strong>5</strong><span>FAIL</span><strong>0</strong>
+          </div>
+          <ol>
+            <li>Golden VM provisioned from code.</li>
+            <li>Tier-1 service signed, digest-pinned, and aligned.</li>
+            <li>Promotion and rollback path exercised.</li>
+            <li>Tier-2 microVM boots with default-deny egress.</li>
+            <li>Timeout and teardown are verified.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="workloads" aria-labelledby="workloads-title">
+        <div class="section-heading narrow">
+          <p class="eyebrow">reference workloads</p>
+          <h2 id="workloads-title">Two opposite agent shapes, one hosting contract.</h2>
+        </div>
+        <div class="workload-grid">
+          <article>
+            <span class="workload-label">Archetype A</span>
+            <h3>Immutable-release agent</h3>
+            <p>Python orchestrator-style service promoted by exact git commit into a hardened profile.</p>
+          </article>
+          <article>
+            <span class="workload-label">Archetype B</span>
+            <h3>Package-install agent pool</h3>
+            <p>Versioned package model captured as a design reference with explicit rollout boundaries.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="docs" class="docs" aria-labelledby="docs-title">
+        <div class="section-heading">
+          <p class="eyebrow">read the evidence trail</p>
+          <h2 id="docs-title">The landing page points to receipts, not vibes.</h2>
+        </div>
+        <div class="doc-grid">
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/architecture/00-overview.md">00 — Overview</a>
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/architecture/01-isolation-substrate.md">01 — Isolation substrate</a>
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/architecture/02-promotion-control-plane.md">02 — Promotion control plane</a>
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/architecture/03-gateway-runtime-layout.md">03 — Gateway runtime layout</a>
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/architecture/04-production-governance.md">04 — Production governance</a>
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/threat-model.md">Threat model</a>
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/verification.md">Verification model</a>
+          <a href="https://github.com/sambegui/agent-vm/blob/main/docs/evidence/substrate-validation-receipt.md">Evidence receipt</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Design direction: <strong>forensic operations console</strong> — containment boundaries,
+        signed-digest rails, and microVM cells rendered as an elevated public portfolio page.
+      </p>
+      <a href="https://github.com/sambegui/agent-vm">View repository</a>
+    </footer>
+  </body>
+</html>

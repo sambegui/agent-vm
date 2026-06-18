@@ -1,0 +1,94 @@
+<svg width="920" height="720" viewBox="0 0 920 720" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>agent-vm trust-boundary architecture</title>
+  <desc>Operator enters a promotion control plane, which promotes exact commits into a golden VM substrate. Governance gates every layer.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#142233" />
+      <stop offset="1" stop-color="#080d13" />
+    </linearGradient>
+    <linearGradient id="copper" x1="0" x2="1">
+      <stop offset="0" stop-color="#f5c16f" />
+      <stop offset="1" stop-color="#c76d3a" />
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" x2="1">
+      <stop offset="0" stop-color="#8ef6ff" />
+      <stop offset="1" stop-color="#38bdf8" />
+    </linearGradient>
+    <pattern id="hash" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <path d="M0 12h24" stroke="#223246" stroke-width="1" opacity="0.75" />
+    </pattern>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="7" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.42 0 0 0 0 0.91 0 0 0 0 1 0 0 0 .34 0" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="920" height="720" rx="34" fill="url(#panel)" />
+  <rect x="26" y="26" width="868" height="668" rx="28" fill="url(#hash)" opacity="0.5" />
+  <path d="M530 50 825 188 694 660 365 536 444 316Z" fill="#0c1623" stroke="#20344c" stroke-width="2" opacity="0.92" />
+
+  <g font-family="IBM Plex Mono, ui-monospace, monospace" font-size="17" fill="#b7c8d8">
+    <text x="64" y="74">TRACE / TRUST BOUNDARY</text>
+    <text x="682" y="74" fill="#f5c16f">digest: sha256:illustrative</text>
+  </g>
+
+  <g transform="translate(72 124)">
+    <rect width="302" height="104" rx="20" fill="#101a27" stroke="#3f5b76" stroke-width="2" />
+    <text x="28" y="42" font-family="Sora, sans-serif" font-weight="700" font-size="28" fill="#f8fbff">Operator</text>
+    <text x="28" y="75" font-family="IBM Plex Mono, monospace" font-size="18" fill="#8ef6ff">dry-run by default</text>
+  </g>
+
+  <g transform="translate(96 308)">
+    <rect width="402" height="132" rx="24" fill="#101a27" stroke="#54d6ed" stroke-width="2.5" filter="url(#glow)" />
+    <text x="30" y="44" font-family="Sora, sans-serif" font-weight="700" font-size="29" fill="#f8fbff">Promotion control plane</text>
+    <text x="30" y="82" font-family="IBM Plex Mono, monospace" font-size="17" fill="#b7c8d8">exact commit · drift check · rollback target</text>
+    <text x="30" y="110" font-family="IBM Plex Mono, monospace" font-size="17" fill="#f5c16f">mutation mode: preview → apply</text>
+  </g>
+
+  <g transform="translate(170 532)">
+    <rect width="520" height="112" rx="24" fill="#101a27" stroke="#53657a" stroke-width="2" />
+    <text x="30" y="42" font-family="Sora, sans-serif" font-weight="700" font-size="30" fill="#f8fbff">Golden VM substrate</text>
+    <text x="30" y="78" font-family="IBM Plex Mono, monospace" font-size="17" fill="#b7c8d8">platform-host · agent-runtime · isolated profiles</text>
+  </g>
+
+  <path d="M225 230 C230 264 256 288 298 308" stroke="url(#cyan)" stroke-width="6" fill="none" stroke-linecap="round" />
+  <path d="M298 440 C318 482 360 510 430 532" stroke="url(#cyan)" stroke-width="6" fill="none" stroke-linecap="round" />
+  <g fill="#8ef6ff">
+    <circle cx="225" cy="230" r="8" />
+    <circle cx="298" cy="308" r="8" />
+    <circle cx="430" cy="532" r="8" />
+  </g>
+
+  <g transform="translate(548 270)">
+    <rect width="268" height="104" rx="20" fill="#0f2430" stroke="#f5c16f" stroke-width="2" />
+    <text x="24" y="38" font-family="Sora, sans-serif" font-weight="700" font-size="24" fill="#fff7e6">Tier-1 service</text>
+    <text x="24" y="70" font-family="IBM Plex Mono, monospace" font-size="16" fill="#ffd790">cosign-signed</text>
+    <text x="24" y="92" font-family="IBM Plex Mono, monospace" font-size="16" fill="#ffd790">digest-pinned</text>
+  </g>
+
+  <g transform="translate(592 430)">
+    <rect width="226" height="96" rx="48" fill="#0b1722" stroke="#8ef6ff" stroke-width="2" stroke-dasharray="9 9" />
+    <text x="34" y="38" font-family="Sora, sans-serif" font-weight="700" font-size="22" fill="#f8fbff">Tier-2 microVM</text>
+    <text x="34" y="70" font-family="IBM Plex Mono, monospace" font-size="15" fill="#b7c8d8">deny egress · teardown</text>
+  </g>
+
+  <path d="M646 376 C662 394 671 410 684 430" stroke="#f5c16f" stroke-width="3" stroke-dasharray="8 8" fill="none" />
+  <path d="M590 532 C585 505 590 492 612 478" stroke="#8ef6ff" stroke-width="4" fill="none" opacity="0.9" />
+
+  <g transform="translate(560 116)">
+    <path d="M0 88 C52 8 178 0 246 64 C322 136 274 246 174 260 C64 276 -52 190 0 88Z" fill="none" stroke="url(#copper)" stroke-width="3" stroke-dasharray="14 10" />
+    <text x="58" y="82" font-family="Sora, sans-serif" font-weight="800" font-size="24" fill="#f5c16f">GOVERNANCE</text>
+    <text x="45" y="116" font-family="IBM Plex Mono, monospace" font-size="15" fill="#ffd790">L0-L5 · SLO/canary</text>
+    <text x="34" y="140" font-family="IBM Plex Mono, monospace" font-size="15" fill="#ffd790">fail-closed allowlists</text>
+    <text x="48" y="164" font-family="IBM Plex Mono, monospace" font-size="15" fill="#ffd790">audit · rollback proof</text>
+  </g>
+
+  <g transform="translate(72 654)" font-family="IBM Plex Mono, monospace" font-size="15" fill="#7f93a8">
+    <text>solid path = verified promotion flow</text>
+    <text x="344">dashed path = governance gate / risk escalation</text>
+  </g>
+</svg>
