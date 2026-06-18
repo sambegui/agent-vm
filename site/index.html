@@ -220,6 +220,48 @@
         </div>
       </section>
 
+      <section class="research" aria-labelledby="research-title">
+        <div class="section-heading">
+          <p class="eyebrow">grounded in primary research</p>
+          <h2 id="research-title">Aligned with frontier safety standards.</h2>
+        </div>
+        <div class="research-grid">
+          <article class="research-card">
+            <span class="research-logo">Anthropic</span>
+            <h3>Dual-Isolation Thesis</h3>
+            <blockquote>
+              "Without network isolation, a compromised agent could exfiltrate sensitive files; without filesystem isolation, it could escape the sandbox."
+            </blockquote>
+            <p>
+              Our architecture implements exactly this dual-isolation model, combining filesystem containment with default-deny network egress.
+            </p>
+            <a href="https://www.anthropic.com/engineering/claude-code-sandboxing" class="citation-link" target="_blank" rel="noopener">Anthropic Engineering (2025) →</a>
+          </article>
+          <article class="research-card">
+            <span class="research-logo">Google</span>
+            <h3>Host Defense Architecture</h3>
+            <blockquote>
+              "By intercepting all sandboxed application system calls to the kernel, it protects the host from the application."
+            </blockquote>
+            <p>
+              Our substrate intercepts tool actions and enforces strict host boundaries, protecting your infrastructure from untrusted code.
+            </p>
+            <a href="https://gvisor.dev/" class="citation-link" target="_blank" rel="noopener">Google gVisor Platform →</a>
+          </article>
+          <article class="research-card">
+            <span class="research-logo">AWS</span>
+            <h3>Minimal Attack Surface</h3>
+            <blockquote>
+              "A minimal device model that excludes all non-essential functionality and reduces the attack surface."
+            </blockquote>
+            <p>
+              Our Tier-2 microVMs run on stripped-down, isolated virtual devices with hardware-enforced boundaries and fast teardown.
+            </p>
+            <a href="https://firecracker-microvm.github.io/" class="citation-link" target="_blank" rel="noopener">AWS Firecracker microVM →</a>
+          </article>
+        </div>
+      </section>
+
       <section class="workloads" aria-labelledby="workloads-title">
         <div class="section-heading narrow">
           <p class="eyebrow">reference workloads</p>

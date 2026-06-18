@@ -741,10 +741,84 @@ code {
   border: 0;
 }
 
+/* Research Citations Styling */
+.research {
+  padding: clamp(4rem, 10vw, 8rem) 0 0;
+}
+
+.research-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.research-card {
+  padding: 1.6rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(142, 246, 255, 0.16);
+  background: rgba(10, 18, 27, 0.72);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.research-logo {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--copper);
+  border: 1px solid var(--line-warm);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(245, 193, 111, 0.05);
+  margin-bottom: 1.15rem;
+}
+
+.research-card h3 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.8rem;
+  font-size: 1.25rem;
+}
+
+.research-card blockquote {
+  border-left: 2px solid var(--cyan);
+  padding-left: 0.8rem;
+  margin: 0 0 1.2rem;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--dim);
+}
+
+.research-card p {
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.citation-link {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--cyan);
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(142, 246, 255, 0.4);
+  align-self: flex-start;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.citation-link:hover {
+  color: var(--text);
+  border-bottom-style: solid;
+}
+
 @media (max-width: 980px) {
   .section-grid,
   .proof-strip,
   .risk-grid,
+  .research-grid,
   .layer-stack,
   .doc-grid {
     grid-template-columns: 1fr;
@@ -765,6 +839,7 @@ code {
   }
 
   .risk-grid,
+  .research-grid,
   .layer-stack,
   .doc-grid {
     max-width: 720px;
