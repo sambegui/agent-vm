@@ -273,7 +273,7 @@ h3 {
 .hero-lede,
 .section-lede,
 .copy-block p {
-  color: var(--muted);
+  color: #c9d5e3;
   font-size: clamp(1rem, 1.7vw, 1.2rem);
 }
 
@@ -289,6 +289,7 @@ h3 {
   margin: 0.95rem 0 0.9rem;
 }
 
+.hero-proofrail a,
 .hero-proofrail span {
   display: inline-flex;
   align-items: center;
@@ -300,6 +301,14 @@ h3 {
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 0.78rem;
+  text-decoration: none;
+  transition: border-color 0.25s, background 0.25s, color 0.25s;
+}
+
+.hero-proofrail a:hover {
+  border-color: rgba(142, 246, 255, 0.5);
+  background: rgba(142, 246, 255, 0.12);
+  color: var(--text);
 }
 
 .hero-proofrail strong {
@@ -317,11 +326,21 @@ h3 {
   font-size: 0.9rem;
 }
 
+.trust-route a,
 .trust-route span:not([aria-hidden="true"]) {
   padding: 0.38rem 0.62rem;
   border: 1px solid rgba(142, 246, 255, 0.28);
   border-radius: 999px;
   background: rgba(142, 246, 255, 0.06);
+  color: var(--cyan);
+  text-decoration: none;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+
+.trust-route a:hover {
+  border-color: rgba(142, 246, 255, 0.6);
+  background: rgba(142, 246, 255, 0.15);
+  box-shadow: 0 0 10px rgba(142, 246, 255, 0.15);
 }
 
 .hero-actions {
