@@ -5,6 +5,32 @@ be**, and gates it from lab to production with controls proportional to its blas
 governance is a **production cell**: one workload, with a contract, a signed artifact, a manifest,
 isolation, auth, observability, progressive delivery, and proven rollback.
 
+```mermaid
+flowchart TB
+    classDef gov fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111827;
+    subgraph RINGS["isolation ring model · trust ↓, controls ↑"]
+        direction TB
+        R0["Ring 0 · operator / control"] --> R1["Ring 1 · conversation-plane · no terminal/file/delegation"]
+        R1 --> R2["Ring 2 · trusted worker · bounded work dirs"]
+        R2 --> R3["Ring 3 · code / build · sandboxed terminal backend"]
+        R3 --> R4["Ring 4 · untrusted exec · ephemeral microVM"]
+        R4 --> R5["Ring 5 · public / client · separate user / VM"]
+    end
+    subgraph CAN["progressive delivery · beside legacy"]
+        direction TB
+        S0["Stage 0 · deploy-only"] --> S1["Stage 1 · read-only canary"]
+        S1 --> S2["Stage 2 · limited production"]
+        S2 --> DEC{"promote?"}
+        DEC -->|"evidence: cross-profile read denied · egress denied · auth · rollback &lt; 5m"| PRO["promote"]
+        DEC -->|else| RB["rollback · proven"]
+    end
+    GOV["governance gate · production-ready = canary evidence, not unit creation"]:::gov
+    GOV -.->|"controls scale with ring"| RINGS
+    GOV -.->|"gates promotion"| CAN
+```
+
+*Solid = the trust ladder and canary progression; dotted = governance gating both.*
+
 ## Risk tiers (controls scale with autonomy/blast radius)
 
 | Tier | Example | Required controls |
@@ -17,6 +43,23 @@ isolation, auth, observability, progressive delivery, and proven rollback.
 | **L5** Regulated | high-autonomy/sensitive | compliance review, strict retention, dedicated environment |
 
 A workload may not deploy with controls below its tier; raising autonomy raises the bar.
+
+## Isolation ring model (profile classes)
+
+Risk tiers say *how much control* a workload needs; isolation **rings** say *what boundary and file /
+tool posture* a profile class gets. They complement each other.
+
+| Ring | Class | Boundary | File access | Tool posture |
+|---|---|---|---|---|
+| 0 | operator / control | human-gated | observe registry & receipts; not all homes | owner-gated admin only |
+| 1 | conversation-plane | dedicated user + hardened unit | own home only | no terminal / file / delegation |
+| 2 | trusted worker | dedicated user + bounded dirs | own home + assigned worktree | limited tools by role |
+| 3 | code / build | dedicated user + sandboxed terminal backend | assigned worktree only | terminal via container / microVM |
+| 4 | untrusted exec | ephemeral microVM | scratch only | default-deny egress, teardown verified |
+| 5 | public / client | separate user, preferably separate VM | client home only | no private memory / cross-client |
+
+A read-only conversation-plane endpoint is **Ring 1**: dedicated OS user, own home only, no
+terminal/file/delegation tools.
 
 ## Tool-agency security (the AI-specific danger surface)
 
@@ -66,3 +109,29 @@ recorded receipt, not an assumption.
 
 This overlay is how a new agent crosses from "runs in the lab" to "trusted in production" without the
 platform having to trust the agent.
+
+## Dashboards & control plane
+
+A single dashboard that can edit every profile's home is a powerful cross-profile authority — it
+collapses the isolation it sits above. The production pattern:
+
+- **per-profile** dashboards / status endpoints, each bound to loopback or a private socket, reading
+  only their own profile;
+- a **central dashboard that is read-only by default** — a registry / observability view (profile
+  name, ring, unit, health, canary state, rollback target, evidence path) with **no broad
+  profile-home access**;
+- any central mutation is an **explicit, approved, profile-scoped** admin action through a narrow
+  helper that writes a receipt — never a broad filesystem mount.
+
+The non-secret registry that drives it:
+[`examples/manifests/profile-registry.example.yaml`](../../examples/manifests/profile-registry.example.yaml);
+a per-profile capability contract:
+[`examples/manifests/profile-capability.example.yaml`](../../examples/manifests/profile-capability.example.yaml).
+
+## Production-ready means evidence, not unit creation
+
+Creating users and units is not production. A workload is production-ready only when **recorded
+evidence** shows it runs the intended code, **cross-profile read is denied**, denied tools are absent,
+egress policy is enforced, secrets are not logged, **rollback works**, and the canary survived real
+traffic. The scaffold and first canary can land the same day; the *production claim* waits for the
+evidence packet.

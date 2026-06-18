@@ -11,8 +11,11 @@ AssertPathIsSymbolicLink=/opt/agent/gateways/%i/current
 
 [Service]
 Type=simple
-User=agent
-Group=agent
+# Production-isolation mode: each profile runs as its OWN service account — this (plus the hardening
+# below) is the file-security boundary. App-state profiles under ONE Unix user are NOT a security
+# boundary. For convenience/dev mode, use User=agent / Group=agent instead.
+User=agent-%i
+Group=agent-%i
 
 # Optional shared overlays load FIRST; the per-profile env is authoritative and loads LAST
 # (systemd: a later EnvironmentFile wins on conflict). The runtime-source vars live ONLY in the
@@ -31,7 +34,34 @@ TimeoutStartSec=60
 SyslogIdentifier=agent-gw-%i
 StandardOutput=append:/opt/agent/gateways/%i/logs/gateway.log
 StandardError=append:/opt/agent/gateways/%i/logs/gateway.err
+
+# --- per-profile OS isolation (production mode): writes only its own home/ and logs/; the runtime
+# tree (current -> immutable release) stays read-only under ProtectSystem=strict ---
+UMask=0077
+ReadWritePaths=/opt/agent/gateways/%i/home /opt/agent/gateways/%i/logs
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
 NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+LockPersonality=yes
+RestrictSUIDSGID=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectKernelLogs=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+# Default-deny egress; allow loopback + the approved local proxy only (tune per profile).
+IPAddressDeny=any
+IPAddressAllow=127.0.0.1/32 ::1/128 10.0.0.1/32
+# Resource limits (tune during canary).
+TasksMax=512
+MemoryMax=2G
+CPUQuota=200%
 
 [Install]
 WantedBy=multi-user.target

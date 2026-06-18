@@ -1,0 +1,25 @@
+# Illustrative NON-SECRET profile registry that drives the central, read-only control view.
+# No tokens, API keys, or .env contents ever live here. Fictional values.
+profiles:
+  core:
+    ring: 1
+    linux_user: agent-core
+    gateway_unit: agent-gateway@core.service
+    home: /opt/agent/gateways/core/home
+    health: http://127.0.0.1:9101/healthz
+    mutable_from_central_dashboard: false
+  api:
+    ring: 2
+    linux_user: agent-api
+    gateway_unit: agent-gateway@api.service
+    home: /opt/agent/gateways/api/home
+    health: http://127.0.0.1:9102/healthz
+    mutable_from_central_dashboard: false
+  mcp:
+    ring: 1
+    linux_user: agent-mcp
+    gateway_unit: agent-gateway@mcp.service
+    home: /opt/agent/gateways/mcp/home
+    health: http://127.0.0.1:9103/healthz
+    canary_endpoint: http://10.0.0.60:18090/sse
+    mutable_from_central_dashboard: false

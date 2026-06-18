@@ -4,6 +4,33 @@ The substrate is a **golden VM (`agent-platform`) defined as code** on a nested-
 Agents never run on the host directly; the VM is the first boundary, and inside it workloads are
 split into tiers by blast radius.
 
+```mermaid
+flowchart TB
+    subgraph SUP["Supply chain · host"]
+        SRC["source @ exact SHA"] --> PIPE["build · cosign sign · push<br/>image @ digest"]
+    end
+    subgraph VM["Golden VM · isolation substrate"]
+        direction LR
+        subgraph T1["Tier-1 · long-running service"]
+            direction TB
+            MAN["digest-pinned manifest"] --> REC["reconcile · render + (re)start"]
+            REC --> RUN["running service"]
+            RUN --> ALN{"alignment check"}
+            ALN -->|ALIGNED| SRV["serve"]
+            ALN -->|DRIFT| HLT["flag / halt"]
+        end
+        subgraph T2["Tier-2 · ephemeral Kata microVM"]
+            direction TB
+            JOB["signed jobspec"] --> MVM["Kata microVM<br/>default-deny egress"]
+            MVM --> TDN["hard timeout<br/>verified teardown · 0 residual"]
+        end
+        RUN -.->|"escalate untrusted code / tools"| JOB
+    end
+    PIPE --> MAN
+```
+
+*Solid = verified pipeline; dotted = risk escalation into the microVM boundary.*
+
 ## Workload tiers
 
 | Tier | Workload | Boundary | Controls |

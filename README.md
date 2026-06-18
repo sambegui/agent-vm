@@ -21,6 +21,46 @@ agent is.
 > (`10.0.0.0/24`, `platform-host`, `agent-runtime`). Nothing points at real infrastructure, and no
 > secrets are present — secret *references* only.
 
+## Architecture at a glance
+
+```mermaid
+flowchart TB
+    classDef gov fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111827;
+    classDef plane fill:#dbeafe,stroke:#1d4ed8,color:#0b1324;
+
+    subgraph HOST["Host — operator trust domain"]
+        direction TB
+        OP["Operator<br/>dry-run by default"]
+        A["Archetype A<br/>Python orchestrator<br/>immutable git-release"]
+        B["Archetype B<br/>Node agent-pool<br/>versioned package"]
+        CP["Promotion control plane<br/>exact-commit releases · drift detection · state-as-truth"]:::plane
+        OP --> CP
+        A --> CP
+        B --> CP
+    end
+
+    GOV["Governance overlay<br/>risk tiers L0–L5 · SLO / canary · tool allowlist (fail-closed)<br/>secrets-by-reference · signed supply chain · audit · rollback proof"]:::gov
+
+    subgraph VM["Golden VM — isolation substrate, defined as code"]
+        direction TB
+        subgraph T1["Tier-1 · long-running service"]
+            T1S["cosign-signed · digest-pinned<br/>reconcile → align"]
+        end
+        subgraph T2["Tier-2 · ephemeral Kata microVM"]
+            T2J["default-deny egress · hard timeout<br/>verified teardown"]
+        end
+        GW["agent-gateway@&lt;profile&gt;<br/>one runtime source per profile · restart isolation"]
+        T1S --> GW
+        T1S -.->|"escalate higher-risk work"| T2J
+    end
+
+    CP -->|"promote exact commit (ssh, verified)"| T1S
+    GOV -.->|gates| CP
+    GOV -.->|gates| VM
+```
+
+*Vertical flow is the trust boundary (operator → control plane → substrate). **Solid** = verified promotion flow; **dotted** = governance/policy & risk escalation; the highlighted node is the cross-cutting governance overlay.*
+
 ## Why this matters
 
 AI agents are an awkward new workload class: they execute tool calls, hold credentials, reach

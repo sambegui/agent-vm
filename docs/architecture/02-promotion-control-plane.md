@@ -4,6 +4,25 @@ The control plane is a **host-side** set of small, idempotent scripts plus versi
 "truth" files. It deploys agent runtimes **over ssh against immutable releases** — live services are
 never run from a writable host mount, and live paths are never edited in place.
 
+```mermaid
+flowchart TB
+    A["Archetype A · git-release"] --> WT["worktree @ exact SHA"]
+    WT --> GATE{"--apply ?"}
+    GATE -->|"no · default"| DRY["print plan<br/>changes nothing"]
+    GATE -->|yes| SHIP["git archive → ssh<br/>/opt/agent/releases/&lt;sha&gt;"]
+    SHIP --> PROV["write .release.json"]
+    PROV --> FLIP["atomic current symlink flip"]
+    FLIP --> RST["restart service"]
+    RST --> VER["verify active · symlink · source SHA"]
+    VER --> PREV["record previous target<br/>rollback-ready"]
+    VER --> TRU["state-as-truth"]
+    STAT["status-agent · read-only"] -.->|"re-derive live SHA"| TRU
+    STAT -.->|"mismatch"| DRIFT["flag drift"]
+    B["Archetype B · package-pin"] -.->|"capture-first"| TRU
+```
+
+*Solid = verified promotion flow; dotted = read-only drift detection and capture-first archetype.*
+
 ## Immutable, exact-commit releases
 
 Promotion ships an **exact commit**, not a working tree:
