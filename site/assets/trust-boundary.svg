@@ -122,9 +122,9 @@
   <path d="M316 230 L320 300" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
   <path d="M496 230 L410 310" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
 
-  <!-- Governance Overlay Left Curve (Curves BELOW the rounded Operator Domain box) -->
-  <path d="M620 230 C 580 275, 490 275, 440 310" stroke="#f5c16f" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#arrow-gold)" />
-  <text x="500" y="260" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#f5c16f">gates</text>
+  <!-- Governance Overlay Left Curve (Curves BELOW the Host Operator rounded box and enters Control Plane on its RIGHT side) -->
+  <path d="M620 200 C 560 300, 520 330, 460 350" stroke="#f5c16f" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#arrow-gold)" />
+  <text x="510" y="332" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#f5c16f">gates</text>
 
   <!-- Governance Overlay Bottom Line (Straight down to Tier-2 microVM) -->
   <path d="M780 250 L780 585" stroke="#f5c16f" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#arrow-gold)" />
@@ -134,9 +134,9 @@
   <path d="M320 405 C320 455 410 465 450 485" stroke="url(#cyan)" stroke-width="3" fill="none" marker-end="url(#arrow)" />
   <text x="210" y="445" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#8ef6ff" font-weight="bold">promote commit (ssh, verified)</text>
 
-  <!-- Substrate Connections (Connecting bottom of Tier-1 to gateways with larger spacing) -->
+  <!-- Substrate Connections (Connecting bottom of Tier-1 to gateways with flat/gentle curves and separated text) -->
   <path d="M490 560 C490 580 350 575 300 595" stroke="url(#cyan)" stroke-width="1.5" fill="none" opacity="0.6" />
-  <path d="M490 560 C490 580 630 575 680 595" stroke="#f5c16f" stroke-width="1.5" fill="none" stroke-dasharray="2 2" opacity="0.6" />
-  <text x="510" y="578" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#f5c16f">escalate higher-risk</text>
+  <path d="M490 560 C 520 560, 630 570, 680 595" stroke="#f5c16f" stroke-width="1.5" fill="none" stroke-dasharray="2 2" opacity="0.6" />
+  <text x="510" y="588" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#f5c16f">escalate higher-risk</text>
 
 </svg>
