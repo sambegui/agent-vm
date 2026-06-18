@@ -1031,8 +1031,8 @@ code {
     top: 16px;
     z-index: 100;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     padding: 0.55rem 1.1rem;
     border: 1px solid rgba(142, 246, 255, 0.18);
     border-radius: 999px;
@@ -1041,6 +1041,13 @@ code {
     -webkit-backdrop-filter: blur(18px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .header-main-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .brand-copy small {
@@ -1079,24 +1086,16 @@ code {
     display: block;
   }
 
-  /* Hamburger Animating Lines */
-  .site-header .line-top,
-  .site-header .line-mid,
-  .site-header .line-bot {
-    transition: transform 0.3s, opacity 0.3s;
-    transform-origin: center;
+  .menu-toggle .icon-close {
+    display: none;
   }
 
-  .site-header.menu-open .line-mid {
-    opacity: 0;
+  .site-header.menu-open .menu-toggle .icon-menu {
+    display: none;
   }
 
-  .site-header.menu-open .line-top {
-    transform: translateY(6px) rotate(45deg);
-  }
-
-  .site-header.menu-open .line-bot {
-    transform: translateY(-6px) rotate(-45deg);
+  .site-header.menu-open .menu-toggle .icon-close {
+    display: block;
   }
 
   /* Dropdown Nav Links on Mobile */

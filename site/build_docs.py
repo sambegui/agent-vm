@@ -272,6 +272,22 @@ TEMPLATE = """<!DOCTYPE html>
       font-family: var(--font-mono);
       font-size: 0.85rem;
     }}
+
+    @media (max-width: 720px) {{
+      .site-header {{
+        top: 12px;
+        padding: 0.55rem 1.1rem;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+      }}
+      .back-link {{
+        font-size: 0.8rem;
+      }}
+      .top-nav-group {{
+        font-size: 0.75rem;
+        gap: 0.5rem;
+      }}
+    }}
   </style>
 </head>
 <body>
