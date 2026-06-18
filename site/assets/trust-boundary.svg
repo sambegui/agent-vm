@@ -1,6 +1,6 @@
-<svg width="920" height="640" viewBox="0 0 920 640" role="img" xmlns="http://www.w3.org/2000/svg">
+<svg width="980" height="720" viewBox="0 0 980 720" role="img" xmlns="http://www.w3.org/2000/svg">
   <title>agent-vm trust-boundary architecture</title>
-  <desc>Operator requests pass through a promotion control plane, into an isolation substrate, with governance gates on higher-risk workloads.</desc>
+  <desc>Grounded trust boundary flow from host operators to control plane and isolation substrate with governance gates.</desc>
   <defs>
     <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#142233" />
@@ -22,59 +22,116 @@
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L10,5 L0,9 L2,5 Z" fill="#8ef6ff" />
+    </marker>
+    <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L10,5 L0,9 L2,5 Z" fill="#f5c16f" />
+    </marker>
   </defs>
 
-  <rect width="920" height="640" rx="34" fill="url(#panel)" />
-  <circle cx="146" cy="122" r="190" fill="#38bdf8" opacity="0.07" />
-  <circle cx="780" cy="488" r="220" fill="#f5c16f" opacity="0.055" />
-  <path d="M520 58 800 188 706 560 360 498 410 250Z" fill="#0c1623" stroke="#20344c" stroke-width="2" opacity="0.5" />
+  <!-- Background and Ambient Light -->
+  <rect width="980" height="720" rx="34" fill="url(#panel)" />
+  <circle cx="150" cy="180" r="220" fill="#38bdf8" opacity="0.05" />
+  <circle cx="800" cy="500" r="240" fill="#f5c16f" opacity="0.04" />
 
+  <!-- Diagram Headers -->
   <g font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" fill="#b7c8d8">
-    <text x="72" y="82" font-size="16" letter-spacing="1.5">TRUST BOUNDARY</text>
-    <text x="692" y="82" font-size="15" fill="#f5c16f">illustrative map</text>
+    <text x="40" y="55" font-size="16" letter-spacing="1.5" font-weight="bold">TRUST BOUNDARY MAP</text>
+    <text x="940" y="55" font-size="14" fill="#f5c16f" text-anchor="end">production architecture</text>
   </g>
 
-  <g transform="translate(74 128)">
-    <rect width="252" height="78" rx="20" fill="#101a27" stroke="#3f5b76" stroke-width="2" />
-    <text x="26" y="34" font-family="Aptos Display, SF Pro Display, Segoe UI Variable Display, ui-sans-serif, system-ui, sans-serif" font-weight="700" font-size="24" fill="#f8fbff">Operator</text>
-    <text x="26" y="59" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="15" fill="#8ef6ff">dry-run first</text>
+  <!-- Outer Interconnecting Path Lines -->
+  <!-- Host Operators to Control Plane -->
+  <path d="M136 230 L230 310" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
+  <path d="M316 230 L320 300" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
+  <path d="M496 230 L410 310" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
+
+  <!-- Governance Gates to Control Plane and Substrate -->
+  <path d="M620 165 C540 165 440 250 440 300" stroke="#f5c16f" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#arrow-gold)" />
+  <text x="500" y="220" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#f5c16f">gates</text>
+
+  <path d="M780 250 L780 585" stroke="#f5c16f" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#arrow-gold)" />
+  <text x="792" y="380" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#f5c16f">gates</text>
+
+  <!-- Control Plane to Substrate -->
+  <path d="M320 405 C320 455 410 465 450 505" stroke="url(#cyan)" stroke-width="3" fill="none" marker-end="url(#arrow)" />
+  <text x="210" y="445" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#8ef6ff" font-weight="bold">promote commit (ssh, verified)</text>
+
+  <!-- Box 1: Host — Operator Trust Domain -->
+  <rect x="40" y="80" width="560" height="170" rx="16" fill="rgba(16, 26, 39, 0.4)" stroke="#20344c" stroke-width="1.5" />
+  <text x="56" y="105" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-weight="700" font-size="12" fill="#8ef6ff" letter-spacing="1">HOST — OPERATOR TRUST DOMAIN</text>
+
+  <!-- Operator Node -->
+  <g transform="translate(56, 120)">
+    <rect width="160" height="110" rx="10" fill="#0c121a" stroke="rgba(142, 246, 255, 0.3)" stroke-width="1.5" />
+    <text x="20" y="34" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="16" fill="#f8fbff">Operator</text>
+    <text x="20" y="60" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#8ef6ff">dry-run</text>
+    <text x="20" y="78" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#8ef6ff">by default</text>
   </g>
 
-  <g transform="translate(230 270)" filter="url(#soft-glow)">
-    <rect width="386" height="112" rx="24" fill="#101a27" stroke="#54d6ed" stroke-width="2.5" />
-    <text x="30" y="45" font-family="Aptos Display, SF Pro Display, Segoe UI Variable Display, ui-sans-serif, system-ui, sans-serif" font-weight="750" font-size="29" fill="#f8fbff">Control plane</text>
-    <text x="30" y="80" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="16" fill="#b7c8d8">exact commit · preview → apply</text>
+  <!-- Archetype A Node -->
+  <g transform="translate(236, 120)">
+    <rect width="160" height="110" rx="10" fill="#0c121a" stroke="rgba(142, 246, 255, 0.2)" stroke-width="1" />
+    <text x="20" y="34" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="16" fill="#f8fbff">Archetype A</text>
+    <text x="20" y="60" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#b7c8d8">persistent worker</text>
+    <text x="20" y="78" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#7f93a8">immutable release</text>
   </g>
 
-  <g transform="translate(212 480)">
-    <rect width="430" height="92" rx="24" fill="#101a27" stroke="#53657a" stroke-width="2" />
-    <text x="30" y="39" font-family="Aptos Display, SF Pro Display, Segoe UI Variable Display, ui-sans-serif, system-ui, sans-serif" font-weight="750" font-size="28" fill="#f8fbff">Isolation substrate</text>
-    <text x="30" y="67" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="15" fill="#b7c8d8">defined as code · isolated profiles</text>
+  <!-- Archetype B Node -->
+  <g transform="translate(416, 120)">
+    <rect width="160" height="110" rx="10" fill="#0c121a" stroke="rgba(142, 246, 255, 0.2)" stroke-width="1" />
+    <text x="20" y="34" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="16" fill="#f8fbff">Archetype B</text>
+    <text x="20" y="60" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#b7c8d8">ephemeral pool</text>
+    <text x="20" y="78" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#7f93a8">on-demand package</text>
   </g>
 
-  <path d="M300 206 C316 236 350 254 396 270" stroke="url(#cyan)" stroke-width="5" fill="none" stroke-linecap="round" />
-  <path d="M418 382 C428 424 444 454 466 480" stroke="url(#cyan)" stroke-width="5" fill="none" stroke-linecap="round" />
-  <circle cx="300" cy="206" r="7" fill="#8ef6ff" />
-  <circle cx="396" cy="270" r="7" fill="#8ef6ff" />
-  <circle cx="466" cy="480" r="7" fill="#8ef6ff" />
-
-  <g transform="translate(650 158)">
-    <rect width="210" height="318" rx="34" fill="#0b1722" stroke="url(#copper)" stroke-width="2.4" stroke-dasharray="12 10" opacity="0.95" />
-    <text x="28" y="48" font-family="Aptos Display, SF Pro Display, Segoe UI Variable Display, ui-sans-serif, system-ui, sans-serif" font-weight="800" font-size="22" fill="#f5c16f">Governance</text>
-    <text x="28" y="75" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="14" fill="#ffd790">risk gates · audit</text>
-
-    <g transform="translate(22 112)">
-      <rect width="166" height="66" rx="18" fill="#0f2430" stroke="#f5c16f" stroke-width="1.8" />
-      <text x="20" y="30" font-family="Aptos Display, SF Pro Display, Segoe UI Variable Display, ui-sans-serif, system-ui, sans-serif" font-weight="700" font-size="18" fill="#fff7e6">Tier-1 service</text>
-      <text x="20" y="50" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#ffd790">signed release</text>
-    </g>
-
-    <g transform="translate(22 214)">
-      <rect width="166" height="66" rx="33" fill="#0b1722" stroke="#8ef6ff" stroke-width="1.8" stroke-dasharray="8 8" />
-      <text x="20" y="30" font-family="Aptos Display, SF Pro Display, Segoe UI Variable Display, ui-sans-serif, system-ui, sans-serif" font-weight="700" font-size="18" fill="#f8fbff">Tier-2 job</text>
-      <text x="20" y="50" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#b7c8d8">tear down</text>
-    </g>
+  <!-- Box 2: Governance Overlay -->
+  <rect x="620" y="80" width="320" height="170" rx="16" fill="rgba(245, 193, 111, 0.05)" stroke="url(#copper)" stroke-width="2" stroke-dasharray="6 4" />
+  <text x="640" y="112" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="800" font-size="16" fill="#f5c16f" letter-spacing="0.5">GOVERNANCE OVERLAY</text>
+  <g font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#ffd790">
+    <text x="640" y="142">• Risk tiers L0–L5 controls</text>
+    <text x="640" y="164">• SLO/canary promotion</text>
+    <text x="640" y="186">• Fail-closed tool allowlists</text>
+    <text x="640" y="208">• Secrets-by-reference gates</text>
+    <text x="640" y="230">• Signed supply chain &amp; audit</text>
   </g>
 
-  <path d="M616 326 C640 310 648 292 650 270" stroke="#f5c16f" stroke-width="3" stroke-dasharray="8 8" fill="none" opacity="0.72" />
+  <!-- Box 3: Promotion Control Plane -->
+  <g transform="translate(180, 310)" filter="url(#soft-glow)">
+    <rect width="280" height="95" rx="16" fill="#0f1c28" stroke="#54d6ed" stroke-width="2.5" />
+    <text x="24" y="32" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="800" font-size="16" fill="#f8fbff">Promotion control plane</text>
+    <text x="24" y="55" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#8ef6ff">exact-commit releases</text>
+    <text x="24" y="75" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#b7c8d8">drift detection · state-as-truth</text>
+  </g>
+
+  <!-- Box 4: Golden VM Substrate -->
+  <rect x="40" y="470" width="900" height="210" rx="16" fill="rgba(16, 26, 39, 0.3)" stroke="#324960" stroke-width="1.5" />
+  <text x="56" y="495" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-weight="700" font-size="12" fill="#b7c8d8" letter-spacing="1">GOLDEN VM ISOLATION SUBSTRATE</text>
+
+  <!-- Substrate Connections -->
+  <path d="M490 580 C490 590 350 585 300 595" stroke="url(#cyan)" stroke-width="1.5" fill="none" opacity="0.6" />
+  <path d="M490 580 C490 590 630 585 680 595" stroke="#f5c16f" stroke-width="1.5" fill="none" stroke-dasharray="2 2" opacity="0.6" />
+  <text x="510" y="590" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#f5c16f">escalate higher-risk</text>
+
+  <!-- Tier-1 Service Node -->
+  <g transform="translate(360, 515)">
+    <rect width="260" height="65" rx="10" fill="#0a1219" stroke="#8ef6ff" stroke-width="1.5" />
+    <text x="20" y="24" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="13" fill="#ffffff">Tier-1 long-running service</text>
+    <text x="20" y="45" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#b7c8d8">cosign-signed · digest-pinned · align</text>
+  </g>
+
+  <!-- agent-gateway@<profile> Node -->
+  <g transform="translate(56, 595)">
+    <rect width="360" height="65" rx="10" fill="#050910" stroke="rgba(142, 246, 255, 0.4)" stroke-width="1" />
+    <text x="20" y="24" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="13" fill="#f8fbff">agent-gateway@&lt;profile&gt;</text>
+    <text x="20" y="45" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#b7c8d8">one runtime source per profile · user isolation</text>
+  </g>
+
+  <!-- Tier-2 Ephemeral Kata microVM Node -->
+  <g transform="translate(480, 595)">
+    <rect width="444" height="65" rx="10" fill="#0c121a" stroke="url(#copper)" stroke-width="1.5" stroke-dasharray="4 2" />
+    <text x="20" y="24" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="13" fill="#f5c16f">Tier-2 ephemeral Kata microVM</text>
+    <text x="20" y="45" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#b7c8d8">default-deny egress · hard timeout · teardown</text>
+  </g>
 </svg>

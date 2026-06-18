@@ -223,6 +223,7 @@ main {
 }
 
 .hero {
+  grid-template-columns: minmax(0, 0.8fr) minmax(320px, 1.2fr);
   align-items: center;
   min-height: calc(100svh - 104px);
   padding: clamp(1.6rem, 4.2vw, 4rem) 0 clamp(1.8rem, 4vw, 3rem);
