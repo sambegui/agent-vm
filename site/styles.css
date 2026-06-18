@@ -93,17 +93,28 @@ button:focus-visible {
   top: 16px;
   left: 16px;
   z-index: 20;
-  transform: translateY(-160%);
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--cyan);
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--text);
-  transition: transform 180ms ease;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.skip-link:focus {
-  transform: translateY(0);
+.skip-link:focus-visible {
+  width: auto;
+  height: auto;
+  padding: 0.7rem 1rem;
+  overflow: visible;
+  border: 1px solid var(--cyan);
+  border-radius: 999px;
+  clip: auto;
+  clip-path: none;
+  background: var(--ink);
+  color: var(--text);
+  white-space: normal;
 }
 
 .site-header {

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# LLM navigation guide:
+# https://agent-vm.sabe.dev/docs/llms.txt
+#
+# Full page map and citation guidance:
+# https://agent-vm.sabe.dev/docs/llms-full.txt

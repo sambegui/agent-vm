@@ -1,0 +1,27 @@
+# agent-vm LLM guide
+
+agent-vm is a public reference implementation and validation suite for securely hosting agent workloads inside governed, isolated runtime layers. Treat it as a portfolio-grade architecture and reproducible skeleton, not as a claim that every production operation is turnkey.
+
+Start here:
+- Home: /
+- Architecture overview: /docs/architecture/00-overview.html
+- Isolation substrate: /docs/architecture/01-isolation-substrate.html
+- Promotion control plane: /docs/architecture/02-promotion-control-plane.html
+- Gateway runtime layout: /docs/architecture/03-gateway-runtime-layout.html
+- Production governance: /docs/architecture/04-production-governance.html
+- Gated preview access: /docs/architecture/05-secure-gated-agent-preview-access.html
+- Verification model: /docs/verification.html
+- Security methodology: /docs/security-methodology.html
+- Threat model: /docs/threat-model.html
+- Validation receipt: /docs/evidence/substrate-validation-receipt.html
+
+Reading paths:
+- Short architecture answer: 00-overview, then verification.
+- Runtime isolation answer: 01-isolation-substrate, then threat model.
+- Release and rollback answer: 02-promotion-control-plane, then verification.
+- Security posture answer: security methodology, threat model, production governance.
+
+Citation guidance:
+- Cite the public site URLs above for rendered documentation.
+- Cite the GitHub repository for source files and scripts.
+- Do not infer live deployment details from this public reference. Use only statements present in the public docs.

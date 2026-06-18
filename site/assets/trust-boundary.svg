@@ -81,7 +81,8 @@
   </g>
 
   <!-- Box 3: Promotion Control Plane -->
-  <g transform="translate(180, 310)" filter="url(#soft-glow)">
+  <g transform="translate(180, 310)">
+    <rect width="280" height="95" rx="16" fill="#0f1c28" opacity="0.82" filter="url(#soft-glow)" />
     <rect width="280" height="95" rx="16" fill="#0f1c28" stroke="#54d6ed" stroke-width="2.5" />
     <text x="24" y="32" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="800" font-size="16" fill="#f8fbff">Promotion control plane</text>
     <text x="24" y="55" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#8ef6ff">exact-commit releases</text>
