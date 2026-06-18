@@ -39,11 +39,11 @@ flowchart TB
         B --> CP
     end
 
-    GOV["Governance overlay<br/>risk tiers L0–L5 · SLO / canary · tool allowlist (fail-closed)<br/>secrets-by-reference · signed supply chain · audit · rollback proof"]:::gov
+    GOV["Governance overlay<br/>risk&nbsp;tiers&nbsp;L0–L5&nbsp;·&nbsp;SLO/canary&nbsp;·&nbsp;fail-closed&nbsp;tool&nbsp;allowlist<br/>secret&nbsp;refs&nbsp;·&nbsp;signed&nbsp;supply&nbsp;chain&nbsp;·&nbsp;audit&nbsp;·&nbsp;rollback&nbsp;proof"]:::gov
 
-    subgraph VM["Golden VM — isolation substrate, defined as code"]
+    subgraph VM["Golden VM substrate"]
         direction TB
-        subgraph T1["Tier-1 · long-running service"]
+        subgraph T1["Tier-1 service"]
             T1S["cosign-signed · digest-pinned<br/>reconcile → align"]
         end
         subgraph T2["Tier-2 · ephemeral Kata microVM"]
