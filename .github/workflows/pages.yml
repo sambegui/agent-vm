@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      - "docs/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -24,6 +25,17 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Markdown Dependencies
+        run: pip install markdown
+
+      - name: Compile Markdown Docs to Static HTML
+        run: python site/build_docs.py
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

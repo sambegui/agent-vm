@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spec · agent-vm specs</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #070b10;
+      --ink-2: #0b111a;
+      --panel: rgba(14, 24, 36, 0.78);
+      --panel-strong: #101a27;
+      --line: rgba(142, 246, 255, 0.22);
+      --text: #f8fbff;
+      --muted: #b7c8d8;
+      --dim: #7f93a8;
+      --cyan: #8ef6ff;
+      --font-body: "SF Pro Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
+    }
+
+    body {
+      background-color: var(--ink);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 5vw, 4rem) 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+    }
+
+    .back-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--text);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-top: 0;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      border-bottom: 1px solid rgba(142, 246, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(142, 246, 255, 0.4);
+    }
+
+    a:hover {
+      color: var(--text);
+      border-bottom-style: solid;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--cyan);
+    }
+
+    pre {
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 1.2rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    pre code {
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(142, 246, 255, 0.05);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    blockquote {
+      border-left: 4px solid var(--cyan);
+      margin: 1.5rem 0;
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      background-color: rgba(142, 246, 255, 0.02);
+      border-radius: 0 4px 4px 0;
+    }
+
+    blockquote p {
+      margin: 0;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.5rem;
+      text-align: center;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a class="back-link" href="../index.html">← Back to Console</a>
+      <span style="color: var(--dim); font-family: var(--font-mono); font-size: 0.85rem;">spec v1.0</span>
+    </header>
+    <main>
+      <h1 id="security-methodology">Security methodology</h1>
+<p><code>agent-vm</code> shifts AI agents from isolated chatbot tabs into governed, persistent <strong>Agent Employees</strong> that live in team workspaces (Slack, Discord, ClickUp) collaborating alongside human employees. While this cooperative model unlocks massive productivity gains and cost savings, it exposes the runtime to a variety of untrusted inputs (files, chat history, meeting transcripts). </p>
+<p>Therefore, the platform treats these persistent digital workers as untrusted, tool-wielding workloads. The security model is aligned with common practices used by mature infrastructure teams: layered controls, least privilege, explicit promotion, auditable operations, and rollback evidence. It is a public reference architecture, not a certification, vendor endorsement, or provider-approved deployment pattern.</p>
+<p>This document intentionally avoids deployment-specific hostnames, addresses, identities, keys, firewall handles, private URLs, and operational paths. A real deployment should bind these principles to its own threat model, policies, and evidence trail.</p>
+<h2 id="1-defense-in-depth">1. Defense in depth</h2>
+<p>Guest workloads (agent employees) are not trusted because their behavior can be influenced by prompts, tools, dependencies, retrieved project files, Google Meet/Zoom transcripts, and operator mistakes. The platform therefore avoids relying on a single boundary.</p>
+<p>Controls are layered across:</p>
+<ul>
+<li><strong>runtime boundaries</strong> — separate workload runtime from the host control plane;</li>
+<li><strong>network boundaries</strong> — deny by default, then allow only required paths;</li>
+<li><strong>release boundaries</strong> — promote known commits or artifacts instead of editing live runtime state;</li>
+<li><strong>operational workflows</strong> — dry-run first, record evidence, and require rollback paths for
+  higher-risk changes.</li>
+</ul>
+<p>A control is useful only if the next layer still limits blast radius when it fails.</p>
+<h2 id="2-least-privilege-and-fail-closed-defaults">2. Least privilege and fail-closed defaults</h2>
+<p>Agents should receive only the permissions, tools, files, and network paths needed for their role.
+Access should be explicit, narrow, auditable, and revocable.</p>
+<p>Preferred defaults:</p>
+<ul>
+<li>deny-by-default firewalling and explicit allowlists;</li>
+<li>tool discovery that exposes only approved tools;</li>
+<li>missing or invalid policy treated as a hard failure;</li>
+<li>short-lived or scoped credentials where possible;</li>
+<li>human approval gates for sensitive writes or irreversible actions.</li>
+</ul>
+<p>A denied capability should be absent from the agent's available surface, not merely discouraged in
+documentation.</p>
+<h2 id="3-isolation-substrate">3. Isolation substrate</h2>
+<p>Runtime environments should be separated from the host control plane. The control plane decides what
+should run; isolated runtimes execute it with constrained authority.</p>
+<p>Operating principles:</p>
+<ul>
+<li>long-running services run from immutable promoted releases, not writable development directories;</li>
+<li>release symlinks or equivalent promotion targets are deployment pointers, not edit locations;</li>
+<li>promoted artifacts are identified by commit, digest, or package version;</li>
+<li>higher-risk or short-lived jobs use stronger isolation and explicit teardown;</li>
+<li>live runtime identity is verified before making claims about what is running.</li>
+</ul>
+<p>The goal is to make deployment state observable and reproducible instead of dependent on local shell
+history.</p>
+<h2 id="4-egress-and-exfiltration-resistance">4. Egress and exfiltration resistance</h2>
+<p>Agents can leak data through network calls, logs, browser pages, generated artifacts, and tool
+outputs. External access should therefore be mediated through narrow policy gates.</p>
+<p>Public-safe design principles:</p>
+<ul>
+<li>outbound network access is allowlisted or routed through a policy-aware proxy where practical;</li>
+<li>negative egress tests are part of validation, not an afterthought;</li>
+<li>sensitive data is passed by reference where possible, not copied into prompts, logs, pages, or
+  generated artifacts;</li>
+<li>receipts and audit logs record decisions and identifiers without storing raw secrets;</li>
+<li>public preview flows expose only intended development ports and do not grant broad network
+  reachability.</li>
+</ul>
+<p>Secret-by-reference is a design constraint: the agent may be allowed to request a capability, but
+the raw secret should not become normal prompt or artifact content.</p>
+<h2 id="5-temporary-access-for-previews">5. Temporary access for previews</h2>
+<p>Preview and review access should be explicit, time-bounded, and easy to revoke. The safest preview
+is the narrowest one that still lets a reviewer inspect the intended surface.</p>
+<p>Preferred patterns:</p>
+<ul>
+<li>ephemeral or on-demand access for demos and review;</li>
+<li>explicit preview ports rather than broad network access;</li>
+<li>no subnet routing, exit nodes, broad SSH access, or persistent remote identities unless a specific
+  review requires them;</li>
+<li>clear shutdown and revocation steps after the review window ends;</li>
+<li>no reuse of preview credentials as production credentials.</li>
+</ul>
+<p>A preview path should not silently become a standing management path.</p>
+<p>See <a href="architecture/05-secure-gated-agent-preview-access.html"><code>docs/architecture/05-secure-gated-agent-preview-access.html</code></a>
+for a standards-oriented reference pattern and sanitized Tailscale implementation example.</p>
+<h2 id="6-auditability-and-rollback">6. Auditability and rollback</h2>
+<p>A platform should be able to prove what is running before claiming it is fixed, deployed, or
+validated.</p>
+<p>Before promotion claims, verify:</p>
+<ul>
+<li>runtime state and process command;</li>
+<li>promoted commit, digest, package version, or equivalent source identity;</li>
+<li>import path or runtime source path;</li>
+<li>active policy and tool allowlist;</li>
+<li>expected network posture;</li>
+<li>rollback target and rollback command path.</li>
+</ul>
+<p>Operational changes should be reproducible, reviewable, and ideally represented as code. Promotions
+should record the previous known-good target so rollback is a tested operation rather than a hope.</p>
+<h2 id="7-governance-overlay">7. Governance overlay</h2>
+<p>Governance sits across all layers. It does not replace isolation; it decides which controls are
+required for each blast radius.</p>
+<p>Target operating principles:</p>
+<ul>
+<li>risk tiers for workloads and tool classes;</li>
+<li>SLO or canary checks before promotion;</li>
+<li>explicit tool allowlists with fail-closed loading;</li>
+<li>signed or digest-pinned supply chain artifacts where possible;</li>
+<li>audit trails for promotions, tool grants, policy decisions, and rollbacks;</li>
+<li>secret-by-reference practices for credentials and sensitive data;</li>
+<li>rollback proof for changes that can affect durable state.</li>
+</ul>
+<p>The point is not to make agents appear safe by policy alone. The point is to make each step
+observable, bounded, and reversible enough that failures can be contained.</p>
+<h2 id="non-goals">Non-goals</h2>
+<p><code>agent-vm</code> is a reference architecture and validated skeleton. It does not claim to be a turnkey
+production platform, a managed security product, or a deployment endorsed by any company. A
+production adoption needs its own environment-specific threat model, control mapping, incident
+process, monitoring, and evidence retention policy.</p>
+    </main>
+    <footer>
+      agent-vm security substrate · open-source verification receipt
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spec · agent-vm specs</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #070b10;
+      --ink-2: #0b111a;
+      --panel: rgba(14, 24, 36, 0.78);
+      --panel-strong: #101a27;
+      --line: rgba(142, 246, 255, 0.22);
+      --text: #f8fbff;
+      --muted: #b7c8d8;
+      --dim: #7f93a8;
+      --cyan: #8ef6ff;
+      --font-body: "SF Pro Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
+    }
+
+    body {
+      background-color: var(--ink);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 5vw, 4rem) 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+    }
+
+    .back-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--text);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-top: 0;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      border-bottom: 1px solid rgba(142, 246, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(142, 246, 255, 0.4);
+    }
+
+    a:hover {
+      color: var(--text);
+      border-bottom-style: solid;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--cyan);
+    }
+
+    pre {
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 1.2rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    pre code {
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(142, 246, 255, 0.05);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    blockquote {
+      border-left: 4px solid var(--cyan);
+      margin: 1.5rem 0;
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      background-color: rgba(142, 246, 255, 0.02);
+      border-radius: 0 4px 4px 0;
+    }
+
+    blockquote p {
+      margin: 0;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.5rem;
+      text-align: center;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a class="back-link" href="../../index.html">← Back to Console</a>
+      <span style="color: var(--dim); font-family: var(--font-mono); font-size: 0.85rem;">spec v1.0</span>
+    </header>
+    <main>
+      <h1 id="05-secure-gated-agent-preview-access">05 — Secure gated agent preview access</h1>
+<p>Agent previews are useful because reviewers need to see the actual running surface, not only a
+screenshot or a local build log. They are risky because an agent runtime or development server is a
+network service attached to code, tools, files, logs, and sometimes sensitive task context.</p>
+<p>This pattern treats preview access as a temporary, least-privilege access grant. The goal is not to
+make the preview public. The goal is to let an approved operator or reviewer reach only the intended
+preview ports through an explicit, auditable gate, while the host/control plane keeps its normal
+network identity and the guest/runtime uses a separate isolated network identity.</p>
+<p>Tailscale is used below as one illustrative implementation. The normative requirements apply equally
+to another private overlay, bastion, VPN, access proxy, or zero-trust gateway.</p>
+<h2 id="standards-posture">Standards posture</h2>
+<p>The secure preview gate is part of the governance layer, not a convenience tunnel. A preview session
+MUST be:</p>
+<ul>
+<li><strong>explicit</strong> — created for a named review window and preview surface;</li>
+<li><strong>temporary</strong> — short-lived, revoked, and torn down after use;</li>
+<li><strong>least-privilege</strong> — scoped to approved reviewers and approved ports only;</li>
+<li><strong>isolated</strong> — the guest/runtime identity is separate from the host/control-plane identity;</li>
+<li><strong>auditable</strong> — access grants, firewall openings, preview start, and teardown are recorded;</li>
+<li><strong>reversible</strong> — logout, daemon stop, firewall rollback, and inactive-state verification are part of
+  the runbook;</li>
+<li><strong>secret-by-reference</strong> — auth keys or credentials are stored outside the repo and never copied into
+  prompts, logs, transcripts, Markdown examples, manifests, or receipts.</li>
+</ul>
+<p>A preview path SHOULD NOT become a permanent management path. Production access should have its own
+identity, policy, monitoring, and incident procedures.</p>
+<h2 id="reference-topology">Reference topology</h2>
+<pre><code class="language-text">operator / approved reviewer
+        |
+        | private overlay ACL/grant: approved reviewer -&gt; preview ports only
+        v
+isolated guest/runtime preview identity
+        |
+        | guest firewall: default deny, allow only overlay interface + scoped preview ports
+        v
+agent preview service on &lt;preview-port&gt;
+
+host/control plane
+        |
+        | normal operator network identity; does not join or expose through the preview identity
+        v
+promotion, status, rollback, receipts
+</code></pre>
+<p>Design intent:</p>
+<ul>
+<li>The <strong>host/control plane</strong> remains reachable through its normal operator-controlled path.</li>
+<li>The <strong>guest/runtime</strong> gets a separate, temporary preview identity.</li>
+<li>The overlay grants reviewer access only to approved preview ports such as <code>4000-4099</code>, <code>5173</code>, and
+  <code>8000-9000</code>.</li>
+<li>The guest firewall remains default-deny and allows preview traffic only on the private overlay
+  interface.</li>
+<li>Broad routing features are disabled unless a separate, reviewed use case justifies them.</li>
+</ul>
+<h2 id="threat-model">Threat model</h2>
+<table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Why it matters</th>
+<th>Control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unauthorized preview access</td>
+<td>A preview server may expose drafts, logs, local state, or agent outputs.</td>
+<td>Overlay ACLs/grants/tags restrict source identities; guest firewall allows only scoped ports on the overlay interface.</td>
+</tr>
+<tr>
+<td>Persistent agent network identity</td>
+<td>A forgotten runtime identity can become a standing access path.</td>
+<td>Use ephemeral identity/session state where possible; require logout, daemon stop, and inactive-state proof.</td>
+</tr>
+<tr>
+<td>Accidental subnet exposure</td>
+<td>A preview tunnel can accidentally bridge more of the guest or site network than intended.</td>
+<td>Disable subnet route advertisement and route acceptance by default.</td>
+</tr>
+<tr>
+<td>Exit-node exposure</td>
+<td>A guest can accidentally become a general network relay.</td>
+<td>Disable exit-node advertisement and selection.</td>
+</tr>
+<tr>
+<td>Public exposure</td>
+<td>Public sharing features can bypass the private-review model.</td>
+<td>Disable Funnel/public exposure unless explicitly approved in a separate threat model.</td>
+</tr>
+<tr>
+<td>Broad remote shell access</td>
+<td>Tailscale SSH or equivalent features can exceed preview needs.</td>
+<td>Disable overlay SSH by default; use the existing operator-controlled management path.</td>
+</tr>
+<tr>
+<td>Auth-key leakage</td>
+<td>Auth keys can join devices or mint identities.</td>
+<td>Treat keys as secrets-by-reference; never place values in prompts, logs, repos, memory, transcripts, or receipts.</td>
+</tr>
+<tr>
+<td>Broad firewall rules</td>
+<td>Allowing all overlay traffic exposes unintended local services.</td>
+<td>Keep guest firewall default-deny; allow only the private overlay interface and approved preview ports.</td>
+</tr>
+<tr>
+<td>Forgotten preview sessions</td>
+<td>A demo path can become unowned infrastructure.</td>
+<td>Teardown is mandatory; verify no daemon, interface, temporary rules, or key material remain.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="control-objectives">Control objectives</h2>
+<table>
+<thead>
+<tr>
+<th>Objective</th>
+<th>Practices</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Identity isolation</td>
+<td>Keep host/control-plane identity separate from guest/runtime preview identity; prefer tags or device identities scoped to preview use.</td>
+</tr>
+<tr>
+<td>Least privilege</td>
+<td>Grant only approved reviewers or operator accounts access to approved preview ports.</td>
+</tr>
+<tr>
+<td>No broad routing</td>
+<td>Disable subnet routes, accepted routes, exit nodes, public exposure, and overlay SSH unless separately justified.</td>
+</tr>
+<tr>
+<td>Temporary access</td>
+<td>Prefer ephemeral auth keys and in-memory session state; record the review window and revoke access after use.</td>
+</tr>
+<tr>
+<td>Firewall scoping</td>
+<td>Keep input default-deny; allow preview traffic only on the private overlay interface and only to scoped ports.</td>
+</tr>
+<tr>
+<td>Secrets-by-reference</td>
+<td>Store auth-key material outside the repo; reference a protected path such as <code>&lt;auth-key-file&gt;</code> without printing its value.</td>
+</tr>
+<tr>
+<td>Auditability</td>
+<td>Record who requested access, who was allowed, which ports were exposed, when it started, and teardown evidence.</td>
+</tr>
+<tr>
+<td>Teardown / rollback proof</td>
+<td>Verify logout, stopped transient daemon, removed temporary firewall rules, removed key material, and inactive overlay state.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="normative-requirements">Normative requirements</h2>
+<p>A secure agent preview access design MUST:</p>
+<ol>
+<li>define the preview purpose, owner, reviewer identities, ports, and expiration before opening access;</li>
+<li>use a separate guest/runtime preview identity rather than reusing the host/control-plane identity;</li>
+<li>restrict access to specific reviewers or groups through ACLs, grants, tags, or equivalent policy;</li>
+<li>expose only scoped preview ports, for example <code>4000-4099</code>, <code>5173</code>, and <code>8000-9000</code>;</li>
+<li>keep guest firewall input default-deny and allow preview traffic only on the private overlay
+   interface;</li>
+<li>keep auth keys and equivalent credentials out of prompts, logs, repositories, Markdown examples,
+   transcripts, and receipts;</li>
+<li>disable subnet routing, exit-node behavior, public exposure, and overlay SSH unless a separate
+   approval and threat model require them;</li>
+<li>verify active state before telling reviewers the preview is ready;</li>
+<li>require teardown and inactive-state verification before the work is closed;</li>
+<li>run repository secret scanning before publishing examples or receipts.</li>
+</ol>
+<p>A secure agent preview access design SHOULD:</p>
+<ul>
+<li>use ephemeral auth keys or equivalent short-lived join credentials;</li>
+<li>use in-memory daemon state such as <code>tailscaled --state=mem:</code> when the implementation supports it;</li>
+<li>put temporary runtime files under an operating-system runtime directory rather than the repository;</li>
+<li>bind preview services to explicit interfaces where the framework supports it;</li>
+<li>write a short receipt that includes command output summaries but no secret values;</li>
+<li>prefer an approved wrapper script for implementation details so operators do not paste secrets into
+  shells or transcripts.</li>
+</ul>
+<h2 id="illustrative-tailscale-implementation">Illustrative Tailscale implementation</h2>
+<blockquote>
+<p>This section is an example, not a vendor endorsement or a requirement to use Tailscale. Replace every
+placeholder with environment-specific values outside the repository. Do not paste real auth keys into
+this document, prompts, logs, or tickets.</p>
+</blockquote>
+<h3 id="tailnet-policy-shape">Tailnet policy shape</h3>
+<p>Use ACLs, grants, groups, and tags to restrict reviewer access to the preview identity and preview
+ports only. The exact syntax may vary by Tailscale policy version; the shape should be equivalent to:</p>
+<pre><code class="language-json">{
+  &quot;tagOwners&quot;: {
+    &quot;tag:agent-preview&quot;: [&quot;group:platform-operators&quot;]
+  },
+  &quot;grants&quot;: [
+    {
+      &quot;src&quot;: [&quot;group:approved-preview-reviewers&quot;],
+      &quot;dst&quot;: [&quot;tag:agent-preview&quot;],
+      &quot;ip&quot;: [&quot;tcp:4000-4099&quot;, &quot;tcp:5173&quot;, &quot;tcp:8000-9000&quot;]
+    }
+  ],
+  &quot;ssh&quot;: []
+}
+</code></pre>
+<p>Policy intent:</p>
+<ul>
+<li>only approved reviewers can reach the tagged preview node;</li>
+<li>only preview ports are reachable;</li>
+<li>overlay SSH is empty/disabled;</li>
+<li>the tag cannot be self-assigned by arbitrary users;</li>
+<li>the policy does not grant subnet routing, exit-node use, or public exposure.</li>
+</ul>
+<h3 id="preflight-checklist">Preflight checklist</h3>
+<p>Before starting the preview, the operator MUST confirm:</p>
+<ul>
+<li>[ ] The preview purpose, owner, reviewers, ports, and expiration are documented.</li>
+<li>[ ] The auth key is ephemeral or short-lived where supported.</li>
+<li>[ ] The auth key grants only the preview tag/identity and no broad device ownership.</li>
+<li>[ ] The auth key is stored in <code>&lt;auth-key-file&gt;</code> with restrictive file permissions outside the repo.</li>
+<li>[ ] The guest/runtime has a default-deny firewall posture.</li>
+<li>[ ] The preview app is bound to an explicit preview port in the approved range.</li>
+<li>[ ] The Tailscale policy allows only approved reviewers to the preview tag and ports.</li>
+<li>[ ] Subnet routes, route acceptance, exit-node behavior, Funnel/public exposure, and Tailscale SSH
+      are not required for this review.</li>
+<li>[ ] The teardown owner and deadline are known.</li>
+<li>[ ] Secret scanning will run before any example, receipt, or docs change is published.</li>
+</ul>
+<h3 id="placeholder-only-runbook">Placeholder-only runbook</h3>
+<p>The following commands are intentionally placeholder-only. They show the required control shape, not a
+copy/paste deployment recipe.</p>
+<p>Set local variables without secret values in the command text:</p>
+<pre><code class="language-bash">PREVIEW_DIR=/run/agent-preview
+TAILSCALE_SOCKET=&quot;$PREVIEW_DIR/tailscaled.sock&quot;
+AUTH_KEY_FILE=&quot;&lt;auth-key-file&gt;&quot;
+OPERATOR_TAILNET_IP=&quot;&lt;operator-tailnet-ip&gt;&quot;
+PREVIEW_HOSTNAME=&quot;&lt;preview-hostname&gt;&quot;
+PREVIEW_PORT=&quot;&lt;preview-port&gt;&quot;
+OVERLAY_IFACE=tailscale0
+APPROVED_TAILSCALE_PREVIEW_WRAPPER=&quot;&lt;approved-tailscale-preview-wrapper&gt;&quot;
+</code></pre>
+<p>Create runtime-only state outside the repository:</p>
+<pre><code class="language-bash">sudo install -d -m 0700 &quot;$PREVIEW_DIR&quot;
+sudo install -m 0600 &quot;$AUTH_KEY_FILE&quot; &quot;$PREVIEW_DIR/authkey&quot;
+</code></pre>
+<p>Start a transient daemon with in-memory identity state where supported:</p>
+<pre><code class="language-bash">sudo tailscaled \
+  --state=mem: \
+  --statedir=&quot;$PREVIEW_DIR&quot; \
+  --socket=&quot;$TAILSCALE_SOCKET&quot; &amp;
+</code></pre>
+<p>Join with restrictive preview defaults. Use an approved wrapper in real operations so the auth-key
+value is read from <code>&lt;auth-key-file&gt;</code> without being printed, logged, stored in shell history, or copied
+into a transcript.</p>
+<pre><code class="language-bash">sudo &quot;$APPROVED_TAILSCALE_PREVIEW_WRAPPER&quot; up \
+  --socket &quot;$TAILSCALE_SOCKET&quot; \
+  --auth-key-file &quot;$PREVIEW_DIR/authkey&quot; \
+  --hostname &quot;$PREVIEW_HOSTNAME&quot; \
+  --advertise-tags tag:agent-preview \
+  --reset \
+  --accept-dns=false \
+  --accept-routes=false \
+  --advertise-routes= \
+  --advertise-exit-node=false \
+  --exit-node= \
+  --ssh=false
+</code></pre>
+<p>If the implementation supports disabling managed firewall changes, prefer explicit local firewall
+rules controlled by the operator. The exact commands depend on the host firewall. This nftables-shaped
+example allows only one reviewer IP and only one preview port on the overlay interface:</p>
+<pre><code class="language-bash">sudo nft add table inet agent_preview
+sudo nft add chain inet agent_preview input '{ type filter hook input priority 0; policy accept; }'
+sudo nft add rule inet agent_preview input \
+  iifname &quot;$OVERLAY_IFACE&quot; ip saddr &quot;$OPERATOR_TAILNET_IP&quot; tcp dport &quot;$PREVIEW_PORT&quot; accept \
+  comment &quot;agent-preview-temporary&quot;
+sudo nft add rule inet agent_preview input \
+  iifname &quot;$OVERLAY_IFACE&quot; tcp dport { 4000-4099, 5173, 8000-9000 } drop \
+  comment &quot;agent-preview-temporary&quot;
+</code></pre>
+<p>Start the preview app through the normal development command for the project, with no secrets printed
+and no broad bind unless required by the framework:</p>
+<pre><code class="language-bash">START_PREVIEW_COMMAND=&quot;&lt;start-preview-command&gt;&quot;
+PRIVATE_OVERLAY_BIND_ADDRESS=&quot;&lt;private-overlay-bind-address&gt;&quot;
+&quot;$START_PREVIEW_COMMAND&quot; --host &quot;$PRIVATE_OVERLAY_BIND_ADDRESS&quot; --port &quot;$PREVIEW_PORT&quot;
+</code></pre>
+<p>Verify the preview is reachable only through the approved gate:</p>
+<pre><code class="language-bash">sudo tailscale --socket=&quot;$TAILSCALE_SOCKET&quot; status
+sudo nft list ruleset | grep 'agent-preview-temporary'
+curl --fail --silent --show-error &quot;http://$PREVIEW_HOSTNAME:$PREVIEW_PORT/health&quot;
+</code></pre>
+<p>Record a preview-ready receipt containing:</p>
+<ul>
+<li>preview owner and expiration;</li>
+<li>reviewer identity or group, not secret values;</li>
+<li>preview hostname and approved port;</li>
+<li>firewall rule summary;</li>
+<li>overlay status summary;</li>
+<li>app health-check result;</li>
+<li>teardown deadline and owner.</li>
+</ul>
+<h3 id="ready-checklist-for-agents">Ready checklist for agents</h3>
+<p>An agent or operator MUST NOT mark preview access ready until all items are true:</p>
+<ul>
+<li>[ ] The preview service is the intended code/artifact and runtime alignment is known.</li>
+<li>[ ] The exposed port is in the approved preview range.</li>
+<li>[ ] The overlay identity is the guest/runtime preview identity, not the host/control-plane identity.</li>
+<li>[ ] ACLs/grants/tags restrict access to the approved reviewer set.</li>
+<li>[ ] The guest firewall allows only overlay-interface traffic to the approved preview port(s).</li>
+<li>[ ] Subnet routes are not advertised.</li>
+<li>[ ] Route acceptance is disabled unless explicitly justified.</li>
+<li>[ ] Exit-node advertisement and exit-node selection are disabled.</li>
+<li>[ ] Funnel/public exposure is disabled.</li>
+<li>[ ] Tailscale SSH or equivalent overlay SSH is disabled.</li>
+<li>[ ] Auth-key material is referenced only by protected path and not present in logs, prompts, repo,
+      receipts, memory, or transcripts.</li>
+<li>[ ] The readiness receipt has been written without secret values.</li>
+<li>[ ] A teardown deadline and owner are recorded.</li>
+</ul>
+<h2 id="teardown-checklist">Teardown checklist</h2>
+<p>Teardown is required even for failed preview sessions.</p>
+<ul>
+<li>[ ] Notify reviewers that the preview window is closed.</li>
+<li>[ ] Stop the preview application.</li>
+<li>[ ] Log out the preview overlay identity.</li>
+<li>[ ] Stop the transient overlay daemon.</li>
+<li>[ ] Remove temporary firewall rules.</li>
+<li>[ ] Remove runtime-only key material and daemon state.</li>
+<li>[ ] Revoke the auth key or remove the ephemeral node if it still exists in the admin console.</li>
+<li>[ ] Verify the overlay interface is gone or has no address.</li>
+<li>[ ] Verify no preview process is listening on the exposed port.</li>
+<li>[ ] Verify no temporary firewall rules remain.</li>
+<li>[ ] Write a teardown receipt without secret values.</li>
+</ul>
+<p>Placeholder-only teardown commands:</p>
+<pre><code class="language-bash">sudo tailscale --socket=&quot;$TAILSCALE_SOCKET&quot; logout || true
+sudo pkill -f 'tailscaled.*agent-preview' || true
+sudo nft delete table inet agent_preview || true
+sudo rm -rf &quot;$PREVIEW_DIR&quot;
+</code></pre>
+<p>Verification commands:</p>
+<pre><code class="language-bash">sudo tailscale --socket=&quot;$TAILSCALE_SOCKET&quot; status || true
+ip addr show &quot;$OVERLAY_IFACE&quot; || true
+sudo nft list ruleset | grep 'agent-preview-temporary' &amp;&amp; exit 1 || true
+ss -ltnp | grep &quot;:$PREVIEW_PORT&quot; &amp;&amp; exit 1 || true
+</code></pre>
+<p>The final teardown receipt SHOULD include the inactive overlay status, absent firewall rules, absent
+listener, removed runtime directory, and revoked/expired key reference. It MUST NOT include the auth-key
+value.</p>
+<h2 id="publication-and-secret-scan-gate">Publication and secret-scan gate</h2>
+<p>Before publishing a preview-access example, run the repository's normal static checks and every
+available secret scanner over the changed files. At minimum, run the available subset of:</p>
+<pre><code class="language-bash">gitleaks detect --source . --no-git --redact
+trufflehog filesystem . --only-verified --no-update
+detect-secrets scan --all-files
+git secrets --scan
+</code></pre>
+<p>If a tool is unavailable, record it as unavailable rather than silently skipping it. Pair scanner output
+with manual review for private hostnames, private addresses, auth-key material, transcript content,
+firewall handles, and environment-specific identifiers.</p>
+<h2 id="non-goals">Non-goals</h2>
+<p>This pattern does not:</p>
+<ul>
+<li>make an agent runtime production-ready by itself;</li>
+<li>replace authentication on the preview application;</li>
+<li>justify exposing production data in previews;</li>
+<li>grant broad remote administration;</li>
+<li>replace promotion, rollback, audit, and canary evidence;</li>
+<li>claim endorsement by Tailscale or any other vendor.</li>
+</ul>
+<p>The preview gate is only one control. It should be used with the rest of the platform posture:
+workload isolation, default-deny egress, secrets-by-reference, explicit promotion, audit records, and
+verified rollback.</p>
+    </main>
+    <footer>
+      agent-vm security substrate · open-source verification receipt
+    </footer>
+  </div>
+</body>
+</html>

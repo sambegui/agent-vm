@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spec · agent-vm specs</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #070b10;
+      --ink-2: #0b111a;
+      --panel: rgba(14, 24, 36, 0.78);
+      --panel-strong: #101a27;
+      --line: rgba(142, 246, 255, 0.22);
+      --text: #f8fbff;
+      --muted: #b7c8d8;
+      --dim: #7f93a8;
+      --cyan: #8ef6ff;
+      --font-body: "SF Pro Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
+    }
+
+    body {
+      background-color: var(--ink);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 5vw, 4rem) 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+    }
+
+    .back-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--text);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-top: 0;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      border-bottom: 1px solid rgba(142, 246, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(142, 246, 255, 0.4);
+    }
+
+    a:hover {
+      color: var(--text);
+      border-bottom-style: solid;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--cyan);
+    }
+
+    pre {
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 1.2rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    pre code {
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(142, 246, 255, 0.05);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    blockquote {
+      border-left: 4px solid var(--cyan);
+      margin: 1.5rem 0;
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      background-color: rgba(142, 246, 255, 0.02);
+      border-radius: 0 4px 4px 0;
+    }
+
+    blockquote p {
+      margin: 0;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.5rem;
+      text-align: center;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a class="back-link" href="../../index.html">← Back to Console</a>
+      <span style="color: var(--dim); font-family: var(--font-mono); font-size: 0.85rem;">spec v1.0</span>
+    </header>
+    <main>
+      <h1 id="04-production-governance">04 — Production governance</h1>
+<p>The substrate makes workloads <em>isolatable</em>; governance decides <strong>what a given workload is allowed to
+be</strong>, and gates it from lab to production with controls proportional to its blast radius. The unit of
+governance is a <strong>production cell</strong>: one workload, with a contract, a signed artifact, a manifest,
+isolation, auth, observability, progressive delivery, and proven rollback.</p>
+<pre><code class="language-mermaid">flowchart TB
+    classDef gov fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111827;
+    subgraph RINGS[&quot;isolation ring model · trust ↓, controls ↑&quot;]
+        direction TB
+        R0[&quot;Ring 0 · operator / control&quot;] --&gt; R1[&quot;Ring 1 · conversation-plane · no terminal/file/delegation&quot;]
+        R1 --&gt; R2[&quot;Ring 2 · trusted worker · bounded work dirs&quot;]
+        R2 --&gt; R3[&quot;Ring 3 · code / build · sandboxed terminal backend&quot;]
+        R3 --&gt; R4[&quot;Ring 4 · untrusted exec · ephemeral microVM&quot;]
+        R4 --&gt; R5[&quot;Ring 5 · public / client · separate user / VM&quot;]
+    end
+    subgraph CAN[&quot;progressive delivery · beside legacy&quot;]
+        direction TB
+        S0[&quot;Stage 0 · deploy-only&quot;] --&gt; S1[&quot;Stage 1 · read-only canary&quot;]
+        S1 --&gt; S2[&quot;Stage 2 · limited production&quot;]
+        S2 --&gt; DEC{&quot;promote?&quot;}
+        DEC --&gt;|&quot;evidence: cross-profile read denied · egress denied · auth · rollback &amp;lt; 5m&quot;| PRO[&quot;promote&quot;]
+        DEC --&gt;|else| RB[&quot;rollback · proven&quot;]
+    end
+    GOV[&quot;governance gate · production-ready = canary evidence, not unit creation&quot;]:::gov
+    GOV -.-&gt;|&quot;controls scale with ring&quot;| RINGS
+    GOV -.-&gt;|&quot;gates promotion&quot;| CAN
+</code></pre>
+<p><em>Solid = the trust ladder and canary progression; dotted = governance gating both.</em></p>
+<h2 id="risk-tiers-controls-scale-with-autonomyblast-radius">Risk tiers (controls scale with autonomy/blast radius)</h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Example</th>
+<th>Required controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L0</strong> Lab</td>
+<td>synthetic job</td>
+<td>digest pinning, teardown, no secrets, local logs</td>
+</tr>
+<tr>
+<td><strong>L1</strong> Internal read-only</td>
+<td>read-only awareness endpoint</td>
+<td>auth, <strong>tool allowlist</strong>, isolated state, <strong>default-deny egress</strong>, audit</td>
+</tr>
+<tr>
+<td><strong>L2</strong> Internal limited action</td>
+<td>approved read/send tools</td>
+<td>human approval for writes, stronger audit, tested rollback, scoped tokens</td>
+</tr>
+<tr>
+<td><strong>L3</strong> Owner-facing prod</td>
+<td>a primary service</td>
+<td>high SLO, full incident loop, backup/restore, live runtime proof</td>
+</tr>
+<tr>
+<td><strong>L4</strong> Client-facing</td>
+<td>external surface</td>
+<td>tenant isolation, data policy, external-audit-ready evidence, stronger identity</td>
+</tr>
+<tr>
+<td><strong>L5</strong> Regulated</td>
+<td>high-autonomy/sensitive</td>
+<td>compliance review, strict retention, dedicated environment</td>
+</tr>
+</tbody>
+</table>
+<p>A workload may not deploy with controls below its tier; raising autonomy raises the bar.</p>
+<h2 id="isolation-ring-model-profile-classes">Isolation ring model (profile classes)</h2>
+<p>Risk tiers say <em>how much control</em> a workload needs; isolation <strong>rings</strong> say <em>what boundary and file /
+tool posture</em> a profile class gets. They complement each other.</p>
+<table>
+<thead>
+<tr>
+<th>Ring</th>
+<th>Class</th>
+<th>Boundary</th>
+<th>File access</th>
+<th>Tool posture</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>operator / control</td>
+<td>human-gated</td>
+<td>observe registry &amp; receipts; not all homes</td>
+<td>owner-gated admin only</td>
+</tr>
+<tr>
+<td>1</td>
+<td>conversation-plane</td>
+<td>dedicated user + hardened unit</td>
+<td>own home only</td>
+<td>no terminal / file / delegation</td>
+</tr>
+<tr>
+<td>2</td>
+<td>trusted worker</td>
+<td>dedicated user + bounded dirs</td>
+<td>own home + assigned worktree</td>
+<td>limited tools by role</td>
+</tr>
+<tr>
+<td>3</td>
+<td>code / build</td>
+<td>dedicated user + sandboxed terminal backend</td>
+<td>assigned worktree only</td>
+<td>terminal via container / microVM</td>
+</tr>
+<tr>
+<td>4</td>
+<td>untrusted exec</td>
+<td>ephemeral microVM</td>
+<td>scratch only</td>
+<td>default-deny egress, teardown verified</td>
+</tr>
+<tr>
+<td>5</td>
+<td>public / client</td>
+<td>separate user, preferably separate VM</td>
+<td>client home only</td>
+<td>no private memory / cross-client</td>
+</tr>
+</tbody>
+</table>
+<p>A read-only conversation-plane endpoint is <strong>Ring 1</strong>: dedicated OS user, own home only, no
+terminal/file/delegation tools.</p>
+<h2 id="tool-agency-security-the-ai-specific-danger-surface">Tool-agency security (the AI-specific danger surface)</h2>
+<p>For agents that expose tools (e.g. via MCP), the tool surface <em>is</em> the attack surface:</p>
+<ul>
+<li>tools are an <strong>explicit allowlist</strong>, not "whatever is convenient";</li>
+<li><strong>denied tools are absent from <code>tools/list</code></strong>, not merely rejected on call;</li>
+<li>an <strong>unknown allowed tool fails closed</strong>; a tool <strong>schema-hash drift blocks</strong> the workload;</li>
+<li>policy that cannot be loaded → <strong>refuse to serve</strong> (never fall back to a permissive default);</li>
+<li>tool <em>descriptions/schemas</em> are treated as injection surfaces; sensitive actions require approval.</li>
+</ul>
+<pre><code>examples/manifests/tool-policy.example.yaml   # allowed/denied tools + schema hashes + fail-closed flags
+</code></pre>
+<h2 id="secrets-egress-supply-chain">Secrets, egress, supply chain</h2>
+<ul>
+<li><strong>Secrets by reference only</strong> — manifests carry <code>secret://…</code> refs; never values. No secret in image
+  layers, manifests, logs, SBOM, or git. Token <em>ids/hashes</em> may be recorded; values never.</li>
+<li><strong>Default-deny egress</strong> — internet, arbitrary DNS, work-plane APIs, model/messaging APIs all denied
+  unless explicitly allowed; a denied egress emits an audit event.</li>
+<li><strong>Signed supply chain</strong> — exact source SHA → digest-pinned image → cosign signature → SBOM/provenance
+  ref → <strong>deploy-time</strong> verification (see <code>01</code>).</li>
+</ul>
+<h2 id="secure-gated-preview-access">Secure gated preview access</h2>
+<p>Preview surfaces are governed exposure, not casual tunnels. A development or agent-preview service may
+be opened only through a temporary, revocable, least-privilege, auditable gate with no broad routing,
+no public exposure, no standing remote identity, and no secret values in prompts, logs, repositories,
+or receipts. See <a href="05-secure-gated-agent-preview-access.html"><code>05-secure-gated-agent-preview-access.html</code></a>
+for the reference pattern and sanitized Tailscale example.</p>
+<h2 id="progressive-delivery-measured-exposure-not-blind-cutover">Progressive delivery (measured exposure, not blind cutover)</h2>
+<p>A workload is promoted through canary stages <strong>beside</strong> the existing one, never replacing it in one
+motion:</p>
+<pre><code>Stage 0  deploy-only dry canary   — health, auth-deny, egress-deny, alignment, audit; no clients
+Stage 1  read-only canary         — one trusted client, read calls only, observe
+Stage 2  limited production canary — one/two clients, narrow approved actions, old service still live
+Promotion decision                — only if SLO met, rollback proven, no tool/egress/secret surprises
+</code></pre>
+<p>SLO/error-budget thinking, synthetic probes with baseline/control comparison, and <strong>rollback proven
+before promotion</strong> are required — and you do not claim stronger reliability than your probe volume
+supports.</p>
+<h2 id="audit-rollback">Audit &amp; rollback</h2>
+<p>Minimum audit events — <code>service.start/stop</code>, <code>auth.accepted/denied</code>, <code>tool.allowed/denied</code>,
+<code>egress.denied</code>, <code>secret.loaded</code>, <code>alignment.checked</code>, <code>rollback.executed</code> — shipped <strong>off-box</strong>,
+append-only, no secret values. <strong>Rollback is a tested drill</strong> (endpoint and manifest-digest), with a
+recorded receipt, not an assumption.</p>
+<p>This overlay is how a new agent crosses from "runs in the lab" to "trusted in production" without the
+platform having to trust the agent.</p>
+<h2 id="dashboards-control-plane">Dashboards &amp; control plane</h2>
+<p>A single dashboard that can edit every profile's home is a powerful cross-profile authority — it
+collapses the isolation it sits above. The production pattern:</p>
+<ul>
+<li><strong>per-profile</strong> dashboards / status endpoints, each bound to loopback or a private socket, reading
+  only their own profile;</li>
+<li>a <strong>central dashboard that is read-only by default</strong> — a registry / observability view (profile
+  name, ring, unit, health, canary state, rollback target, evidence path) with <strong>no broad
+  profile-home access</strong>;</li>
+<li>any central mutation is an <strong>explicit, approved, profile-scoped</strong> admin action through a narrow
+  helper that writes a receipt — never a broad filesystem mount.</li>
+</ul>
+<p>The non-secret registry that drives it:
+<a href="../../examples/manifests/profile-registry.example.yaml"><code>examples/manifests/profile-registry.example.yaml</code></a>;
+a per-profile capability contract:
+<a href="../../examples/manifests/profile-capability.example.yaml"><code>examples/manifests/profile-capability.example.yaml</code></a>.</p>
+<h2 id="production-ready-means-evidence-not-unit-creation">Production-ready means evidence, not unit creation</h2>
+<p>Creating users and units is not production. A workload is production-ready only when <strong>recorded
+evidence</strong> shows it runs the intended code, <strong>cross-profile read is denied</strong>, denied tools are absent,
+egress policy is enforced, secrets are not logged, <strong>rollback works</strong>, and the canary survived real
+traffic. The scaffold and first canary can land the same day; the <em>production claim</em> waits for the
+evidence packet.</p>
+    </main>
+    <footer>
+      agent-vm security substrate · open-source verification receipt
+    </footer>
+  </div>
+</body>
+</html>

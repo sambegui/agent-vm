@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spec · agent-vm specs</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #070b10;
+      --ink-2: #0b111a;
+      --panel: rgba(14, 24, 36, 0.78);
+      --panel-strong: #101a27;
+      --line: rgba(142, 246, 255, 0.22);
+      --text: #f8fbff;
+      --muted: #b7c8d8;
+      --dim: #7f93a8;
+      --cyan: #8ef6ff;
+      --font-body: "SF Pro Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
+    }
+
+    body {
+      background-color: var(--ink);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 5vw, 4rem) 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+    }
+
+    .back-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--text);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-top: 0;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      border-bottom: 1px solid rgba(142, 246, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(142, 246, 255, 0.4);
+    }
+
+    a:hover {
+      color: var(--text);
+      border-bottom-style: solid;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--cyan);
+    }
+
+    pre {
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 1.2rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    pre code {
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(142, 246, 255, 0.05);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    blockquote {
+      border-left: 4px solid var(--cyan);
+      margin: 1.5rem 0;
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      background-color: rgba(142, 246, 255, 0.02);
+      border-radius: 0 4px 4px 0;
+    }
+
+    blockquote p {
+      margin: 0;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.5rem;
+      text-align: center;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a class="back-link" href="../../index.html">← Back to Console</a>
+      <span style="color: var(--dim); font-family: var(--font-mono); font-size: 0.85rem;">spec v1.0</span>
+    </header>
+    <main>
+      <h1 id="00-architecture-overview">00 — Architecture overview</h1>
+<h2 id="shifting-from-chatbot-tabs-to-governed-persistent-agent-employees">Shifting from chatbot tabs to governed, persistent 'Agent Employees'</h2>
+<p>Most enterprise AI deployments suffer from isolated usage: employees run queries in individual, context-blind chatbot tabs. This setup has zero team visibility, fragmented context, and no secure path to access enterprise files. </p>
+<p><code>agent-vm</code> introduces a governed, persistent <strong>Agent Employee</strong> substrate. Instead of solitary chatbot tabs, agents live directly inside group chats (Slack, Discord, ClickUp), collaborating alongside human employees. </p>
+<p>By executing repeatable workflows (or skills) securely on a dedicated, isolated VM with continuous access to on-disk project files, these digital workers deliver highly-polished assets (Excel models, PowerPoint presentations conforming to company templates) back to the team channel while driving extreme cost savings.</p>
+<p>To achieve this securely, the platform treats every agent employee as a workload that may be <strong>compromised or misdirected at runtime</strong>, and limits what that costs. Defense is layered, and each layer assumes the one above it can fail.</p>
+<p>Traditional services are mostly deterministic and operator-controlled. AI agents are not. They:</p>
+<ul>
+<li>execute <strong>tool calls</strong> (shell, files, network, Slack notifications, meeting integrations) under model control,</li>
+<li>hold <strong>credentials</strong> and act on behalf of the organization,</li>
+<li>ingest <strong>untrusted input</strong> (including external files, email, and meeting transcripts) — and that input can <em>redirect their behavior</em> (prompt injection, tool poisoning, cross-agent shadowing, excessive agency).</li>
+</ul>
+<h2 id="layered-defense">Layered defense</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Assumes</th>
+<th>Provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Substrate</strong> (<code>01</code>)</td>
+<td>an agent process can be exploited</td>
+<td>VM boundary; Tier-2 jobs get an ephemeral microVM + default-deny egress + teardown; Tier-1 services run from signed, digest-pinned, reconciled images</td>
+</tr>
+<tr>
+<td><strong>Control plane</strong> (<code>02</code>)</td>
+<td>live state drifts and operators fat-finger</td>
+<td>immutable exact-commit releases; dry-run-by-default mutation; drift detection; recorded rollback target</td>
+</tr>
+<tr>
+<td><strong>Gateway layout</strong> (<code>03</code>)</td>
+<td>many profiles share a runtime and get confused</td>
+<td>one explicit service per profile; exactly one runtime source per profile; restart isolation</td>
+</tr>
+<tr>
+<td><strong>Governance</strong> (<code>04</code>)</td>
+<td>capability grows over time</td>
+<td>risk tiers gate controls; tool allowlists fail closed; secrets by reference; audit; tested rollback; canary before promotion</td>
+</tr>
+</tbody>
+</table>
+<h2 id="agent-agnosticism-concretely">Agent-agnosticism, concretely</h2>
+<p>Nothing in the substrate, control plane, or governance names a specific agent framework. The two
+reference archetypes exist only to prove generality across <em>opposite</em> deployment models:</p>
+<ul>
+<li><strong>Archetype A</strong> — Python orchestrator, <strong>immutable git-release</strong> model (<code>control-plane/promote-agent</code>,
+  <code>agent-gateway@core</code>).</li>
+<li><strong>Archetype B</strong> — Node backend agent-pool, <strong>versioned package-install</strong> model
+  (<code>control-plane/promote-pkg</code>, capture-first).</li>
+</ul>
+<p>If a new agent arrives, it is classified into a <strong>risk tier</strong> and a <strong>deployment archetype</strong>, given a
+<strong>workload contract</strong> and a <strong>manifest</strong>, and hosted — without changing the platform.</p>
+<h2 id="how-to-read-this-directory">How to read this directory</h2>
+<ol>
+<li><code>01-isolation-substrate.html</code> — where workloads actually run, and the Tier-1/Tier-2 boundary.</li>
+<li><code>02-promotion-control-plane.html</code> — how code becomes a running release, safely and reversibly.</li>
+<li><code>03-gateway-runtime-layout.html</code> — how one runtime serves many profiles without ambiguity.</li>
+<li><code>04-production-governance.html</code> — the controls that gate a workload from lab to production.</li>
+<li><code>05-secure-gated-agent-preview-access.html</code> — how to expose agent/dev previews behind a temporary,
+   revocable, auditable access gate without turning preview access into broad network access.</li>
+</ol>
+<p>Then <code>../reference-workloads/</code> for the two archetypes and <code>../decisions/</code> for key choices.</p>
+    </main>
+    <footer>
+      agent-vm security substrate · open-source verification receipt
+    </footer>
+  </div>
+</body>
+</html>
