@@ -32,10 +32,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install Markdown Dependencies
-        run: pip install markdown
+        run: pip install -r requirements-docs.txt
 
       - name: Compile Markdown Docs to Static HTML
-        run: python site/build_docs.py
+        run: make docs-build
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
