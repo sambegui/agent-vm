@@ -1,20 +1,25 @@
 # 00 — Architecture overview
 
-## Shifting from chatbot tabs to governed, persistent 'Agent Employees'
+## Shifting from chatbot tabs to governed, persistent agent workloads
 
-Most enterprise AI deployments suffer from isolated usage: employees run queries in individual, context-blind chatbot tabs. This setup has zero team visibility, fragmented context, and no secure path to access enterprise files. 
+Most enterprise AI usage still happens through isolated browser tabs or ad hoc automation. That model
+fragments context, hides execution state, and gives reviewers little evidence about what ran, what
+authority was available, or how recovery would work.
 
-`agent-vm` introduces a governed, persistent **Agent Employee** substrate. Instead of solitary chatbot tabs, agents live directly inside group chats (Slack, Discord, ClickUp), collaborating alongside human employees. 
+`agent-vm` presents a governed runtime architecture for autonomous AI-agent workloads that are
+treated as untrusted. Agents can process approved messages, attached documents, external links,
+transcripts, API responses, and structured outputs, but the platform does not trust the agent or the
+inputs it receives.
 
-By executing repeatable workflows (or skills) securely on a dedicated, isolated VM with continuous access to on-disk project files, these digital workers deliver highly-polished assets (Excel models, PowerPoint presentations conforming to company templates) back to the team channel while driving extreme cost savings.
-
-To achieve this securely, the platform treats every agent employee as a workload that may be **compromised or misdirected at runtime**, and limits what that costs. Defense is layered, and each layer assumes the one above it can fail.
+The VM is one implementation substrate. The deeper architecture is about trust boundaries: every
+workload may be **compromised or misdirected at runtime**, so the platform limits what that costs
+with promotion controls, isolation, fail-closed policy, audit evidence, and rollback.
 
 Traditional services are mostly deterministic and operator-controlled. AI agents are not. They:
 
-- execute **tool calls** (shell, files, network, Slack notifications, meeting integrations) under model control,
-- hold **credentials** and act on behalf of the organization,
-- ingest **untrusted input** (including external files, email, and meeting transcripts) — and that input can *redirect their behavior* (prompt injection, tool poisoning, cross-agent shadowing, excessive agency).
+- execute **tool calls** (shell, files, network, API calls, content-processing tools) under model control,
+- may act through **credentials or secret references** on behalf of an organization,
+- ingest **untrusted input** (including external documents, links, and transcripts) — and that input can *redirect their behavior* (prompt injection, tool poisoning, cross-agent shadowing, excessive agency).
 
 ## Layered defense
 
@@ -46,5 +51,7 @@ If a new agent arrives, it is classified into a **risk tier** and a **deployment
 4. `04-production-governance.md` — the controls that gate a workload from lab to production.
 5. `05-secure-gated-agent-preview-access.md` — how to expose agent/dev previews behind a temporary,
    revocable, auditable access gate without turning preview access into broad network access.
+6. `../evidence/governed-agent-workload-case-study.md` — a concrete vendor-neutral scenario that shows
+   how prompt injection, secret access, egress, audit, and rollback expectations map to evidence.
 
 Then `../reference-workloads/` for the two archetypes and `../decisions/` for key choices.

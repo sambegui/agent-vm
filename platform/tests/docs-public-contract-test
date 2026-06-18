@@ -33,6 +33,10 @@ CASE_STUDY="$ROOT/docs/evidence/governed-agent-workload-case-study.md"
 
 require_text "$ROOT/README.md" "reference implementation + acceptance suite"
 require_text "$ROOT/README.md" "governed-agent-workload-case-study.md"
+require_text "$ROOT/docs/architecture/00-overview.md" "governed, persistent agent workloads"
+require_text "$ROOT/docs/architecture/00-overview.md" "compromised or misdirected"
+require_text "$ROOT/site/index.html" "probabilistic workloads"
+require_text "$ROOT/site/index.html" "governed-agent-workload-case-study.html"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "reference implementation + acceptance suite"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "make provision"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "AGENT_VM_SSH"
@@ -57,7 +61,23 @@ require_text "$CASE_STUDY" "illustrative narrative"
 require_text "$CASE_STUDY" "static repo checks"
 require_text "$CASE_STUDY" "lab validation"
 require_text "$CASE_STUDY" "production proof"
+require_text "$CASE_STUDY" "Reviewer takeaway"
+require_text "$CASE_STUDY" "authority is mediated by policy"
 require_text "$ROOT/site/docs/verification.html" 'href="evidence/governed-agent-workload-case-study.html"'
+require_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../verification.html"'
+require_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../threat-model.html"'
 forbid_text "$ROOT/site/docs/verification.html" 'href="evidence/governed-agent-workload-case-study.md"'
+forbid_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../verification.md"'
+forbid_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../threat-model.md"'
+forbid_text "$ROOT/docs/architecture/00-overview.md" "Agent Employee"
+forbid_text "$ROOT/docs/architecture/00-overview.md" "Slack"
+forbid_text "$ROOT/docs/architecture/00-overview.md" "Discord"
+forbid_text "$ROOT/docs/architecture/00-overview.md" "ClickUp"
+forbid_text "$ROOT/docs/architecture/00-overview.md" "Excel"
+forbid_text "$ROOT/docs/architecture/00-overview.md" "PowerPoint"
+forbid_text "$ROOT/docs/architecture/00-overview.md" "extreme cost"
+forbid_text "$ROOT/site/index.html" "completely eliminate"
+forbid_text "$ROOT/site/index.html" "Eliminating execution risk"
+forbid_text "$ROOT/site/index.html" "frontier safety standards"
 
 echo "public docs contract tests passed"

@@ -349,6 +349,7 @@ def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
     )
 
     # Resolve local relative links
+    md_text = re.sub(r'(?<!\.)\.\./([a-zA-Z0-9_-]+)\.md', r'../\1.html', md_text)
     md_text = re.sub(r'(?<![a-zA-Z0-9_/-])evidence/([a-zA-Z0-9_-]+)\.md', r'evidence/\1.html', md_text)
     md_text = re.sub(r'(\d+)-([a-zA-Z0-9_-]+)\.md', r'\1-\2.html', md_text)
     md_text = re.sub(r'(?<!/)(?<![a-zA-Z0-9_-])([a-zA-Z0-9_-]+)\.md', r'\1.html', md_text)

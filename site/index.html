@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="agent-vm is a secure, agent-agnostic platform skeleton for hosting multiple AI agents as untrusted workloads."
+      content="agent-vm is a public reference architecture for governing untrusted autonomous AI-agent workloads with explicit trust boundaries, rollback, audit, and validation evidence."
     />
-    <title>agent-vm — secure multi-agent hosting skeleton</title>
+    <title>agent-vm — governed agent workload architecture</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" href="favicon-32x32.png" type="image/png" />
@@ -28,7 +28,7 @@
           </a>
           <a class="brand-copy" href="#top" aria-label="agent-vm home">
             <span>agent-vm</span>
-            <small>controlled agent runtime substrate</small>
+            <small>governed agent workload architecture</small>
           </a>
         </div>
         <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -53,10 +53,10 @@
     <main id="main">
       <section id="top" class="hero section-grid" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow">isolated agent sandbox · execution-risk containment</p>
-          <h1 id="hero-title">Host AI agents securely inside a persistent, isolated sandbox.</h1>
+          <p class="eyebrow">governed agent workloads · trust-boundary evidence</p>
+          <h1 id="hero-title">Govern untrusted AI-agent workloads with explicit boundaries and evidence.</h1>
           <p class="hero-lede">
-            <strong>agent-vm</strong> is a framework-agnostic sandbox system designed specifically for AI agents, allowing them to work securely inside a persistent, isolated environment that mitigates execution risks and prevents credential or network leakage.
+            <strong>agent-vm</strong> is a public reference architecture for treating autonomous AI agents as probabilistic workloads that process untrusted input. It demonstrates how promotion controls, isolation, default-deny access, audit trails, rollback, and reproducible validation fit together without claiming a turnkey security product.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#architecture">See the boundary</a>
@@ -83,14 +83,14 @@
             <code>boundary.map</code>
           </div>
           <h2 id="diagram-title" class="sr-only">Architecture trust boundary diagram</h2>
-          <button class="diagram-trigger" id="diagram-trigger" aria-label="Zoom trust boundary map">
+          <button class="diagram-trigger" id="diagram-trigger" aria-label="Expand trust boundary map">
             <img
               src="assets/trust-boundary.svg"
               alt="Operator requests pass through a promotion control plane into an isolation substrate, with governance gates for signed services and teardown jobs."
             />
-            <span class="zoom-indicator">
+            <span class="expand-indicator">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-              Click to expand
+              Expand
             </span>
           </button>
         </aside>
@@ -98,62 +98,62 @@
 
       <section class="proof-strip" aria-label="Agnostic agent sandbox purpose">
         <div>
-          <span class="proof-kicker">agent containment</span>
-          <strong>secure agent sandboxing</strong>
-          <p>A hardened virtual environment designed specifically to contain AI agents, allowing them to execute code and operate tools safely.</p>
+          <span class="proof-kicker">workload governance</span>
+          <strong>untrusted agent assumption</strong>
+          <p>Agents are treated as probabilistic actors that can be compromised or misdirected by external input.</p>
         </div>
         <div>
           <span class="proof-kicker">risk mitigation</span>
           <strong>default-deny boundaries</strong>
-          <p>Prevents unverified network egress, credential leakage, and unauthorized host access during agent execution.</p>
+          <p>Constrains unverified network egress, credential access, and host reachability through explicit policy and evidence-backed denial paths.</p>
         </div>
         <div>
           <span class="proof-kicker">agnostic substrate</span>
           <strong>framework independent</strong>
-          <p>Standardized hosting layers that isolate any digital worker or autonomous process, regardless of its underlying framework.</p>
+          <p>Standardized hosting layers that isolate autonomous workloads regardless of their underlying framework.</p>
         </div>
       </section>
 
       <section id="architecture" class="narrative section-grid compact" aria-labelledby="what-title">
         <div>
           <p class="eyebrow">what it is</p>
-          <h2 id="what-title">Enterprise containment for autonomous digital workers.</h2>
+          <h2 id="what-title">Enterprise governance for autonomous workloads.</h2>
         </div>
         <div class="copy-block">
           <p>
-            Instead of exposing internal networks to unverified third-party libraries and unchecked agent scripts, this substrate runs digital workers inside an isolated, highly-auditable virtual sandbox. This ensures all file system operations and execution tasks remain safely contained within VM boundaries.
+            Instead of exposing internal systems to unverified third-party libraries and unchecked agent scripts, this reference architecture routes agent workloads through isolated, auditable runtime boundaries. The purpose is to limit blast radius and make authority, execution state, and recovery evidence reviewable.
           </p>
           <p>
-            The architecture is completely <em>agent-agnostic</em>. Any autonomous process is assigned a risk tier and runs in a hardened, default-deny hosting container. This allows the agent to safely compile software, run tests, and process raw assets without risking host-level intrusion or data exfiltration.
+            The architecture is <em>agent-agnostic</em>. Any autonomous process is assigned a risk tier and deployment archetype, then governed by fail-closed policy, evidence requirements, and rollback expectations before claims move beyond static or lab validation.
           </p>
         </div>
       </section>
 
       <section class="risk-section" aria-labelledby="risk-title">
         <div class="section-heading">
-          <p class="eyebrow">sandbox capabilities</p>
-          <h2 id="risk-title">Eliminating execution risk at the infrastructure layer.</h2>
+          <p class="eyebrow">operational controls</p>
+          <h2 id="risk-title">Managing execution risk through trust boundaries.</h2>
         </div>
         <div class="risk-grid">
           <article>
             <span class="risk-code">01</span>
-            <h3>Hardened agent runtime</h3>
-            <p>Hosts AI agents within secure, isolated execution sandboxes instead of unmonitored chatbot interfaces, ensuring all code execution and tool interactions are strictly confined.</p>
+            <h3>Governed agent runtime</h3>
+            <p>Hosts AI-agent workloads inside isolated execution layers instead of unmonitored chatbot sessions, so code execution and tool interactions are policy-mediated and reviewable.</p>
           </article>
           <article>
             <span class="risk-code">02</span>
             <h3>Durable state isolation</h3>
-            <p>Maintains persistent context and files on a secure, dedicated storage layer that is isolated from the host operating system, preventing cross-tenant leakage or unauthorized data access.</p>
+            <p>Keeps persistent context and files inside bounded runtime state so reviewers can distinguish workload state from host state and audit what crossed a boundary.</p>
           </article>
           <article>
             <span class="risk-code">03</span>
-            <h3>Secure tool execution</h3>
-            <p>Allows agents to process external data, invoke APIs, and ingest transcripts locally on the VM substrate, satisfying strict data governance and regulatory compliance.</p>
+            <h3>Tool/data gates</h3>
+            <p>Allows agents to process external data, invoke APIs, and ingest transcripts only through explicit tool/data policy, secret references, and auditable access paths.</p>
           </article>
           <article>
             <span class="risk-code">04</span>
             <h3>Containment policy enforcement</h3>
-            <p>Enforces default-deny network egress, deterministic runtime timeouts, and credential-by-reference access gates to completely eliminate exfiltration and host takeover risks.</p>
+            <p>Enforces default-deny network egress, deterministic runtime timeouts, and credential-by-reference access gates, with negative tests and receipts required before stronger claims are made.</p>
           </article>
         </div>
       </section>
@@ -207,7 +207,7 @@
             <span class="layer-number">04</span>
             <h3>Governance overlay</h3>
             <p>
-              Risk tiers L0–L5, SLO/canary, fail-closed MCP tool allowlists, secrets-by-reference,
+              Risk tiers L0–L5, SLO/canary, fail-closed tool allowlists, secrets-by-reference,
               signed supply chain, audit trails, and proven rollback.
             </p>
             <ul>
@@ -242,7 +242,7 @@
       <section class="research" aria-labelledby="research-title">
         <div class="section-heading">
           <p class="eyebrow">grounded in primary research</p>
-          <h2 id="research-title">Aligned with frontier safety standards.</h2>
+          <h2 id="research-title">Aligned with published sandboxing and isolation patterns.</h2>
         </div>
         <div class="research-grid">
           <article class="research-card">
@@ -252,7 +252,7 @@
               "Without network isolation, a compromised agent could exfiltrate sensitive files; without filesystem isolation, it could escape the sandbox."
             </blockquote>
             <p>
-              Our architecture implements exactly this dual-isolation model, combining filesystem containment with default-deny network egress.
+              The reference architecture maps this dual-isolation model to agent workloads by combining filesystem containment with default-deny network egress.
             </p>
             <a href="https://www.anthropic.com/engineering/claude-code-sandboxing" class="citation-link" target="_blank" rel="noopener">Anthropic Engineering (2025) →</a>
           </article>
@@ -263,7 +263,7 @@
               "By intercepting all sandboxed application system calls to the kernel, it protects the host from the application."
             </blockquote>
             <p>
-              Our substrate intercepts tool actions and enforces strict host boundaries, protecting your infrastructure from untrusted code.
+              The substrate treats tool actions as boundary-crossing events and keeps host protection as an explicit design concern.
             </p>
             <a href="https://gvisor.dev/" class="citation-link" target="_blank" rel="noopener">Google gVisor Platform →</a>
           </article>
@@ -274,7 +274,7 @@
               "A minimal device model that excludes all non-essential functionality and reduces the attack surface."
             </blockquote>
             <p>
-              Our Tier-2 microVMs run on stripped-down, isolated virtual devices with hardware-enforced boundaries and fast teardown.
+              Tier-2 microVMs use stripped-down, isolated virtual devices with hardware-enforced boundaries and fast teardown.
             </p>
             <a href="https://firecracker-microvm.github.io/" class="citation-link" target="_blank" rel="noopener">AWS Firecracker microVM →</a>
           </article>
@@ -284,18 +284,18 @@
       <section class="workloads" aria-labelledby="workloads-title">
         <div class="section-heading narrow">
           <p class="eyebrow">reference workloads</p>
-          <h2 id="workloads-title">Two worker shapes, one hosting contract.</h2>
+          <h2 id="workloads-title">Two workload shapes, one hosting contract.</h2>
         </div>
         <div class="workload-grid">
           <article>
             <span class="workload-label">Archetype A</span>
-            <h3>Persistent digital worker</h3>
-            <p>Long-running background agents promoted by immutable git commits, executing complex workflows within a dedicated, isolated environment.</p>
+            <h3>Persistent agent workload</h3>
+            <p>Long-running background agents promoted by immutable git commits, executing approved workflows within a dedicated, isolated environment.</p>
           </article>
           <article>
             <span class="workload-label">Archetype B</span>
             <h3>Ephemeral task container</h3>
-            <p>Short-lived sandboxed containers that spin up on demand to execute unsafe scripts or process raw input, tearing down completely upon task completion.</p>
+            <p>Short-lived sandboxed containers that spin up on demand for higher-risk scripts or raw-input processing, then tear down with residual state checks.</p>
           </article>
         </div>
       </section>
@@ -315,6 +315,7 @@
           <a href="docs/security-methodology.html">Security methodology</a>
           <a href="docs/threat-model.html">Threat model</a>
           <a href="docs/verification.html">Verification model</a>
+          <a href="docs/evidence/governed-agent-workload-case-study.html">Governed workload case study</a>
           <a href="docs/evidence/substrate-validation-receipt.html">Evidence receipt</a>
         </div>
       </section>

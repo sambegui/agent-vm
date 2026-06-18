@@ -110,3 +110,13 @@ claim.
 This case study is an illustrative narrative. The repository also contains static repo checks and
 lab validation receipts. Production proof requires a separate workload-specific canary packet with
 auth, tool-policy, egress, audit, rollback, and SLO evidence.
+
+## Reviewer takeaway
+
+The strongest portfolio signal is not "a sandbox exists." It is the operating model:
+
+> autonomous agent workloads are treated as untrusted, their authority is mediated by policy, their
+> claims are tied to evidence, and rollback remains part of the definition of done.
+
+Read this alongside [`../verification.md`](../verification.md), [`../threat-model.md`](../threat-model.md),
+and [`substrate-validation-receipt.md`](substrate-validation-receipt.md).

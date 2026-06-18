@@ -852,7 +852,7 @@ code {
 }
 
 /* ========================================== */
-/* DIAGRAM LIGHTBOX MODAL & ZOOM TRIGGER */
+/* DIAGRAM LIGHTBOX MODAL & EXPAND TRIGGER */
 /* ========================================== */
 
 .diagram-trigger {
@@ -878,7 +878,7 @@ code {
   transform: scale(1.02);
 }
 
-.zoom-indicator {
+.expand-indicator {
   position: absolute;
   bottom: 16px;
   right: 16px;
@@ -898,7 +898,7 @@ code {
   pointer-events: none;
 }
 
-.diagram-trigger:hover .zoom-indicator {
+.diagram-trigger:hover .expand-indicator {
   opacity: 1;
   transform: translateY(0);
 }
