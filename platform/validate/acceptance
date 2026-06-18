@@ -10,6 +10,12 @@ $P "cat > /tmp/egress-job.json <<JSON
   \"egress\":{\"default\":\"deny\"},\"timeout\":30 }
 JSON"
 
+$P "cat > /tmp/dns-exfiltration-job.json <<JSON
+{ \"jobId\":\"dns-exfiltrate-001\",\"requester\":\"hello\",\"image\":\"127.0.0.1:5000/busybox@$BUSYBOX_DIGEST\",
+  \"command\":[\"sh\",\"-c\",\"nslookup malicious-domain.com 2>/dev/null && echo RESOLVED || echo BLOCKED\"],
+  \"egress\":{\"default\":\"deny\"},\"timeout\":30 }
+JSON"
+
 pass=0
 fail=0
 check() {
@@ -26,6 +32,7 @@ check "tier1.health"        "$P 'curl -fsS http://127.0.0.1:18080/healthz | grep
 check "alignment.aligned"   "$P '~/platform/control/align ~/platform/manifests/hello.service.yaml | grep -q ALIGNED'"
 check "tier2.microvm_boots" "$P '~/platform/sandbox/sandbox-runner ~/platform/sandbox/jobspec.example.json | grep -q hello-from-microvm'"
 check "tier2.egress_deny"   "$P '~/platform/sandbox/sandbox-runner /tmp/egress-job.json | grep -q BLOCKED'"
+check "tier2.dns_exfiltrate_deny" "$P '~/platform/sandbox/sandbox-runner /tmp/dns-exfiltration-job.json | grep -q BLOCKED'"
 check "tier2.teardown"      "$P '~/platform/sandbox/sandbox-runner ~/platform/sandbox/jobspec.example.json | grep -q \"0 residual\"'"
 echo "---"
 echo "PASS=$pass FAIL=$fail"

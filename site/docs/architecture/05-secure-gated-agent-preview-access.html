@@ -452,6 +452,7 @@ ports only. The exact syntax may vary by Tailscale policy version; the shape sho
 <li>[ ] The auth key is stored in <code>&lt;auth-key-file&gt;</code> with restrictive file permissions outside the repo.</li>
 <li>[ ] The guest/runtime has a default-deny firewall posture.</li>
 <li>[ ] The preview app is bound to an explicit preview port in the approved range.</li>
+<li>[ ] The preview app is configured to validate the <code>Host</code> header, accepting only the designated Tailnet IP or FQDN.</li>
 <li>[ ] The Tailscale policy allows only approved reviewers to the preview tag and ports.</li>
 <li>[ ] Subnet routes, route acceptance, exit-node behavior, Funnel/public exposure, and Tailscale SSH
       are not required for this review.</li>
@@ -472,14 +473,20 @@ OVERLAY_IFACE=tailscale0
 APPROVED_TAILSCALE_PREVIEW_WRAPPER=&quot;&lt;approved-tailscale-preview-wrapper&gt;&quot;
 </code></pre>
 <p>Create runtime-only state outside the repository:</p>
-<pre><code class="language-bash">sudo install -d -m 0700 &quot;$PREVIEW_DIR&quot;
-sudo install -m 0600 &quot;$AUTH_KEY_FILE&quot; &quot;$PREVIEW_DIR/authkey&quot;
+<pre><code class="language-bash"># Group-readable (m 0750) with appropriate group ownership so the non-root agent user can access the socket
+sudo install -d -m 0750 -o root -g &lt;agent-operator-group&gt; &quot;$PREVIEW_DIR&quot;
+sudo install -m 0600 -o root -g &lt;agent-operator-group&gt; &quot;$AUTH_KEY_FILE&quot; &quot;$PREVIEW_DIR/authkey&quot;
 </code></pre>
 <p>Start a transient daemon with in-memory identity state where supported:</p>
+<blockquote>
+<p><strong>Operational Warning:</strong> When using <code>--state=mem:</code>, any daemon restart wipes the transient node identity. Ensure that the auth key in <code>&lt;auth-key-file&gt;</code> is configured as reusable (with a strict expiration window) or that a dynamic provisioning wrapper automatically handles re-registration with a new key upon service restart.</p>
+</blockquote>
 <pre><code class="language-bash">sudo tailscaled \
   --state=mem: \
   --statedir=&quot;$PREVIEW_DIR&quot; \
-  --socket=&quot;$TAILSCALE_SOCKET&quot; &amp;
+  --socket=&quot;$TAILSCALE_SOCKET&quot; \
+  --socket-owner=&quot;&lt;agent-user&gt;&quot; \
+  --socket-group=&quot;&lt;agent-operator-group&gt;&quot; &amp;
 </code></pre>
 <p>Join with restrictive preview defaults. Use an approved wrapper in real operations so the auth-key
 value is read from <code>&lt;auth-key-file&gt;</code> without being printed, logged, stored in shell history, or copied
@@ -543,6 +550,7 @@ curl --fail --silent --show-error &quot;http://$PREVIEW_HOSTNAME:$PREVIEW_PORT/h
 <li>[ ] Exit-node advertisement and exit-node selection are disabled.</li>
 <li>[ ] Funnel/public exposure is disabled.</li>
 <li>[ ] Tailscale SSH or equivalent overlay SSH is disabled.</li>
+<li>[ ] Host-header validation is verified as active on the running preview service, rejecting unexpected headers.</li>
 <li>[ ] Auth-key material is referenced only by protected path and not present in logs, prompts, repo,
       receipts, memory, or transcripts.</li>
 <li>[ ] The readiness receipt has been written without secret values.</li>

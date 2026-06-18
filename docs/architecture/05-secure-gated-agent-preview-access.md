@@ -160,6 +160,7 @@ Before starting the preview, the operator MUST confirm:
 - [ ] The auth key is stored in `<auth-key-file>` with restrictive file permissions outside the repo.
 - [ ] The guest/runtime has a default-deny firewall posture.
 - [ ] The preview app is bound to an explicit preview port in the approved range.
+- [ ] The preview app is configured to validate the `Host` header, accepting only the designated Tailnet IP or FQDN.
 - [ ] The Tailscale policy allows only approved reviewers to the preview tag and ports.
 - [ ] Subnet routes, route acceptance, exit-node behavior, Funnel/public exposure, and Tailscale SSH
       are not required for this review.
@@ -187,17 +188,22 @@ APPROVED_TAILSCALE_PREVIEW_WRAPPER="<approved-tailscale-preview-wrapper>"
 Create runtime-only state outside the repository:
 
 ```bash
-sudo install -d -m 0700 "$PREVIEW_DIR"
-sudo install -m 0600 "$AUTH_KEY_FILE" "$PREVIEW_DIR/authkey"
+# Group-readable (m 0750) with appropriate group ownership so the non-root agent user can access the socket
+sudo install -d -m 0750 -o root -g <agent-operator-group> "$PREVIEW_DIR"
+sudo install -m 0600 -o root -g <agent-operator-group> "$AUTH_KEY_FILE" "$PREVIEW_DIR/authkey"
 ```
 
 Start a transient daemon with in-memory identity state where supported:
+
+> **Operational Warning:** When using `--state=mem:`, any daemon restart wipes the transient node identity. Ensure that the auth key in `<auth-key-file>` is configured as reusable (with a strict expiration window) or that a dynamic provisioning wrapper automatically handles re-registration with a new key upon service restart.
 
 ```bash
 sudo tailscaled \
   --state=mem: \
   --statedir="$PREVIEW_DIR" \
-  --socket="$TAILSCALE_SOCKET" &
+  --socket="$TAILSCALE_SOCKET" \
+  --socket-owner="<agent-user>" \
+  --socket-group="<agent-operator-group>" &
 ```
 
 Join with restrictive preview defaults. Use an approved wrapper in real operations so the auth-key
@@ -275,6 +281,7 @@ An agent or operator MUST NOT mark preview access ready until all items are true
 - [ ] Exit-node advertisement and exit-node selection are disabled.
 - [ ] Funnel/public exposure is disabled.
 - [ ] Tailscale SSH or equivalent overlay SSH is disabled.
+- [ ] Host-header validation is verified as active on the running preview service, rejecting unexpected headers.
 - [ ] Auth-key material is referenced only by protected path and not present in logs, prompts, repo,
       receipts, memory, or transcripts.
 - [ ] The readiness receipt has been written without secret values.

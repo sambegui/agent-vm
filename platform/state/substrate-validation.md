@@ -18,5 +18,5 @@
 - Hypervisor evidence: `kata-runtime kata-env` reported QEMU at `/opt/kata/opt/kata/bin/qemu-system-x86_64`, Kata kernel `vmlinux-6.18.28-194`, and guest image `kata-ubuntu-noble.image`.
 - Command: `~/platform/sandbox/sandbox-runner ~/platform/sandbox/jobspec.example.json`.
 - Result: PASS — job printed `hello-from-microvm`, guest kernel `6.18.28`, `exit=0`, `teardown verified: 0 residual`, and an audit line.
-- Egress evidence: egress job attempting `wget http://1.1.1.1` printed `BLOCKED` with `Network is unreachable`.
+- Egress evidence: egress job attempting `wget http://1.1.1.1` printed `BLOCKED` with `Network is unreachable`. DNS exfiltration test attempting `nslookup malicious-domain.com` also printed `BLOCKED`.
 - Timeout evidence: timeout job returned `exit=124` after the hard timeout and `teardown verified: 0 residual`.

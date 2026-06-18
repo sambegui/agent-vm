@@ -37,7 +37,7 @@ A passing acceptance run should prove:
 1. Tier-1 health responds locally.
 2. Running image digest matches the pinned manifest.
 3. Tier-2 microVM job boots.
-4. Default-deny egress blocks an external network attempt.
+4. Default-deny egress blocks an external network attempt (both direct IP and external DNS resolution).
 5. Teardown leaves zero residual containers/tasks.
 
 ## Promotion and rollback validation
