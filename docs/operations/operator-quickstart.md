@@ -71,7 +71,7 @@ These commands are for an isolated lab host. They are expected to fail on a norm
 without nested KVM and the illustrative SSH aliases.
 
 ```bash
-# Host side: create or reconcile the illustrative golden VM.
+# Host side: create or reconcile the illustrative golden VM and bootstrap the acceptance runtime.
 make provision
 
 # Host side: prove nested hardware-backed microVM boot.

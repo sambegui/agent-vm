@@ -30,6 +30,7 @@ grep -q 'AGENT_VM_NAME="custom-vm"' <<<"$dry_run"
 grep -q 'AGENT_VM_SSH="custom-ssh"' <<<"$dry_run"
 grep -q 'AGENT_VM_IP="10.44.0.99"' <<<"$dry_run"
 grep -q 'AGENT_VM_USER="operator"' <<<"$dry_run"
+grep -q 'platform/vm/bootstrap-runtime' <<<"$dry_run"
 
 destroy_out="$(
   AGENT_VM_NAME=custom-vm \

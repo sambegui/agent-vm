@@ -37,3 +37,19 @@
   - `tier2.dns_exfiltrate_deny`
   - `tier2.teardown`
 - Acceptance footer: `PASS=6 FAIL=0`.
+
+## Task 10 — Acceptance suite after runner hardening (agent-platform)
+- Date: 2026-06-18
+- Scope: reran the full acceptance suite after adding per-run sandbox container IDs,
+  stale-prefix pre-clean, trap-backed teardown, and a parameterized acceptance SSH target.
+- Command: `bash platform/validate/acceptance`.
+- Result: PASS — acceptance footer remained `PASS=6 FAIL=0`.
+
+## Task 11 — Fresh provision/bootstrap acceptance validation (agent-platform)
+- Date: 2026-06-18
+- Scope: rebuilt the illustrative lab VM from the repo-controlled provisioning path, ran the
+  repo-controlled runtime bootstrap, then reran the full acceptance suite.
+- Commands:
+  - `make provision` with local lab `AGENT_VM_*` overrides
+  - `bash platform/validate/acceptance`
+- Result: PASS — acceptance footer was `PASS=6 FAIL=0`.

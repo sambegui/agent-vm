@@ -23,7 +23,7 @@ long-running agent services and a Tier-2 microVM sandbox runner. Design:
 
 ```bash
 # on the host
-make provision                      # create the golden VM (idempotent); then: ssh agent-platform
+make provision                      # create the golden VM and bootstrap the acceptance runtime
 platform/validate/nested-smoke      # nested HW-backed microVM boot check
 platform/validate/acceptance        # expected final line: PASS=6 FAIL=0
 

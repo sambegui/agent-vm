@@ -59,6 +59,7 @@ provision:
 	AGENT_VM_PUBKEY="$(AGENT_VM_PUBKEY)" \
 	AGENT_VM_IMGDIR="$(AGENT_VM_IMGDIR)" \
 	platform/vm/provision-vm
+	AGENT_VM_SSH="$(AGENT_VM_SSH)" platform/vm/bootstrap-runtime
 
 docs:
 	@echo "Start with README.md, then docs/operations/operator-quickstart.md and docs/verification.md"

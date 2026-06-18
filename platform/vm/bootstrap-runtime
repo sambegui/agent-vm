@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# bootstrap-runtime - sync platform/ and configure the in-VM acceptance runtime.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+VM_SSH="${AGENT_VM_SSH:-agent-platform}"
+KATA_VERSION="${KATA_VERSION:-3.31.0}"
+COSIGN_VERSION="${COSIGN_VERSION:-v2.4.1}"
+BUSYBOX_DIGEST="${BUSYBOX_DIGEST:-sha256:7b9a320334d446845c17edcfad9bdd1d54ad05c84c35b117e8fa7d830b9fcce5}"
+
+echo "[bootstrap] syncing platform/ to $VM_SSH"
+tar -C "$ROOT" -cf - platform | ssh "$VM_SSH" 'rm -rf "$HOME/platform" && tar -C "$HOME" -xf -'
+
+echo "[bootstrap] configuring runtime in $VM_SSH"
+# shellcheck disable=SC2029 # The heredoc is intentionally executed on the configured VM.
+ssh "$VM_SSH" \
+  "KATA_VERSION='$KATA_VERSION' COSIGN_VERSION='$COSIGN_VERSION' BUSYBOX_DIGEST='$BUSYBOX_DIGEST' bash -s" <<'REMOTE'
+set -euo pipefail
+
+REG="127.0.0.1:5000"
+
+sudo apt-get update
+sudo apt-get install -y containerd curl jq podman slirp4netns uidmap zstd
+
+mkdir -p "$HOME/.config/systemd/user"
+cat > "$HOME/.config/systemd/user/registry.service" <<'UNIT'
+[Unit]
+Description=agent-vm local OCI registry
+After=network-online.target
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/podman rm -f registry
+ExecStart=/usr/bin/podman run --replace --name registry -p 127.0.0.1:5000:5000 -v registry-data:/var/lib/registry docker.io/library/registry:2
+ExecStop=/usr/bin/podman stop -t 10 registry
+ExecStopPost=-/usr/bin/podman rm -f registry
+
+[Install]
+WantedBy=default.target
+UNIT
+systemctl --user daemon-reload
+systemctl --user enable --now registry.service
+
+for _ in $(seq 1 60); do
+  if curl -fsS "http://$REG/v2/" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+curl -fsS "http://$REG/v2/" >/dev/null
+
+if ! command -v cosign >/dev/null 2>&1; then
+  tmp_cosign="$(mktemp)"
+  curl -fsSL -o "$tmp_cosign" "https://github.com/sigstore/cosign/releases/download/$COSIGN_VERSION/cosign-linux-amd64"
+  sudo install -m 0755 "$tmp_cosign" /usr/local/bin/cosign
+  rm -f "$tmp_cosign"
+fi
+
+if [ ! -f "$HOME/cosign.key" ] || [ ! -f "$HOME/cosign.pub" ]; then
+  (cd "$HOME" && COSIGN_PASSWORD= cosign generate-key-pair)
+fi
+
+hello_output="$("$HOME/platform/images/build-sign-push" 1)"
+echo "$hello_output"
+hello_digest="$(printf '%s\n' "$hello_output" | awk -F= '/^DIGEST=/{print $2}' | tail -1)"
+if [ -z "$hello_digest" ]; then
+  echo "ERROR: build-sign-push did not print DIGEST=..." >&2
+  exit 1
+fi
+sed -i -E "s#image: 127\\.0\\.0\\.1:5000/hello-agent@sha256:[a-f0-9]+#image: $hello_digest#" "$HOME/platform/manifests/hello.service.yaml"
+
+podman pull docker.io/library/busybox:latest
+podman tag docker.io/library/busybox:latest "$REG/busybox:probe"
+podman push --tls-verify=false "$REG/busybox:probe"
+
+if ! command -v kata-runtime >/dev/null 2>&1; then
+  kata_archive="$(mktemp)"
+  curl -fsSL -o "$kata_archive" "https://github.com/kata-containers/kata-containers/releases/download/$KATA_VERSION/kata-static-$KATA_VERSION-amd64.tar.zst"
+  sudo rm -rf /opt/kata
+  sudo mkdir -p /opt/kata
+  sudo tar --use-compress-program=unzstd -xf "$kata_archive" -C /opt/kata
+  rm -f "$kata_archive"
+  sudo ln -sfn /opt/kata/opt/kata/bin/kata-runtime /usr/local/bin/kata-runtime
+  sudo ln -sfn /opt/kata/opt/kata/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
+fi
+if [ -d /opt/kata/opt/kata ]; then
+  sudo ln -sfn /opt/kata/opt/kata/bin /opt/kata/bin
+  sudo ln -sfn /opt/kata/opt/kata/share /opt/kata/share
+  sudo ln -sfn /opt/kata/opt/kata/libexec /opt/kata/libexec
+  sudo ln -sfn /opt/kata/opt/kata/bin/kata-runtime /usr/local/bin/kata-runtime
+  sudo ln -sfn /opt/kata/opt/kata/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
+fi
+
+sudo systemctl enable --now containerd
+sudo systemctl restart containerd
+sudo ctr image pull --plain-http "$REG/busybox@$BUSYBOX_DIGEST" >/dev/null
+COSIGN_PASSWORD= cosign sign --allow-insecure-registry --tlog-upload=false --yes --key "$HOME/cosign.key" "$REG/busybox@$BUSYBOX_DIGEST"
+
+"$HOME/platform/control/reconcile" "$HOME/platform/manifests/hello.service.yaml"
+for _ in $(seq 1 60); do
+  if curl -fsS http://127.0.0.1:18080/healthz >/dev/null 2>&1 \
+    && "$HOME/platform/control/align" "$HOME/platform/manifests/hello.service.yaml" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+curl -fsS http://127.0.0.1:18080/healthz
+"$HOME/platform/control/align" "$HOME/platform/manifests/hello.service.yaml"
+kata-runtime --version
+sudo ctr version | sed -n '1,12p'
+REMOTE
