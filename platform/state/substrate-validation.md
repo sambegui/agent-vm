@@ -4,7 +4,10 @@
 - Date: 2026-06-16
 - Command: ssh agent-runtime 'bash /tmp/nested-smoke'
 - Result: PASS — Firecracker v1.7.0 microVM booted HW-backed using /dev/kvm inside the current guest (Linux 4.14.174 on KVM; `Booting paravirtualized kernel on KVM` confirmed in Firecracker log).
-- Note: s3.amazonaws.com is blocked by egress proxy (squid ERR_ACCESS_DENIED). Assets were staged from host: firecracker binary + vmlinux.bin + bionic.rootfs.ext4 scp'd to guest /tmp/nested-smoke-assets/ and used in place of curl. The committed platform/validate/nested-smoke is the canonical curl-based script; the host-staging was a one-time workaround for this restricted environment. Also: admin user was added to the kvm group (sudo usermod -aG kvm admin) — required for /dev/kvm access.
+- Note: the lab network blocked direct asset download during this smoke. Assets were staged into a
+  temporary guest directory for that one run. The committed `platform/validate/nested-smoke` script is
+  the canonical curl-based script. The guest operator account also needed membership in the `kvm`
+  group for `/dev/kvm` access.
 
 ## Task 3 — in-new-VM nested validation (agent-platform)
 - Date: 2026-06-16
@@ -20,3 +23,17 @@
 - Result: PASS — job printed `hello-from-microvm`, guest kernel `6.18.28`, `exit=0`, `teardown verified: 0 residual`, and an audit line.
 - Egress evidence: egress job attempting `wget http://1.1.1.1` printed `BLOCKED` with `Network is unreachable`. DNS exfiltration test attempting `nslookup malicious-domain.com` also printed `BLOCKED`.
 - Timeout evidence: timeout job returned `exit=124` after the hard timeout and `teardown verified: 0 residual`.
+
+## Task 9 — Acceptance suite live validation (agent-platform)
+- Date: 2026-06-18
+- Preflight: Tier-1 health endpoint responded, the local registry responded, `containerd` reported a
+  Server section, and no stale `job-*` containerd containers or tasks were present.
+- Command: `bash platform/validate/acceptance`.
+- Result: PASS — all six checks passed:
+  - `tier1.health`
+  - `alignment.aligned`
+  - `tier2.microvm_boots`
+  - `tier2.egress_deny`
+  - `tier2.dns_exfiltrate_deny`
+  - `tier2.teardown`
+- Acceptance footer: `PASS=6 FAIL=0`.
