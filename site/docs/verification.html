@@ -86,10 +86,12 @@
       font-family: var(--font-mono);
       font-size: 0.9rem;
       transition: color 0.2s;
+      border-bottom: none !important;
     }
 
     .back-link:hover {
       color: var(--text);
+      border-bottom: none !important;
     }
 
     h1, h2, h3, h4, h5, h6 {
@@ -362,21 +364,6 @@ platform/validate/acceptance
 <p>If a command cannot be run in the current environment, record it as <strong>not run</strong> rather than implying it
 passed.</p>
     </main>
-    
-    <nav class="pagination-nav">
-      
-      <a href="../docs/threat-model.html" class="nav-prev">
-        <span class="nav-label">← Previous Spec</span>
-        <span class="nav-title">Threat Model</span>
-      </a>
-        
-      
-      <a href="../docs/evidence/substrate-validation-receipt.html" class="nav-next">
-        <span class="nav-label">Next Spec →</span>
-        <span class="nav-title">Evidence Receipt</span>
-      </a>
-        
-    </nav>
 
     <footer>
       agent-vm security substrate · open-source verification receipt

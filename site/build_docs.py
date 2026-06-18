@@ -97,10 +97,12 @@ TEMPLATE = """<!DOCTYPE html>
       font-family: var(--font-mono);
       font-size: 0.9rem;
       transition: color 0.2s;
+      border-bottom: none !important;
     }}
 
     .back-link:hover {{
       color: var(--text);
+      border-bottom: none !important;
     }}
 
     h1, h2, h3, h4, h5, h6 {{
@@ -285,11 +287,6 @@ TEMPLATE = """<!DOCTYPE html>
     <main>
       {content}
     </main>
-    
-    <nav class="pagination-nav">
-      {prev_html}
-      {next_html}
-    </nav>
 
     <footer>
       agent-vm security substrate · open-source verification receipt
