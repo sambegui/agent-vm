@@ -25,12 +25,15 @@ This repository demonstrates how AI agents can be run as governed workloads rath
 1. Start with the architecture diagram below to see the control-plane/substrate boundary.
 2. Read [`platform/state/substrate-validation.md`](platform/state/substrate-validation.md) for the
    run-backed substrate evidence.
-3. Skim [`docs/operations/operator-quickstart.md`](docs/operations/operator-quickstart.md) for safe
+3. Read the vendor-neutral
+   [governed workload case study](docs/evidence/governed-agent-workload-case-study.md) for the
+   threat model, control path, and claim boundaries in one concrete scenario.
+4. Skim [`docs/operations/operator-quickstart.md`](docs/operations/operator-quickstart.md) for safe
    local checks versus host-dependent and mutating commands.
-4. Review [`docs/verification.md`](docs/verification.md) and
+5. Review [`docs/verification.md`](docs/verification.md) and
    [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-validation-receipt.md)
    for the evidence model.
-5. Read [`docs/security-methodology.md`](docs/security-methodology.md), [`SECURITY.md`](SECURITY.md),
+6. Read [`docs/security-methodology.md`](docs/security-methodology.md), [`SECURITY.md`](SECURITY.md),
    and [`docs/threat-model.md`](docs/threat-model.md) for methodology, trust boundaries, current gaps,
    and non-goals.
 
@@ -190,7 +193,7 @@ and [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-va
 | `docs/reference-workloads/` | The two abstract agent archetypes (A immutable-release, B package-install). |
 | `docs/decisions/` | Architecture decision records. |
 | `docs/operations/` | Operator quickstart and safe runbook entry points. |
-| `docs/evidence/` | Sanitized validation receipts and evidence packets. |
+| `docs/evidence/` | Sanitized validation receipts, evidence packets, and the governed workload case study. |
 | `docs/security-methodology.md` | Public-safe security methodology and operating principles. |
 | `docs/architecture/05-secure-gated-agent-preview-access.md` | Reference pattern for temporary, revocable, least-privilege preview access. |
 | `docs/verification.md` | Claim discipline and verification gates. |

@@ -12,7 +12,27 @@ require_text() {
   fi
 }
 
+forbid_text() {
+  local file="$1"
+  local text="$2"
+  if grep -Fqi "$text" "$file"; then
+    echo "forbidden public docs text in $file: $text" >&2
+    exit 1
+  fi
+}
+
+require_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    echo "missing required public docs file: $file" >&2
+    exit 1
+  fi
+}
+
+CASE_STUDY="$ROOT/docs/evidence/governed-agent-workload-case-study.md"
+
 require_text "$ROOT/README.md" "reference implementation + acceptance suite"
+require_text "$ROOT/README.md" "governed-agent-workload-case-study.md"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "reference implementation + acceptance suite"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "make provision"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "AGENT_VM_SSH"
@@ -23,5 +43,21 @@ require_text "$ROOT/docs/operations/operator-quickstart.md" "Firecracker"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "local registry"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "cosign"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "teardown"
+require_text "$ROOT/docs/verification.md" "governed-agent-workload-case-study.md"
+require_file "$CASE_STUDY"
+require_text "$CASE_STUDY" "Case Study: Treating an Agent as an Untrusted Workload"
+require_text "$CASE_STUDY" "probabilistic actor"
+require_text "$CASE_STUDY" "treated as untrusted"
+require_text "$CASE_STUDY" "prompt injection"
+require_text "$CASE_STUDY" "default-deny egress"
+require_text "$CASE_STUDY" "fail-closed"
+require_text "$CASE_STUDY" "secrets-by-reference"
+require_text "$CASE_STUDY" "rollback target"
+require_text "$CASE_STUDY" "illustrative narrative"
+require_text "$CASE_STUDY" "static repo checks"
+require_text "$CASE_STUDY" "lab validation"
+require_text "$CASE_STUDY" "production proof"
+require_text "$ROOT/site/docs/verification.html" 'href="evidence/governed-agent-workload-case-study.html"'
+forbid_text "$ROOT/site/docs/verification.html" 'href="evidence/governed-agent-workload-case-study.md"'
 
 echo "public docs contract tests passed"

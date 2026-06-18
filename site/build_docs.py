@@ -349,6 +349,7 @@ def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
     )
 
     # Resolve local relative links
+    md_text = re.sub(r'(?<![a-zA-Z0-9_/-])evidence/([a-zA-Z0-9_-]+)\.md', r'evidence/\1.html', md_text)
     md_text = re.sub(r'(\d+)-([a-zA-Z0-9_-]+)\.md', r'\1-\2.html', md_text)
     md_text = re.sub(r'(?<!/)(?<![a-zA-Z0-9_-])([a-zA-Z0-9_-]+)\.md', r'\1.html', md_text)
 
@@ -428,6 +429,7 @@ def main():
         ('security-methodology.md', 'docs/security-methodology.html', '../', 'Security Methodology'),
         ('threat-model.md', 'docs/threat-model.html', '../', 'Threat Model'),
         ('verification.md', 'docs/verification.html', '../', 'Verification Model'),
+        ('evidence/governed-agent-workload-case-study.md', 'docs/evidence/governed-agent-workload-case-study.html', '../../', 'Governed Workload Case Study'),
         ('evidence/substrate-validation-receipt.md', 'docs/evidence/substrate-validation-receipt.html', '../../', 'Evidence Receipt')
     ]
     

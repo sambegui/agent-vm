@@ -13,11 +13,12 @@ Start here:
 - Verification model: /docs/verification.html
 - Security methodology: /docs/security-methodology.html
 - Threat model: /docs/threat-model.html
+- Governed workload case study: /docs/evidence/governed-agent-workload-case-study.html
 - Validation receipt: /docs/evidence/substrate-validation-receipt.html
 
 Reading paths:
 - Short architecture answer: 00-overview, then verification.
-- Runtime isolation answer: 01-isolation-substrate, then threat model.
+- Runtime isolation answer: 01-isolation-substrate, then threat model, then governed workload case study.
 - Release and rollback answer: 02-promotion-control-plane, then verification.
 - Security posture answer: security methodology, threat model, production governance.
 

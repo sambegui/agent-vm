@@ -3,6 +3,9 @@
 This repository separates **static validation**, **host-dependent substrate validation**, and
 **production-readiness evidence**. Do not collapse those into one claim.
 
+For a concrete, vendor-neutral scenario that keeps those boundaries separate, read
+[`docs/evidence/governed-agent-workload-case-study.md`](evidence/governed-agent-workload-case-study.md).
+
 ## Verification levels
 
 | Level | What it proves | Commands / evidence |
