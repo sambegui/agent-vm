@@ -166,6 +166,54 @@
       font-style: italic;
     }
 
+    /* Pagination CSS */
+    .pagination-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 2rem;
+    }
+
+    .nav-prev, .nav-next {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      border-bottom: none !important;
+    }
+
+    .nav-next {
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .nav-label {
+      font-size: 0.75rem;
+      color: var(--dim);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      margin-bottom: 0.35rem;
+    }
+
+    .nav-title {
+      font-size: 1.05rem;
+      color: var(--cyan);
+      font-weight: 600;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .nav-prev:hover .nav-title {
+      color: var(--text);
+      transform: translateX(-4px);
+    }
+
+    .nav-next:hover .nav-title {
+      color: var(--text);
+      transform: translateX(4px);
+    }
+
     footer {
       margin-top: 4rem;
       border-top: 1px solid var(--line);
@@ -382,6 +430,22 @@ egress policy is enforced, secrets are not logged, <strong>rollback works</stron
 traffic. The scaffold and first canary can land the same day; the <em>production claim</em> waits for the
 evidence packet.</p>
     </main>
+    
+    <nav class="pagination-nav">
+      
+      <a href="../../docs/architecture/03-gateway-runtime-layout.html" class="nav-prev">
+        <span class="nav-label">← Previous Spec</span>
+        <span class="nav-title">03 — Gateway Runtime Layout</span>
+      </a>
+        
+      
+      <a href="../../docs/architecture/05-secure-gated-agent-preview-access.html" class="nav-next">
+        <span class="nav-label">Next Spec →</span>
+        <span class="nav-title">05 — Gated Preview Access</span>
+      </a>
+        
+    </nav>
+
     <footer>
       agent-vm security substrate · open-source verification receipt
     </footer>

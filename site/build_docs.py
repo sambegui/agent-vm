@@ -177,6 +177,54 @@ TEMPLATE = """<!DOCTYPE html>
       font-style: italic;
     }}
 
+    /* Pagination CSS */
+    .pagination-nav {{
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 2rem;
+    }}
+
+    .nav-prev, .nav-next {{
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      border-bottom: none !important;
+    }}
+
+    .nav-next {{
+      align-items: flex-end;
+      text-align: right;
+    }}
+
+    .nav-label {{
+      font-size: 0.75rem;
+      color: var(--dim);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      margin-bottom: 0.35rem;
+    }}
+
+    .nav-title {{
+      font-size: 1.05rem;
+      color: var(--cyan);
+      font-weight: 600;
+      transition: color 0.2s, transform 0.2s;
+    }}
+
+    .nav-prev:hover .nav-title {{
+      color: var(--text);
+      transform: translateX(-4px);
+    }}
+
+    .nav-next:hover .nav-title {{
+      color: var(--text);
+      transform: translateX(4px);
+    }}
+
     footer {{
       margin-top: 4rem;
       border-top: 1px solid var(--line);
@@ -197,6 +245,12 @@ TEMPLATE = """<!DOCTYPE html>
     <main>
       {content}
     </main>
+    
+    <nav class="pagination-nav">
+      {prev_html}
+      {next_html}
+    </nav>
+
     <footer>
       agent-vm security substrate · open-source verification receipt
     </footer>
@@ -206,20 +260,16 @@ TEMPLATE = """<!DOCTYPE html>
 """
 
 def extract_title(html_content, default="spec"):
-    # Find the first h1 and extract its text
     match = re.search(r'<h1>(.*?)</h1>', html_content, re.IGNORECASE)
     if match:
-        # Strip html tags if any
         return re.sub('<[^<]+?>', '', match.group(1)).strip()
     return default
 
-def compile_file(src_path, dest_path, back_depth):
-    print(f"Compiling {src_path} -> {dest_path}")
+def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
     with open(src_path, 'r', encoding='utf-8') as f:
         md_text = f.read()
     
-    # Simple conversion of raw github blob links inside documentation to relative html links
-    # For example: https://github.com/sambegui/agent-vm/blob/main/docs/architecture/00-overview.md -> 00-overview.html
+    # Resolve absolute-looking github links to local HTML links
     md_text = re.sub(
         r'https://github.com/sambegui/agent-vm/blob/main/docs/architecture/(\d+)-([a-zA-Z0-9_-]+)\.md',
         r'\1-\2.html',
@@ -236,21 +286,49 @@ def compile_file(src_path, dest_path, back_depth):
         md_text
     )
 
-    # Resolve local relative markdown links to relative html links as well
+    # Resolve local relative links
     md_text = re.sub(r'(\d+)-([a-zA-Z0-9_-]+)\.md', r'\1-\2.html', md_text)
     md_text = re.sub(r'(?<!/)(?<![a-zA-Z0-9_-])([a-zA-Z0-9_-]+)\.md', r'\1.html', md_text)
 
-    # Convert Markdown to HTML
     html_body = markdown.markdown(md_text, extensions=['tables', 'fenced_code', 'toc'])
-    
     title = extract_title(html_body)
+    
+    # Generate pagination HTML
+    prev_html = ""
+    if prev_info:
+        prev_label, prev_link = prev_info
+        # Prepend back_depth to target site-root-relative link
+        prev_html = f"""
+      <a href="{back_depth}{prev_link}" class="nav-prev">
+        <span class="nav-label">← Previous Spec</span>
+        <span class="nav-title">{prev_label}</span>
+      </a>
+        """
+    else:
+        # Keep an empty div so the flexbox grid aligns 'next' to the right!
+        prev_html = "<div></div>"
+        
+    next_html = ""
+    if next_html_info:
+        next_label, next_link = next_html_info
+        # Prepend back_depth to target site-root-relative link
+        next_html = f"""
+      <a href="{back_depth}{next_link}" class="nav-next">
+        <span class="nav-label">Next Spec →</span>
+        <span class="nav-title">{next_label}</span>
+      </a>
+        """
+    else:
+        next_html = "<div></div>"
+
     full_html = TEMPLATE.format(
         title=title,
         content=html_body,
-        back_depth=back_depth
+        back_depth=back_depth,
+        prev_html=prev_html,
+        next_html=next_html
     )
     
-    # Ensure destination directories exist
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path, 'w', encoding='utf-8') as f:
         f.write(full_html)
@@ -260,26 +338,37 @@ def main():
     site_dir = os.path.join(repo_root, 'site')
     docs_dir = os.path.join(repo_root, 'docs')
     
-    # Map sources under docs/ to destinations under site/docs/
-    # format: (source_path, dest_path_under_site_docs, back_depth_to_site_root)
+    # Exact documentation chain in sequence: (rel_src_path, rel_dest_path, back_depth, display_title)
     files_to_compile = [
-        ('architecture/00-overview.md', 'docs/architecture/00-overview.html', '../../'),
-        ('architecture/01-isolation-substrate.md', 'docs/architecture/01-isolation-substrate.html', '../../'),
-        ('architecture/02-promotion-control-plane.md', 'docs/architecture/02-promotion-control-plane.html', '../../'),
-        ('architecture/03-gateway-runtime-layout.md', 'docs/architecture/03-gateway-runtime-layout.html', '../../'),
-        ('architecture/04-production-governance.md', 'docs/architecture/04-production-governance.html', '../../'),
-        ('architecture/05-secure-gated-agent-preview-access.md', 'docs/architecture/05-secure-gated-agent-preview-access.html', '../../'),
-        ('security-methodology.md', 'docs/security-methodology.html', '../'),
-        ('threat-model.md', 'docs/threat-model.html', '../'),
-        ('verification.md', 'docs/verification.html', '../'),
-        ('evidence/substrate-validation-receipt.md', 'docs/evidence/substrate-validation-receipt.html', '../../')
+        ('architecture/00-overview.md', 'docs/architecture/00-overview.html', '../../', '00 — Overview'),
+        ('architecture/01-isolation-substrate.md', 'docs/architecture/01-isolation-substrate.html', '../../', '01 — Isolation Substrate'),
+        ('architecture/02-promotion-control-plane.md', 'docs/architecture/02-promotion-control-plane.html', '../../', '02 — Promotion Control Plane'),
+        ('architecture/03-gateway-runtime-layout.md', 'docs/architecture/03-gateway-runtime-layout.html', '../../', '03 — Gateway Runtime Layout'),
+        ('architecture/04-production-governance.md', 'docs/architecture/04-production-governance.html', '../../', '04 — Production Governance'),
+        ('architecture/05-secure-gated-agent-preview-access.md', 'docs/architecture/05-secure-gated-agent-preview-access.html', '../../', '05 — Gated Preview Access'),
+        ('security-methodology.md', 'docs/security-methodology.html', '../', 'Security Methodology'),
+        ('threat-model.md', 'docs/threat-model.html', '../', 'Threat Model'),
+        ('verification.md', 'docs/verification.html', '../', 'Verification Model'),
+        ('evidence/substrate-validation-receipt.md', 'docs/evidence/substrate-validation-receipt.html', '../../', 'Evidence Receipt')
     ]
     
-    for rel_src, rel_dest, depth in files_to_compile:
+    for i, (rel_src, rel_dest, depth, display_title) in enumerate(files_to_compile):
         src = os.path.join(docs_dir, rel_src)
         dest = os.path.join(site_dir, rel_dest)
+        
+        # Calculate previous link info
+        prev_info = None
+        if i > 0:
+            prev_info = (files_to_compile[i - 1][3], files_to_compile[i - 1][1])
+            
+        # Calculate next link info
+        next_html_info = None
+        if i < len(files_to_compile) - 1:
+            next_html_info = (files_to_compile[i + 1][3], files_to_compile[i + 1][1])
+            
         if os.path.exists(src):
-            compile_file(src, dest, depth)
+            compile_file(src, dest, depth, prev_info, next_html_info)
+            print(f"Successfully compiled {rel_src} with prev/next navigation.")
         else:
             print(f"Warning: Source file {src} not found!")
 
