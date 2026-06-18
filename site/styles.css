@@ -910,11 +910,11 @@ code {
   right: 24px;
   width: 48px;
   height: 48px;
+  padding: 0;
   border-radius: 50%;
   background: rgba(142, 246, 255, 0.08);
   border: 1px solid rgba(142, 246, 255, 0.2);
   color: var(--text);
-  font-size: 2rem;
   cursor: pointer;
   display: grid;
   place-items: center;
