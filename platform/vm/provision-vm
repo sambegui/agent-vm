@@ -2,16 +2,37 @@
 # provision-vm — create the agent-platform VM from code (idempotent). Host-side; needs libvirt group.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VM_NAME=agent-platform
-VM_IP=10.0.0.60
-VM_MAC=52:54:00:00:00:01
-IMGDIR=/var/lib/libvirt/images/agent-platform
-BASE_IMAGE="$IMGDIR/debian-12-genericcloud-amd64.qcow2"
+VM_NAME="${AGENT_VM_NAME:-agent-platform}"
+VM_IP="${AGENT_VM_IP:-10.0.0.60}"
+VM_MAC="${AGENT_VM_MAC:-52:54:00:00:00:01}"
+VM_USER="${AGENT_VM_USER:-agent}"
+VM_SSH="${AGENT_VM_SSH:-$VM_NAME}"
+VM_GATEWAY="${AGENT_VM_GATEWAY:-10.0.0.1}"
+IMGDIR="${AGENT_VM_IMGDIR:-/var/lib/libvirt/images/$VM_NAME}"
+BASE_IMAGE="${AGENT_VM_BASE_IMAGE:-$IMGDIR/debian-12-genericcloud-amd64.qcow2}"
+VM_DISK="${AGENT_VM_DISK:-$IMGDIR/$VM_NAME.qcow2}"
+SEED_ISO="${AGENT_VM_SEED_ISO:-$IMGDIR/seed.iso}"
 BASE_URL="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
-PUBKEY="$(cat "$HOME/.ssh/agent-platform.pub")"
-VIRSH="virsh -c qemu:///system"
+PUBKEY_PATH="${AGENT_VM_PUBKEY:-$HOME/.ssh/$VM_NAME.pub}"
+VIRSH_URI="${AGENT_VM_VIRSH_URI:-qemu:///system}"
+VIRSH="virsh -c $VIRSH_URI"
 SSH_ATTEMPTS="${PROVISION_VM_SSH_ATTEMPTS:-60}"
 SSH_SLEEP="${PROVISION_VM_SSH_SLEEP:-5}"
+
+if [ "${1:-}" = "--print-config" ]; then
+  printf 'AGENT_VM_NAME=%s\n' "$VM_NAME"
+  printf 'AGENT_VM_IP=%s\n' "$VM_IP"
+  printf 'AGENT_VM_MAC=%s\n' "$VM_MAC"
+  printf 'AGENT_VM_USER=%s\n' "$VM_USER"
+  printf 'AGENT_VM_SSH=%s\n' "$VM_SSH"
+  printf 'AGENT_VM_PUBKEY=%s\n' "$PUBKEY_PATH"
+  printf 'AGENT_VM_IMGDIR=%s\n' "$IMGDIR"
+  printf 'AGENT_VM_DISK=%s\n' "$VM_DISK"
+  printf 'AGENT_VM_SEED_ISO=%s\n' "$SEED_ISO"
+  exit 0
+fi
+
+PUBKEY="$(cat "$PUBKEY_PATH")"
 
 ensure_static_lease() {
   local netxml
@@ -35,7 +56,7 @@ ensure_host_dns_firewall() {
   local chain proto comment
   chain="$(sudo nft list chain inet filter input 2>/dev/null || true)"
   for proto in udp tcp; do
-    comment="agent-platform-dns-$proto"
+    comment="$VM_NAME-dns-$proto"
     if grep -q "$comment" <<<"$chain"; then
       continue
     fi
@@ -46,8 +67,8 @@ ensure_host_dns_firewall() {
 wait_for_ssh() {
   echo "waiting for ssh on $VM_IP ..."
   for _ in $(seq 1 "$SSH_ATTEMPTS"); do
-    if ssh -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new "$VM_NAME" true 2>/dev/null; then
-      echo "$VM_NAME is up"
+    if ssh -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new "$VM_SSH" true 2>/dev/null; then
+      echo "$VM_SSH is up"
       return 0
     fi
     sleep "$SSH_SLEEP"
@@ -64,9 +85,27 @@ ensure_static_lease
 ensure_host_dns_firewall
 
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
-sed "s|REPLACE_WITH_AGENT_PLATFORM_PUBKEY|$PUBKEY|" "$HERE/cloud-init/user-data" > "$tmp/user-data"
+sed \
+  -e "s|REPLACE_WITH_AGENT_PLATFORM_PUBKEY|$PUBKEY|" \
+  -e "s|REPLACE_WITH_AGENT_VM_USER|$VM_USER|g" \
+  "$HERE/cloud-init/user-data" > "$tmp/user-data"
 cp "$HERE/cloud-init/meta-data" "$tmp/meta-data"
-cp "$HERE/cloud-init/network-config" "$tmp/network-config"
+sed \
+  -e "s|52:54:00:00:00:01|$VM_MAC|g" \
+  -e "s|10.0.0.60|$VM_IP|g" \
+  -e "s|10.0.0.1|$VM_GATEWAY|g" \
+  "$HERE/cloud-init/network-config" > "$tmp/network-config"
+sed \
+  -e "s|52:54:00:00:00:01|$VM_MAC|g" \
+  -e "s|10.0.0.60|$VM_IP|g" \
+  -e "s|10.0.0.1|$VM_GATEWAY|g" \
+  "$HERE/systemd/10-agent-platform.network" > "$tmp/10-agent-platform.network"
+sed \
+  -e "s|/var/lib/libvirt/images/agent-platform/agent-platform.qcow2|$VM_DISK|g" \
+  -e "s|/var/lib/libvirt/images/agent-platform/seed.iso|$SEED_ISO|g" \
+  -e "s|agent-platform|$VM_NAME|g" \
+  -e "s|52:54:00:00:00:01|$VM_MAC|g" \
+  "$HERE/agent-platform.domain.xml" > "$tmp/domain.xml"
 
 if $VIRSH dominfo "$VM_NAME" >/dev/null 2>&1; then
   echo "$VM_NAME already defined; starting if needed"
@@ -78,11 +117,11 @@ if $VIRSH dominfo "$VM_NAME" >/dev/null 2>&1; then
 fi
 sudo mkdir -p "$IMGDIR"
 sudo test -f "$BASE_IMAGE" || sudo curl -fsSL "$BASE_URL" -o "$BASE_IMAGE"
-if ! sudo test -f "$IMGDIR/agent-platform.qcow2"; then
-  sudo qemu-img create -f qcow2 -F qcow2 -b "$BASE_IMAGE" "$IMGDIR/agent-platform.qcow2" 30G
-  sudo virt-customize --no-network -a "$IMGDIR/agent-platform.qcow2" \
+if ! sudo test -f "$VM_DISK"; then
+  sudo qemu-img create -f qcow2 -F qcow2 -b "$BASE_IMAGE" "$VM_DISK" 30G
+  sudo virt-customize --no-network -a "$VM_DISK" \
     --run-command 'mkdir -p /etc/systemd/network /etc/cloud/cloud.cfg.d /var/lib/cloud/seed/nocloud' \
-    --copy-in "$HERE/systemd/10-agent-platform.network:/etc/systemd/network/" \
+    --copy-in "$tmp/10-agent-platform.network:/etc/systemd/network/" \
     --copy-in "$HERE/cloud-init/99-agent-platform-datasource.cfg:/etc/cloud/cloud.cfg.d/" \
     --copy-in "$tmp/user-data:/var/lib/cloud/seed/nocloud/" \
     --copy-in "$tmp/meta-data:/var/lib/cloud/seed/nocloud/" \
@@ -92,9 +131,9 @@ if ! sudo test -f "$IMGDIR/agent-platform.qcow2"; then
 fi
 
 ( cd "$tmp" && genisoimage -output seed.iso -volid cidata -joliet -rock user-data meta-data network-config >/dev/null 2>&1 )
-sudo cp "$tmp/seed.iso" "$IMGDIR/seed.iso"
+sudo cp "$tmp/seed.iso" "$SEED_ISO"
 
-$VIRSH define "$HERE/agent-platform.domain.xml"
+$VIRSH define "$tmp/domain.xml"
 $VIRSH start "$VM_NAME"
 forget_recreated_host_key
 wait_for_ssh

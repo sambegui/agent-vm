@@ -1,6 +1,6 @@
 #cloud-config
 users:
-  - name: agent
+  - name: REPLACE_WITH_AGENT_VM_USER
     groups: [kvm]
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
@@ -14,7 +14,7 @@ bootcmd:
   - [ sh, -c, "systemctl restart systemd-resolved || true" ]
 runcmd:
   - [ systemctl, enable, --now, podman.socket ]
-  - [ loginctl, enable-linger, agent ]
+  - [ loginctl, enable-linger, REPLACE_WITH_AGENT_VM_USER ]
 write_files:
   - path: /etc/sysctl.d/90-unpriv-userns.conf
     content: "kernel.unprivileged_userns_clone=1\n"

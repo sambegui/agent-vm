@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+out="$(
+  AGENT_VM_NAME=custom-vm \
+  AGENT_VM_IP=10.44.0.99 \
+  AGENT_VM_MAC=52:54:00:44:00:99 \
+  AGENT_VM_USER=operator \
+  AGENT_VM_SSH=custom-ssh \
+  AGENT_VM_PUBKEY=/tmp/custom-agent-vm.pub \
+  AGENT_VM_IMGDIR=/tmp/custom-agent-vm-images \
+  "$ROOT/platform/vm/provision-vm" --print-config
+)"
+
+grep -q '^AGENT_VM_NAME=custom-vm$' <<<"$out"
+grep -q '^AGENT_VM_IP=10.44.0.99$' <<<"$out"
+grep -q '^AGENT_VM_MAC=52:54:00:44:00:99$' <<<"$out"
+grep -q '^AGENT_VM_USER=operator$' <<<"$out"
+grep -q '^AGENT_VM_SSH=custom-ssh$' <<<"$out"
+grep -q '^AGENT_VM_PUBKEY=/tmp/custom-agent-vm.pub$' <<<"$out"
+grep -q '^AGENT_VM_IMGDIR=/tmp/custom-agent-vm-images$' <<<"$out"
+grep -q '^AGENT_VM_DISK=/tmp/custom-agent-vm-images/custom-vm.qcow2$' <<<"$out"
+grep -q '^AGENT_VM_SEED_ISO=/tmp/custom-agent-vm-images/seed.iso$' <<<"$out"
+
+dry_run="$(make -n -C "$ROOT" provision AGENT_VM_NAME=custom-vm AGENT_VM_SSH=custom-ssh AGENT_VM_IP=10.44.0.99 AGENT_VM_USER=operator)"
+grep -q 'platform/vm/provision-vm' <<<"$dry_run"
+grep -q 'AGENT_VM_NAME="custom-vm"' <<<"$dry_run"
+grep -q 'AGENT_VM_SSH="custom-ssh"' <<<"$dry_run"
+grep -q 'AGENT_VM_IP="10.44.0.99"' <<<"$dry_run"
+grep -q 'AGENT_VM_USER="operator"' <<<"$dry_run"
+
+echo "provision config tests passed"
