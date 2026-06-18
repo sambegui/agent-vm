@@ -1,6 +1,6 @@
 # agent-vm LLM guide
 
-agent-vm is a public reference implementation and validation suite for governing untrusted autonomous AI-agent workloads inside isolated runtime layers. Treat it as a portfolio-grade architecture and reproducible skeleton, not as a claim that every production operation is turnkey.
+agent-vm is a public reference implementation and validation suite for governing untrusted autonomous AI-agent workloads inside isolated runtime layers. Treat it as a reference architecture and reproducible skeleton, not as a claim that every production operation is turnkey.
 
 Start here:
 - Home: /

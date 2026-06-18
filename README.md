@@ -6,11 +6,11 @@ This public **reference implementation + acceptance suite** demonstrates how to 
 
 The architecture models an operator-controlled sandbox skeleton where approved queues, collaboration surfaces, transcripts, external files, API responses, and structured outputs are handled through auditable containment boundaries.
 
-## What this demonstrates
+## Architecture focus
 
-This repository shows a platform/security architecture pattern: autonomous agents are treated as untrusted workloads, their authority is mediated by promotion controls and runtime boundaries, and claims are tied to validation evidence. The pattern maps to enterprise AI automation, workspace collaboration, platform engineering, and IT governance where agents process external files, approved transcripts, API responses, and structured outputs inside auditable containment boundaries.
+The core pattern is platform/security architecture for autonomous agents: treat agents as untrusted workloads, mediate their authority through promotion controls and runtime boundaries, and tie claims to validation evidence. The pattern maps to enterprise AI automation, workspace collaboration, platform engineering, and IT governance where agents process external files, approved transcripts, API responses, and structured outputs inside auditable containment boundaries.
 
-## What this proves
+## Validation scope
 
 - workload isolation for tool-using agents
 - dry-run-first promotion and rollback workflows

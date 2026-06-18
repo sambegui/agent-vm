@@ -113,7 +113,7 @@ auth, tool-policy, egress, audit, rollback, and SLO evidence.
 
 ## Reviewer takeaway
 
-The strongest portfolio signal is not "a sandbox exists." It is the operating model:
+Read this as an operating model, not as a claim that a sandbox alone is sufficient:
 
 > autonomous agent workloads are treated as untrusted, their authority is mediated by policy, their
 > claims are tied to evidence, and rollback remains part of the definition of done.

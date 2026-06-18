@@ -2,7 +2,7 @@
 
 This receipt summarizes the public, non-secret evidence recorded in
 [`platform/state/substrate-validation.md`](../../platform/state/substrate-validation.md). It is a
-sanitized portfolio evidence packet, not a live infrastructure log.
+sanitized public evidence packet, not a live infrastructure log.
 
 ## Scope
 

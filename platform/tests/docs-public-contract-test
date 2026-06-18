@@ -60,6 +60,24 @@ forbid_literal_fixture() {
   fi
 }
 
+forbid_hex_text_tree() {
+  local hex="$1"
+  local label="$2"
+  local text
+  local file
+  text="$(hex_to_text "$hex")"
+  while IFS= read -r file; do
+    if grep -Fqi "$text" "$file"; then
+      echo "forbidden public docs text in $file: $label" >&2
+      exit 1
+    fi
+  done < <(
+    find "$ROOT/README.md" "$ROOT/docs" "$ROOT/site" \
+      -type f \( -name '*.md' -o -name '*.txt' -o -name '*.html' \) \
+      2>/dev/null | sort
+  )
+}
+
 require_file() {
   local file="$1"
   if [ ! -f "$file" ]; then
@@ -79,8 +97,7 @@ require_text "$ROOT/README.md" "reference implementation + acceptance suite"
 require_text "$ROOT/README.md" "governed-agent-workload-case-study.md"
 require_text "$ROOT/README.md" "demonstrates reference patterns for strict runtime isolation"
 require_text "$ROOT/README.md" "deploy-time cosign verification remains a hardening item"
-require_text "$ROOT/README.md" "What this demonstrates"
-forbid_text "$ROOT/README.md" "Portfolio signal"
+require_text "$ROOT/README.md" "Architecture focus"
 require_text "$ROOT/docs/architecture/00-overview.md" "governed, persistent agent workloads"
 require_text "$ROOT/docs/architecture/00-overview.md" "compromised or misdirected"
 require_text "$ROOT/docs/architecture/04-production-governance.md" "evidence-gated production use"
@@ -142,6 +159,9 @@ forbid_literal_fixture "6465706c6f792d74696d6520766572696669636174696f6e" "unsup
 forbid_literal_fixture "7472757374656420696e2070726f64756374696f6e" "trust wording"
 forbid_literal_fixture "7365637572656c7920686f7374696e67206167656e7420776f726b6c6f616473" "older llm framing"
 forbid_literal_fixture "636f7369676e20766572696669636174696f6e206f7574707574" "unsupported receipt evidence"
+forbid_literal_fixture "706f7274666f6c696f" "meta positioning language"
+forbid_literal_fixture "506f7274666f6c696f207369676e616c" "meta positioning heading"
+forbid_literal_fixture "5768617420746869732064656d6f6e73747261746573" "meta heading"
 
 forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "4167656e7420456d706c6f796565" "deprecated role framing"
 forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "536c61636b" "vendor-specific collaboration example"
@@ -159,6 +179,9 @@ forbid_hex_text "$ROOT/docs/architecture/04-production-governance.md" "6465706c6
 forbid_hex_text "$ROOT/docs/architecture/04-production-governance.md" "7472757374656420696e2070726f64756374696f6e" "trust wording"
 forbid_hex_text "$ROOT/docs/evidence/substrate-validation-receipt.md" "636f7369676e20766572696669636174696f6e206f7574707574" "unsupported receipt evidence"
 forbid_hex_text "$ROOT/site/docs/llms.txt" "7365637572656c7920686f7374696e67206167656e7420776f726b6c6f616473" "older llm framing"
+forbid_hex_text "$ROOT/README.md" "506f7274666f6c696f207369676e616c" "meta positioning heading"
+forbid_hex_text "$ROOT/README.md" "5768617420746869732064656d6f6e73747261746573" "meta heading"
+forbid_hex_text_tree "706f7274666f6c696f" "meta positioning language"
 require_text "$ROOT/site/docs/llms.txt" "governing untrusted autonomous AI-agent workloads"
 require_text "$ROOT/site/docs/llms.txt" "Reviewer path"
 
