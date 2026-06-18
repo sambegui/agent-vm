@@ -21,6 +21,45 @@ forbid_text() {
   fi
 }
 
+hex_to_text() {
+  local hex="$1"
+  local out=""
+  local i
+  local char
+  if (( ${#hex} % 2 != 0 )); then
+    echo "invalid hex fixture length" >&2
+    exit 1
+  fi
+  for ((i = 0; i < ${#hex}; i += 2)); do
+    printf -v char '%b' "\\x${hex:i:2}"
+    out+="$char"
+  done
+  printf '%s' "$out"
+}
+
+forbid_hex_text() {
+  local file="$1"
+  local hex="$2"
+  local label="$3"
+  local text
+  text="$(hex_to_text "$hex")"
+  if grep -Fqi "$text" "$file"; then
+    echo "forbidden public docs text in $file: $label" >&2
+    exit 1
+  fi
+}
+
+forbid_literal_fixture() {
+  local hex="$1"
+  local label="$2"
+  local text
+  text="$(hex_to_text "$hex")"
+  if grep -Fqi "$text" "$0"; then
+    echo "literal negative fixture leaked in docs contract test: $label" >&2
+    exit 1
+  fi
+}
+
 require_file() {
   local file="$1"
   if [ ! -f "$file" ]; then
@@ -69,15 +108,27 @@ require_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 
 forbid_text "$ROOT/site/docs/verification.html" 'href="evidence/governed-agent-workload-case-study.md"'
 forbid_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../verification.md"'
 forbid_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../threat-model.md"'
-forbid_text "$ROOT/docs/architecture/00-overview.md" "Agent Employee"
-forbid_text "$ROOT/docs/architecture/00-overview.md" "Slack"
-forbid_text "$ROOT/docs/architecture/00-overview.md" "Discord"
-forbid_text "$ROOT/docs/architecture/00-overview.md" "ClickUp"
-forbid_text "$ROOT/docs/architecture/00-overview.md" "Excel"
-forbid_text "$ROOT/docs/architecture/00-overview.md" "PowerPoint"
-forbid_text "$ROOT/docs/architecture/00-overview.md" "extreme cost"
-forbid_text "$ROOT/site/index.html" "completely eliminate"
-forbid_text "$ROOT/site/index.html" "Eliminating execution risk"
-forbid_text "$ROOT/site/index.html" "frontier safety standards"
+
+forbid_literal_fixture "4167656e7420456d706c6f796565" "deprecated role framing"
+forbid_literal_fixture "536c61636b" "vendor-specific collaboration example"
+forbid_literal_fixture "446973636f7264" "vendor-specific collaboration example"
+forbid_literal_fixture "436c69636b5570" "vendor-specific collaboration example"
+forbid_literal_fixture "457863656c" "artifact-specific output example"
+forbid_literal_fixture "506f776572506f696e74" "artifact-specific output example"
+forbid_literal_fixture "65787472656d6520636f7374" "cost overclaim"
+forbid_literal_fixture "636f6d706c6574656c7920656c696d696e617465" "absolute-risk overclaim"
+forbid_literal_fixture "456c696d696e6174696e6720657865637574696f6e207269736b" "absolute-risk headline"
+forbid_literal_fixture "66726f6e7469657220736166657479207374616e6461726473" "standards overclaim"
+
+forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "4167656e7420456d706c6f796565" "deprecated role framing"
+forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "536c61636b" "vendor-specific collaboration example"
+forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "446973636f7264" "vendor-specific collaboration example"
+forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "436c69636b5570" "vendor-specific collaboration example"
+forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "457863656c" "artifact-specific output example"
+forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "506f776572506f696e74" "artifact-specific output example"
+forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "65787472656d6520636f7374" "cost overclaim"
+forbid_hex_text "$ROOT/site/index.html" "636f6d706c6574656c7920656c696d696e617465" "absolute-risk overclaim"
+forbid_hex_text "$ROOT/site/index.html" "456c696d696e6174696e6720657865637574696f6e207269736b" "absolute-risk headline"
+forbid_hex_text "$ROOT/site/index.html" "66726f6e7469657220736166657479207374616e6461726473" "standards overclaim"
 
 echo "public docs contract tests passed"
