@@ -1,14 +1,14 @@
 # agent-vm
 
-**A secure, governed substrate for hosting persistent AI Agent Employees as trusted collaborators.**
+**A framework-agnostic sandbox skeleton for governed AI-agent workloads that are treated as untrusted.**
 
-This public **reference implementation + acceptance suite** demonstrates how to transition AI agents from isolated, session-bound conversational interfaces into governed, persistent team collaborators that live inside group workspaces (Slack, Discord, ClickUp) alongside human employees. It enforces strict runtime isolation, exact-commit promotion, audit logging, and default-deny egress.
+This public **reference implementation + acceptance suite** demonstrates how to host AI-agent workloads inside governed, persistent runtime layers without coupling the substrate to any single agent framework or collaboration product. It enforces strict runtime isolation, exact-commit promotion, audit logging, and default-deny egress.
 
-The architecture models a high-efficiency team substrate where employees delegate repeatable workflows to autonomous digital workers, which are executed securely on a private virtual machine.
+The architecture models an operator-controlled sandbox skeleton where approved queues, collaboration surfaces, transcripts, external files, API responses, and structured outputs are handled through auditable containment boundaries.
 
 ## Portfolio signal
 
-This repository demonstrates how AI agents can be run as governed, persistent digital workers rather than loose chat interfaces. It is directly relevant to enterprise AI automation, workspace collaboration, platform engineering, and IT governance where agents must securely access on-disk files, join meeting calls to compliantly extract transcripts, and generate highly-polished, brand-conforming assets (Excel, PowerPoints) directly back to the team.
+This repository demonstrates how AI agents can be run as governed workloads rather than loose chat interfaces. It is directly relevant to enterprise AI automation, workspace collaboration, platform engineering, and IT governance where agents must process external files, approved transcripts, API responses, and structured outputs inside auditable containment boundaries.
 
 ## What this proves
 
@@ -47,7 +47,7 @@ This repository demonstrates how AI agents can be run as governed, persistent di
 > **Reference implementation + acceptance suite.** Every host, network, account, and identifier here
 > is illustrative (`example-network`, `platform-host`, `agent-runtime`). Nothing points at real
 > infrastructure, and no secrets are present — secret *references* only. The repository proves a
-> reproducible lab skeleton and its validation checks, not a hosted managed product.
+> reproducible lab skeleton and executable validation checks, not a hosted managed product.
 
 ## Architecture at a glance
 
@@ -91,14 +91,14 @@ flowchart TB
 
 ## Why this matters
 
-Most organizations use AI via isolated browser tabs. This model lacks team visibility, fragments context, and relies on manual copying and pasting. Moving to a persistent **AI Agent Employee** model—where agents live inside team channels (Slack, Discord) to collaborate alongside humans—is far more powerful, but introduces major security risks.
+Most organizations use AI through isolated browser tabs or ad hoc automation. This model lacks team visibility, fragments context, and relies on manual copying and pasting. Moving agent workloads into persistent collaboration paths is more powerful, but it introduces execution, credential, and data-boundary risks.
 
-AI agents execute tool calls, hold credentials, reach local file shares, and can be *steered by untrusted input* (prompt injection). This platform solves these concerns by providing:
+AI agent workloads execute tool calls, touch external data, invoke APIs, and can be steered by untrusted input. This reference skeleton addresses those concerns by treating agent workloads as governed and untrusted:
 
-1. **Persistent Unified Context:** The autonomous digital worker can securely access team files on-disk in the VM, allowing it to produce highly-polished, brand-compliant deliverables (Excel sheets, PowerPoint decks) directly back to Slack or ClickUp.
-2. **Compliant Meeting Extraction:** The agent can safely join meeting calls (Google Meet/Zoom) to gather transcripts and compliantly extract action items and structured reports.
-3. **Repeatable Workflow Skills:** Human team members assign repeatable workflows (or skills) to the agent in group chats, which are executed inside the secure, default-deny virtual machine.
-4. **Extreme Cost Savings:** Automated execution of multi-step processes on isolated, predictable VM environments dramatically cuts down engineering overhead and manual task execution.
+1. **Persistent bounded context:** Agent workloads can process approved queues, transcripts, external files, API responses, and structured outputs inside the isolated substrate.
+2. **Auditable containment boundaries:** File, network, credential, and tool access are routed through default-deny controls with explicit evidence for what ran.
+3. **Repeatable workflow execution:** Operators can route durable workflows through the promotion control plane, isolation substrate, and governance overlay instead of relying on one-off local state.
+4. **Predictable operating model:** Reproducible environments make agent automation easier to review, rerun, roll back, and verify without overclaiming turnkey production readiness.
 
 Running several autonomous digital workers safely on shared infrastructure aligns with common security practices used by mature infrastructure teams: SLOs and canaries, explicit release promotion, supply-chain integrity, tool allowlists, egress controls, evidence-backed rollback, and governance proportional to blast radius.
 
