@@ -16,21 +16,30 @@
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="agent-vm home">
-        <span class="brand-mark" aria-hidden="true">
-          <span class="brand-fallback">av</span>
-          <img
-            src="assets/sam-github-avatar.jpg"
-            alt=""
-            decoding="async"
-          />
-        </span>
-        <span class="brand-copy">
-          <span>agent-vm</span>
-          <small>controlled agent runtime substrate</small>
-        </span>
-      </a>
-      <nav class="nav-links" aria-label="Page sections">
+      <div class="header-main-row">
+        <a class="brand" href="#top" aria-label="agent-vm home">
+          <span class="brand-mark" aria-hidden="true">
+            <span class="brand-fallback">av</span>
+            <img
+              src="assets/sam-github-avatar.jpg"
+              alt=""
+              decoding="async"
+            />
+          </span>
+          <span class="brand-copy">
+            <span>agent-vm</span>
+            <small>controlled agent runtime substrate</small>
+          </span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="12" x2="20" y2="12" class="line-mid"></line>
+            <line x1="4" y1="6" x2="20" y2="6" class="line-top"></line>
+            <line x1="4" y1="18" x2="20" y2="18" class="line-bot"></line>
+          </svg>
+        </button>
+      </div>
+      <nav class="nav-links" id="nav-links" aria-label="Page sections">
         <a href="#layers">Layers</a>
         <a href="#validated">Validated</a>
         <a href="#docs">Docs</a>
@@ -70,10 +79,16 @@
             <code>boundary.map</code>
           </div>
           <h2 id="diagram-title" class="sr-only">Architecture trust boundary diagram</h2>
-          <img
-            src="assets/trust-boundary.svg"
-            alt="Operator requests pass through a promotion control plane into an isolation substrate, with governance gates for signed services and teardown jobs."
-          />
+          <button class="diagram-trigger" id="diagram-trigger" aria-label="Zoom trust boundary map">
+            <img
+              src="assets/trust-boundary.svg"
+              alt="Operator requests pass through a promotion control plane into an isolation substrate, with governance gates for signed services and teardown jobs."
+            />
+            <span class="zoom-indicator">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+              Click to expand
+            </span>
+          </button>
         </aside>
       </section>
 
@@ -308,5 +323,73 @@
       </p>
       <a href="https://github.com/sambegui/agent-vm">View repository</a>
     </footer>
+
+    <!-- Trust Boundary Lightbox Modal -->
+    <div id="diagram-modal" class="diagram-modal" aria-hidden="true" role="dialog" aria-label="Trust Boundary Map lightbox">
+      <button class="modal-close" id="modal-close" aria-label="Close lightbox">&times;</button>
+      <div class="modal-content">
+        <img src="assets/trust-boundary.svg" alt="Trust Boundary Map" />
+      </div>
+    </div>
+
+    <!-- Client-side Interactive Navigation & Modal Scripts -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Hamburger Menu Toggle
+        const toggle = document.getElementById('menu-toggle');
+        const header = document.querySelector('.site-header');
+        if (toggle && header) {
+          toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = header.classList.toggle('menu-open');
+            toggle.setAttribute('aria-expanded', isOpen);
+          });
+          // Close menu when clicking links
+          const links = header.querySelectorAll('.nav-links a');
+          links.forEach(link => {
+            link.addEventListener('click', () => {
+              header.classList.remove('menu-open');
+              toggle.setAttribute('aria-expanded', 'false');
+            });
+          });
+          // Close menu when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!header.contains(e.target)) {
+              header.classList.remove('menu-open');
+              toggle.setAttribute('aria-expanded', 'false');
+            }
+          });
+        }
+
+        // Diagram Lightbox Trigger
+        const trigger = document.getElementById('diagram-trigger');
+        const modal = document.getElementById('diagram-modal');
+        const closeBtn = document.getElementById('modal-close');
+        if (trigger && modal && closeBtn) {
+          trigger.addEventListener('click', () => {
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden'; // Lock scrolling
+          });
+          const closeModal = () => {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = ''; // Unlock scrolling
+          };
+          closeBtn.addEventListener('click', closeModal);
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.classList.contains('modal-content')) {
+              closeModal();
+            }
+          });
+          // Close on escape key
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+              closeModal();
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
