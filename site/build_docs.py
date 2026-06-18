@@ -339,6 +339,15 @@ def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
         md_text
     )
 
+    # Resolve links to repo source files outside the docs tree (../../<path>) to
+    # absolute GitHub blob URLs. The published static site contains only rendered
+    # docs, not the source tree, so these would otherwise 404.
+    md_text = re.sub(
+        r'\]\(\.\./\.\./([^)]+)\)',
+        r'](https://github.com/sambegui/agent-vm/blob/main/\1)',
+        md_text
+    )
+
     # Resolve local relative links
     md_text = re.sub(r'(\d+)-([a-zA-Z0-9_-]+)\.md', r'\1-\2.html', md_text)
     md_text = re.sub(r'(?<!/)(?<![a-zA-Z0-9_-])([a-zA-Z0-9_-]+)\.md', r'\1.html', md_text)

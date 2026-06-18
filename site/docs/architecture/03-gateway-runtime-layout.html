@@ -386,7 +386,7 @@ user</strong> can still read each other's files. Production isolation therefore 
 per-profile allowlist — writing only its own <code>home/</code> and <code>logs/</code> (<code>ReadWritePaths</code>). The runtime tree
 (<code>current</code> → an immutable release) stays <strong>read-only</strong>. Untrusted code is never run in the gateway; it
 is escalated to a <strong>Tier-2 microVM</strong>. See
-<a href="../../deploy/agent-gateway/systemd/agent-gateway@.service"><code>agent-gateway@.service</code></a>.</p>
+<a href="https://github.com/sambegui/agent-vm/blob/main/deploy/agent-gateway/systemd/agent-gateway@.service"><code>agent-gateway@.service</code></a>.</p>
 <h3 id="two-modes">Two modes</h3>
 <ul>
 <li><strong>Convenience mode</strong> — one OS user, one home, many app-state profiles, one dashboard switcher. Fine
