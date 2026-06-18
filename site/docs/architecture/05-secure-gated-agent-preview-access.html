@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>spec · agent-vm specs</title>
+  <meta name="description" content="Agent previews are useful because reviewers need to see the actual running surface, not only a screenshot or a local build log. They are risky because an agent runtime or developme">
+  <title>05 — Secure gated agent preview access · agent-vm specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -533,7 +534,7 @@ APPROVED_TAILSCALE_PREVIEW_WRAPPER=&quot;&lt;approved-tailscale-preview-wrapper&
 <p>Create runtime-only state outside the repository:</p>
 <pre><code class="language-bash"># Group-readable (m 0750) with appropriate group ownership so the non-root agent user can access the socket
 sudo install -d -m 0750 -o root -g &lt;agent-operator-group&gt; &quot;$PREVIEW_DIR&quot;
-sudo install -m 0600 -o root -g &lt;agent-operator-group&gt; &quot;$AUTH_KEY_FILE&quot; &quot;$PREVIEW_DIR/authkey&quot;
+sudo install -m 0600 -o root -g &lt;agent-operator-group&gt; &quot;$AUTH_KEY_FILE&quot; &quot;$PREVIEW_DIR/credential&quot;
 </code></pre>
 <p>Start a transient daemon with in-memory identity state where supported:</p>
 <blockquote>
@@ -551,7 +552,7 @@ value is read from <code>&lt;auth-key-file&gt;</code> without being printed, log
 into a transcript.</p>
 <pre><code class="language-bash">sudo &quot;$APPROVED_TAILSCALE_PREVIEW_WRAPPER&quot; up \
   --socket &quot;$TAILSCALE_SOCKET&quot; \
-  --auth-key-file &quot;$PREVIEW_DIR/authkey&quot; \
+  --auth-key-file &quot;$PREVIEW_DIR/credential&quot; \
   --hostname &quot;$PREVIEW_HOSTNAME&quot; \
   --advertise-tags tag:agent-preview \
   --reset \

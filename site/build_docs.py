@@ -2,6 +2,7 @@
 import os
 import re
 import sys
+from html import escape
 
 try:
     import markdown
@@ -14,6 +15,7 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{description}">
   <title>{title} · agent-vm specs</title>
   <style>
     :root {{
@@ -313,10 +315,20 @@ TEMPLATE = """<!DOCTYPE html>
 """
 
 def extract_title(html_content, default="spec"):
-    match = re.search(r'<h1>(.*?)</h1>', html_content, re.IGNORECASE)
+    match = re.search(r'<h1[^>]*>(.*?)</h1>', html_content, re.IGNORECASE | re.DOTALL)
     if match:
         return re.sub('<[^<]+?>', '', match.group(1)).strip()
     return default
+
+def extract_description(html_content, fallback):
+    match = re.search(r'<p>(.*?)</p>', html_content, re.IGNORECASE | re.DOTALL)
+    if not match:
+        return fallback
+    text = re.sub('<[^<]+?>', '', match.group(1))
+    text = re.sub(r'\s+', ' ', text).strip()
+    if not text:
+        return fallback
+    return text[:180]
 
 def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
     with open(src_path, 'r', encoding='utf-8') as f:
@@ -356,6 +368,7 @@ def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
 
     html_body = markdown.markdown(md_text, extensions=['tables', 'fenced_code', 'toc'])
     title = extract_title(html_body)
+    description = escape(extract_description(html_body, title), quote=True)
     
     # Generate pagination HTML
     prev_html = ""
@@ -402,6 +415,7 @@ def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
 
     full_html = TEMPLATE.format(
         title=title,
+        description=description,
         content=html_body,
         back_depth=back_depth,
         prev_html=prev_html,

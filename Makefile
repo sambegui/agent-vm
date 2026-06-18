@@ -7,12 +7,14 @@ AGENT_VM_USER ?= agent
 AGENT_VM_SSH ?= $(AGENT_VM_NAME)
 AGENT_VM_PUBKEY ?= $(HOME)/.ssh/$(AGENT_VM_NAME).pub
 AGENT_VM_IMGDIR ?= /var/lib/libvirt/images/$(AGENT_VM_NAME)
+DOCS_PYTHON ?= python3
+DOCS_REQUIREMENTS ?= requirements-docs.txt
 
 BASH_SCRIPTS := $(shell grep -rl '^#!/usr/bin/env bash' control-plane platform | sort)
 YAML_FILES := $(shell find .github deploy docs examples platform -type f \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null | sort)
 PLATFORM_TESTS := $(shell find platform/tests -maxdepth 1 -type f -name '*-test' 2>/dev/null | sort)
 
-.PHONY: ci syntax lint yaml test provision docs
+.PHONY: ci syntax lint yaml test provision docs docs-build docs-deps
 
 ci: syntax lint yaml test
 
@@ -61,5 +63,14 @@ provision:
 	platform/vm/provision-vm
 	AGENT_VM_SSH="$(AGENT_VM_SSH)" platform/vm/bootstrap-runtime
 
-docs:
-	@echo "Start with README.md, then docs/operations/operator-quickstart.md and docs/verification.md"
+docs: docs-build
+
+docs-deps:
+	$(DOCS_PYTHON) -m pip install -r $(DOCS_REQUIREMENTS)
+
+docs-build:
+	@$(DOCS_PYTHON) -c 'import markdown' >/dev/null 2>&1 || { \
+		echo "Missing docs dependency. Run: $(DOCS_PYTHON) -m pip install -r $(DOCS_REQUIREMENTS)" >&2; \
+		exit 1; \
+	}
+	$(DOCS_PYTHON) site/build_docs.py

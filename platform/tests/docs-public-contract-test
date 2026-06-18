@@ -70,12 +70,26 @@ require_file() {
 
 CASE_STUDY="$ROOT/docs/evidence/governed-agent-workload-case-study.md"
 
+require_file "$ROOT/requirements-docs.txt"
+require_text "$ROOT/requirements-docs.txt" "Markdown=="
+require_text "$ROOT/Makefile" "docs-build:"
 require_text "$ROOT/README.md" "reference implementation + acceptance suite"
 require_text "$ROOT/README.md" "governed-agent-workload-case-study.md"
+require_text "$ROOT/README.md" "demonstrates reference patterns for strict runtime isolation"
+require_text "$ROOT/README.md" "deploy-time cosign verification remains a hardening item"
 require_text "$ROOT/docs/architecture/00-overview.md" "governed, persistent agent workloads"
 require_text "$ROOT/docs/architecture/00-overview.md" "compromised or misdirected"
+require_text "$ROOT/docs/architecture/04-production-governance.md" "evidence-gated production use"
+require_text "$ROOT/docs/evidence/substrate-validation-receipt.md" "cosign signing output"
 require_text "$ROOT/site/index.html" "probabilistic workloads"
 require_text "$ROOT/site/index.html" "governed-agent-workload-case-study.html"
+require_text "$ROOT/site/index.html" 'rel="canonical"'
+require_text "$ROOT/site/index.html" 'property="og:title"'
+require_text "$ROOT/site/index.html" 'name="twitter:card"'
+require_text "$ROOT/site/index.html" 'aria-controls="nav-links"'
+require_text "$ROOT/site/docs/architecture/00-overview.html" "<title>00 — Architecture overview · agent-vm specs</title>"
+require_text "$ROOT/site/docs/architecture/00-overview.html" '<meta name="description"'
+require_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" "<title>Case Study: Treating an Agent as an Untrusted Workload · agent-vm specs</title>"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "reference implementation + acceptance suite"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "make provision"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "AGENT_VM_SSH"
@@ -119,6 +133,11 @@ forbid_literal_fixture "65787472656d6520636f7374" "cost overclaim"
 forbid_literal_fixture "636f6d706c6574656c7920656c696d696e617465" "absolute-risk overclaim"
 forbid_literal_fixture "456c696d696e6174696e6720657865637574696f6e207269736b" "absolute-risk headline"
 forbid_literal_fixture "66726f6e7469657220736166657479207374616e6461726473" "standards overclaim"
+forbid_literal_fixture "7374726963742072756e74696d652069736f6c6174696f6e2c2065786163742d636f6d6d69742070726f6d6f74696f6e2c206175646974206c6f6767696e672c20616e642064656661756c742d64656e7920656772657373" "bundled enforcement overclaim"
+forbid_literal_fixture "6465706c6f792d74696d6520766572696669636174696f6e" "unsupported verification wording"
+forbid_literal_fixture "7472757374656420696e2070726f64756374696f6e" "trust wording"
+forbid_literal_fixture "7365637572656c7920686f7374696e67206167656e7420776f726b6c6f616473" "older llm framing"
+forbid_literal_fixture "636f7369676e20766572696669636174696f6e206f7574707574" "unsupported receipt evidence"
 
 forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "4167656e7420456d706c6f796565" "deprecated role framing"
 forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "536c61636b" "vendor-specific collaboration example"
@@ -130,5 +149,13 @@ forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "65787472656d6520636f73
 forbid_hex_text "$ROOT/site/index.html" "636f6d706c6574656c7920656c696d696e617465" "absolute-risk overclaim"
 forbid_hex_text "$ROOT/site/index.html" "456c696d696e6174696e6720657865637574696f6e207269736b" "absolute-risk headline"
 forbid_hex_text "$ROOT/site/index.html" "66726f6e7469657220736166657479207374616e6461726473" "standards overclaim"
+forbid_hex_text "$ROOT/README.md" "7374726963742072756e74696d652069736f6c6174696f6e2c2065786163742d636f6d6d69742070726f6d6f74696f6e2c206175646974206c6f6767696e672c20616e642064656661756c742d64656e7920656772657373" "bundled enforcement overclaim"
+forbid_hex_text "$ROOT/README.md" "6465706c6f792d74696d6520766572696669636174696f6e" "unsupported verification wording"
+forbid_hex_text "$ROOT/docs/architecture/04-production-governance.md" "6465706c6f792d74696d6520766572696669636174696f6e" "unsupported verification wording"
+forbid_hex_text "$ROOT/docs/architecture/04-production-governance.md" "7472757374656420696e2070726f64756374696f6e" "trust wording"
+forbid_hex_text "$ROOT/docs/evidence/substrate-validation-receipt.md" "636f7369676e20766572696669636174696f6e206f7574707574" "unsupported receipt evidence"
+forbid_hex_text "$ROOT/site/docs/llms.txt" "7365637572656c7920686f7374696e67206167656e7420776f726b6c6f616473" "older llm framing"
+require_text "$ROOT/site/docs/llms.txt" "governing untrusted autonomous AI-agent workloads"
+require_text "$ROOT/site/docs/llms.txt" "Reviewer path"
 
 echo "public docs contract tests passed"

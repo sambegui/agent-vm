@@ -7,6 +7,14 @@
       name="description"
       content="agent-vm is a public reference architecture for governing untrusted autonomous AI-agent workloads with explicit trust boundaries, rollback, audit, and validation evidence."
     />
+    <link rel="canonical" href="https://agent-vm.sabe.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="agent-vm — governed agent workload architecture" />
+    <meta property="og:description" content="A public reference architecture for governing untrusted autonomous AI-agent workloads with explicit trust boundaries, rollback, audit, and validation evidence." />
+    <meta property="og:url" content="https://agent-vm.sabe.dev/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="agent-vm — governed agent workload architecture" />
+    <meta name="twitter:description" content="A public reference architecture for governing untrusted autonomous AI-agent workloads with explicit trust boundaries, rollback, audit, and validation evidence." />
     <title>agent-vm — governed agent workload architecture</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon" href="favicon.ico" sizes="any" />
@@ -31,7 +39,7 @@
             <small>governed agent workload architecture</small>
           </a>
         </div>
-        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">
           <svg class="icon-menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -375,16 +383,22 @@
         const trigger = document.getElementById('diagram-trigger');
         const modal = document.getElementById('diagram-modal');
         const closeBtn = document.getElementById('modal-close');
+        let lastFocusedElement = null;
         if (trigger && modal && closeBtn) {
           trigger.addEventListener('click', () => {
+            lastFocusedElement = document.activeElement;
             modal.classList.add('active');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden'; // Lock scrolling
+            closeBtn.focus();
           });
           const closeModal = () => {
             modal.classList.remove('active');
             modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = ''; // Unlock scrolling
+            if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+              lastFocusedElement.focus();
+            }
           };
           closeBtn.addEventListener('click', closeModal);
           modal.addEventListener('click', (e) => {

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>spec · agent-vm specs</title>
+  <meta name="description" content="The substrate makes workloads isolatable; governance decides what a given workload is allowed to be, and gates it from lab to production with controls proportional to its blast rad">
+  <title>04 — Production governance · agent-vm specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -439,7 +440,7 @@ terminal/file/delegation tools.</p>
 <li><strong>Default-deny egress</strong> — internet, arbitrary DNS, work-plane APIs, model/messaging APIs all denied
   unless explicitly allowed; a denied egress emits an audit event.</li>
 <li><strong>Signed supply chain</strong> — exact source SHA → digest-pinned image → cosign signature → SBOM/provenance
-  ref → <strong>deploy-time</strong> verification (see <code>01</code>).</li>
+  ref → explicit verification gates. Deploy-time cosign verification remains a hardening item.</li>
 </ul>
 <h2 id="secure-gated-preview-access">Secure gated preview access</h2>
 <p>Preview surfaces are governed exposure, not casual tunnels. A development or agent-preview service may
@@ -463,8 +464,8 @@ supports.</p>
 <code>egress.denied</code>, <code>secret.loaded</code>, <code>alignment.checked</code>, <code>rollback.executed</code> — shipped <strong>off-box</strong>,
 append-only, no secret values. <strong>Rollback is a tested drill</strong> (endpoint and manifest-digest), with a
 recorded receipt, not an assumption.</p>
-<p>This overlay is how a new agent crosses from "runs in the lab" to "trusted in production" without the
-platform having to trust the agent.</p>
+<p>This overlay is how a new agent crosses from "runs in the lab" to evidence-gated production use
+without the platform having to trust the agent.</p>
 <h2 id="dashboards-control-plane">Dashboards &amp; control plane</h2>
 <p>A single dashboard that can edit every profile's home is a powerful cross-profile authority — it
 collapses the isolation it sits above. The production pattern:</p>

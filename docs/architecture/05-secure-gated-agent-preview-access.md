@@ -190,7 +190,7 @@ Create runtime-only state outside the repository:
 ```bash
 # Group-readable (m 0750) with appropriate group ownership so the non-root agent user can access the socket
 sudo install -d -m 0750 -o root -g <agent-operator-group> "$PREVIEW_DIR"
-sudo install -m 0600 -o root -g <agent-operator-group> "$AUTH_KEY_FILE" "$PREVIEW_DIR/authkey"
+sudo install -m 0600 -o root -g <agent-operator-group> "$AUTH_KEY_FILE" "$PREVIEW_DIR/credential"
 ```
 
 Start a transient daemon with in-memory identity state where supported:
@@ -213,7 +213,7 @@ into a transcript.
 ```bash
 sudo "$APPROVED_TAILSCALE_PREVIEW_WRAPPER" up \
   --socket "$TAILSCALE_SOCKET" \
-  --auth-key-file "$PREVIEW_DIR/authkey" \
+  --auth-key-file "$PREVIEW_DIR/credential" \
   --hostname "$PREVIEW_HOSTNAME" \
   --advertise-tags tag:agent-preview \
   --reset \

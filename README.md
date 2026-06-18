@@ -2,7 +2,7 @@
 
 **A framework-agnostic sandbox skeleton for governed AI-agent workloads that are treated as untrusted.**
 
-This public **reference implementation + acceptance suite** demonstrates how to host AI-agent workloads inside governed, persistent runtime layers without coupling the substrate to any single agent framework or collaboration product. It enforces strict runtime isolation, exact-commit promotion, audit logging, and default-deny egress.
+This public **reference implementation + acceptance suite** demonstrates how to host AI-agent workloads inside governed, persistent runtime layers without coupling the substrate to any single agent framework or collaboration product. It demonstrates reference patterns for strict runtime isolation and exact-commit promotion, with audit logging and default-deny egress treated as evidence-gated controls; the evidence is split between static checks, host-validated lab receipts, and workload-specific canary packets.
 
 The architecture models an operator-controlled sandbox skeleton where approved queues, collaboration surfaces, transcripts, external files, API responses, and structured outputs are handled through auditable containment boundaries.
 
@@ -43,8 +43,8 @@ This repository demonstrates how AI agents can be run as governed workloads rath
 |---|---|---|
 | **Archetype A — immutable release** | exercised | Python orchestrator-style agent promoted by exact commit with dry-run/apply and rollback flow. |
 | **Archetype B — package install** | captured/design | Node package-install workflows are documented with explicit stubs until package distribution and rollback mechanics are implemented. |
-| **Tier-1 signed service** | host-validated | Local registry, cosign signature, digest-pinned manifest, reconcile/align flow. |
-| **Tier-2 microVM sandbox** | host-validated | Kata/containerd job boots, default-deny egress is tested, timeout/teardown are verified. |
+| **Tier-1 signed service** | host-validated | Local registry, cosign signing, digest-pinned manifest, reconcile/align flow; deploy-time cosign verification remains a hardening item. |
+| **Tier-2 microVM sandbox** | host-validated | Runner validates `egress.default=deny`; lab receipts show denied direct-IP/DNS probes, timeout, and teardown. |
 | **Production platform** | not claimed | This is a reference architecture and validated skeleton, not a turnkey managed platform. |
 
 > **Reference implementation + acceptance suite.** Every host, network, account, and identifier here
@@ -207,7 +207,7 @@ and [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-va
 ## Design principles
 
 - **Agent-agnostic** — agents are workloads, not the architecture.
-- **Immutable & verifiable** — exact commits, signed digests, deploy-time verification, no editing live.
+- **Immutable & verifiable** — exact commits, signed digests, explicit verification gates, no editing live; deploy-time cosign verification remains a hardening item.
 - **Dry-run by default** — every mutation previews before it acts; `--apply` is explicit.
 - **Least authority, fail-closed** — default-deny egress, explicit tool allowlists, refuse to serve on policy-load failure.
 - **Evidence over assertion** — status re-derives ground truth; deploys carry provenance; rollback is proven, not assumed.

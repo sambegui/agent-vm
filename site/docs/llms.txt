@@ -1,6 +1,6 @@
 # agent-vm LLM guide
 
-agent-vm is a public reference implementation and validation suite for securely hosting agent workloads inside governed, isolated runtime layers. Treat it as a portfolio-grade architecture and reproducible skeleton, not as a claim that every production operation is turnkey.
+agent-vm is a public reference implementation and validation suite for governing untrusted autonomous AI-agent workloads inside isolated runtime layers. Treat it as a portfolio-grade architecture and reproducible skeleton, not as a claim that every production operation is turnkey.
 
 Start here:
 - Home: /
@@ -17,6 +17,7 @@ Start here:
 - Validation receipt: /docs/evidence/substrate-validation-receipt.html
 
 Reading paths:
+- Reviewer path: home, governed workload case study, verification model, then architecture overview.
 - Short architecture answer: 00-overview, then verification.
 - Runtime isolation answer: 01-isolation-substrate, then threat model, then governed workload case study.
 - Release and rollback answer: 02-promotion-control-plane, then verification.

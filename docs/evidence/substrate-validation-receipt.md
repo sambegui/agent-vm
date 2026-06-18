@@ -57,7 +57,7 @@ This receipt does **not** claim:
 Before any real workload is called production-ready, capture:
 
 - exact source SHA and artifact digest;
-- cosign verification output;
+- cosign signing output and digest reference;
 - SBOM/provenance reference;
 - tool-policy hash and fail-closed test;
 - auth allow/deny events without token values;

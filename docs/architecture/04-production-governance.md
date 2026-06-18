@@ -82,7 +82,7 @@ examples/manifests/tool-policy.example.yaml   # allowed/denied tools + schema ha
 - **Default-deny egress** — internet, arbitrary DNS, work-plane APIs, model/messaging APIs all denied
   unless explicitly allowed; a denied egress emits an audit event.
 - **Signed supply chain** — exact source SHA → digest-pinned image → cosign signature → SBOM/provenance
-  ref → **deploy-time** verification (see `01`).
+  ref → explicit verification gates. Deploy-time cosign verification remains a hardening item.
 
 ## Secure gated preview access
 
@@ -115,8 +115,8 @@ Minimum audit events — `service.start/stop`, `auth.accepted/denied`, `tool.all
 append-only, no secret values. **Rollback is a tested drill** (endpoint and manifest-digest), with a
 recorded receipt, not an assumption.
 
-This overlay is how a new agent crosses from "runs in the lab" to "trusted in production" without the
-platform having to trust the agent.
+This overlay is how a new agent crosses from "runs in the lab" to evidence-gated production use
+without the platform having to trust the agent.
 
 ## Dashboards & control plane
 
