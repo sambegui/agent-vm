@@ -1040,7 +1040,9 @@ code {
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                border-radius 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .header-main-row {
@@ -1100,16 +1102,21 @@ code {
 
   /* Dropdown Nav Links on Mobile */
   .nav-links {
-    display: none;
+    display: flex;
     flex-direction: column;
     width: 100%;
     gap: 0.35rem;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
     margin-top: 0;
     padding-top: 0;
-    border-top: none;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity 0.3s, transform 0.3s;
+    border-top: 1px solid transparent;
+    transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.25s ease,
+                margin-top 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                padding-top 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
   }
 
   .site-header.menu-open {
@@ -1118,9 +1125,8 @@ code {
   }
 
   .site-header.menu-open .nav-links {
-    display: flex;
+    max-height: 250px;
     opacity: 1;
-    transform: translateY(0);
     margin-top: 0.6rem;
     padding-top: 0.6rem;
     border-top: 1px solid rgba(142, 246, 255, 0.1);
