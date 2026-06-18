@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+RUNNER="$ROOT/platform/sandbox/sandbox-runner"
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+fakebin="$tmp/bin"
+mkdir -p "$fakebin"
+
+cat > "$fakebin/sudo" <<'SH'
+#!/usr/bin/env bash
+echo "sudo $*" >> "$CALL_LOG"
+exec "$@"
+SH
+
+cat > "$fakebin/timeout" <<'SH'
+#!/usr/bin/env bash
+echo "timeout $*" >> "$CALL_LOG"
+shift
+exec "$@"
+SH
+
+cat > "$fakebin/ctr" <<'SH'
+#!/usr/bin/env bash
+echo "ctr $*" >> "$CALL_LOG"
+case "$1 ${2:-}" in
+  "image pull")
+    exit 0
+    ;;
+  "run --rm")
+    echo "fake microvm output"
+    exit "${FAKE_RUN_RC:-0}"
+    ;;
+  "tasks kill")
+    exit 0
+    ;;
+  "containers rm")
+    exit 0
+    ;;
+  "containers list")
+    count_file="$TMPDIR_FAKE/containers-list-count"
+    count="$(cat "$count_file" 2>/dev/null || echo 0)"
+    count=$((count + 1))
+    echo "$count" > "$count_file"
+    if [ "$count" -eq 1 ] && [ -n "${FAKE_STALE_CONTAINERS:-}" ]; then
+      printf '%s\n' "$FAKE_STALE_CONTAINERS"
+    fi
+    exit 0
+    ;;
+esac
+echo "unexpected ctr args: $*" >&2
+exit 2
+SH
+
+chmod +x "$fakebin/sudo" "$fakebin/timeout" "$fakebin/ctr"
+
+write_spec() {
+  cat > "$tmp/spec.json" <<'JSON'
+{
+  "jobId": "demo-001",
+  "requester": "hello",
+  "image": "127.0.0.1:5000/busybox@sha256:7b9a320334d446845c17edcfad9bdd1d54ad05c84c35b117e8fa7d830b9fcce5",
+  "command": ["sh", "-c", "echo hello-from-microvm"],
+  "egress": { "default": "deny" },
+  "timeout": 30
+}
+JSON
+}
+
+run_runner() {
+  : > "$CALL_LOG"
+  rm -f "$TMPDIR_FAKE/containers-list-count"
+  PATH="$fakebin:$PATH" "$RUNNER" "$tmp/spec.json"
+}
+
+extract_run_container() {
+  grep '^ctr run --rm ' "$CALL_LOG" | sed -E 's/^ctr run --rm --runtime [^ ]+ [^ ]+ ([^ ]+) .*/\1/'
+}
+
+assert_contains() {
+  local needle="$1"
+  if ! grep -Fq "$needle" "$CALL_LOG"; then
+    echo "missing log line: $needle" >&2
+    echo "--- call log ---" >&2
+    cat "$CALL_LOG" >&2
+    exit 1
+  fi
+}
+
+assert_not_contains() {
+  local needle="$1"
+  if grep -Fq "$needle" "$CALL_LOG"; then
+    echo "unexpected log line: $needle" >&2
+    echo "--- call log ---" >&2
+    cat "$CALL_LOG" >&2
+    exit 1
+  fi
+}
+
+test_unique_container_id() {
+  CALL_LOG="$tmp/unique.log"
+  TMPDIR_FAKE="$tmp"
+  export CALL_LOG TMPDIR_FAKE
+  write_spec
+  run_runner >/dev/null
+  ctr_id="$(extract_run_container)"
+  if [ "$ctr_id" = "job-demo-001" ]; then
+    echo "container id was not made unique: $ctr_id" >&2
+    exit 1
+  fi
+  case "$ctr_id" in
+    job-demo-001-*) ;;
+    *) echo "container id did not keep the job prefix: $ctr_id" >&2; exit 1 ;;
+  esac
+}
+
+test_stale_prefix_preclean_before_pull() {
+  CALL_LOG="$tmp/preclean.log"
+  TMPDIR_FAKE="$tmp"
+  FAKE_STALE_CONTAINERS=$'job-demo-001-old\njob-other'
+  export CALL_LOG TMPDIR_FAKE FAKE_STALE_CONTAINERS
+  write_spec
+  run_runner >/dev/null
+  assert_contains "ctr tasks kill job-demo-001-old"
+  assert_contains "ctr containers rm job-demo-001-old"
+  assert_not_contains "ctr tasks kill job-other"
+  kill_line="$(grep -nF "ctr tasks kill job-demo-001-old" "$CALL_LOG" | head -1 | cut -d: -f1)"
+  pull_line="$(grep -nF "ctr image pull" "$CALL_LOG" | head -1 | cut -d: -f1)"
+  if [ "$kill_line" -ge "$pull_line" ]; then
+    echo "stale cleanup did not happen before image pull" >&2
+    cat "$CALL_LOG" >&2
+    exit 1
+  fi
+}
+
+test_unique_container_id
+test_stale_prefix_preclean_before_pull
+echo "sandbox-runner tests passed"

@@ -11,12 +11,49 @@ timeout_s="$(jq -r '.timeout' "$SPEC")"
 
 case "$image" in *@sha256:*) ;; *) echo "REFUSED: job image not digest-pinned"; exit 1 ;; esac
 [ "$egress" = "deny" ] || { echo "REFUSED: skeleton runner only supports egress.default=deny"; exit 1; }
+case "$jobId" in
+  "" | *[!a-zA-Z0-9_.-]*)
+    echo "REFUSED: jobId must contain only letters, numbers, dot, underscore, or dash"
+    exit 1
+    ;;
+esac
 
-ctr="job-$jobId"
+base_ctr="job-$jobId"
+run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+ctr="$base_ctr-$run_id"
 runtime="${KATA_RUNTIME:-io.containerd.kata.v2}"
-echo "[runner] job=$jobId image=$image egress=$egress timeout=${timeout_s}s runtime=$runtime"
 
+list_job_containers() {
+  sudo ctr containers list -q | awk -v prefix="$base_ctr" '$0 == prefix || index($0, prefix "-") == 1 { print }'
+}
+
+cleanup_container() {
+  local id="${1:?container id required}"
+  sudo ctr tasks kill "$id" >/dev/null 2>&1 || true
+  sudo ctr containers rm "$id" >/dev/null 2>&1 || true
+}
+
+cleanup_current() {
+  cleanup_container "$ctr"
+}
+
+preclean_stale() {
+  local id stale=0
+  while IFS= read -r id; do
+    [ -n "$id" ] || continue
+    stale=$((stale + 1))
+    cleanup_container "$id"
+  done < <(list_job_containers)
+  if [ "$stale" -gt 0 ]; then
+    echo "[runner] precleaned $stale stale container(s) for $base_ctr"
+  fi
+}
+
+echo "[runner] job=$jobId run=$run_id container=$ctr image=$image egress=$egress timeout=${timeout_s}s runtime=$runtime"
+
+preclean_stale
 sudo ctr image pull --plain-http "$image" >/dev/null
+trap cleanup_current EXIT INT TERM
 
 set +e
 timeout "${timeout_s}s" sudo ctr run --rm --runtime "$runtime" "$image" "$ctr" sh -c "exec $cmd_argv"
@@ -24,9 +61,9 @@ rc=$?
 set -e
 
 echo "[runner] exit=$rc"
-sudo ctr tasks kill "$ctr" >/dev/null 2>&1 || true
-sudo ctr containers rm "$ctr" >/dev/null 2>&1 || true
-residual="$(sudo ctr containers list -q | grep -c "^$ctr$" || true)"
+cleanup_current
+residual="$(list_job_containers | wc -l | tr -d ' ')"
 echo "[runner] teardown verified: $residual residual"
 echo "[audit] job=$jobId image=$image egress=$egress exit=$rc teardown=ok"
+trap - EXIT INT TERM
 exit "$rc"

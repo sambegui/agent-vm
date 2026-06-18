@@ -3,9 +3,9 @@ SHELL := /usr/bin/env bash
 BASH_SCRIPTS := $(shell grep -rl '^#!/usr/bin/env bash' control-plane platform | sort)
 YAML_FILES := $(shell find .github deploy docs examples platform -type f \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null | sort)
 
-.PHONY: ci syntax lint yaml docs
+.PHONY: ci syntax lint yaml test docs
 
-ci: syntax lint yaml
+ci: syntax lint yaml test
 
 syntax:
 	@if [ -z "$(BASH_SCRIPTS)" ]; then \
@@ -33,6 +33,9 @@ yaml:
 	else \
 		echo "ruby not installed; skipping YAML parse"; \
 	fi
+
+test:
+	bash platform/tests/sandbox-runner-test
 
 docs:
 	@echo "Start with README.md, then docs/operations/operator-quickstart.md and docs/verification.md"
