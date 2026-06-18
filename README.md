@@ -1,17 +1,14 @@
 # agent-vm
 
-**A validated walking skeleton for safe AI-agent automation infrastructure.**
+**A secure, governed substrate for hosting persistent AI 'Agent Employees' as trusted collaborators.**
 
-`agent-vm` is a public proof-of-work project for the operational layer around tool-using AI agents:
-isolation, dry-run promotion, rollback, audit evidence, and governance proportional to blast radius.
-It starts from one premise: *an AI agent is an untrusted, tool-wielding workload.*
+`agent-vm` is a secure reference architecture and platform skeleton designed to transition AI agents from isolated, context-blind chatbot tabs into governed, persistent team collaborators (the 'Agent Employee' archetype) that live inside group chats (Slack, Discord, ClickUp) alongside human employees. It enforces strict runtime isolation, exact-commit promotion, audit logging, and default-deny egress.
+
+It models a high-efficiency team substrate where employees delegate repeatable workflows to agent employees, which are executed securely on a private VM.
 
 ## Portfolio signal
 
-This repository demonstrates how AI agents can be run as controlled operational workloads, not just
-chat prompts or one-off scripts. It is relevant to AI automation, internal tools, platform
-engineering, LLMOps, and workflow-governance work where agents can touch files, APIs, tickets,
-messages, credentials, or production-like state.
+This repository demonstrates how AI agents can be run as governed, persistent digital employees rather than loose chat interfaces. It is directly relevant to enterprise AI automation, workspace collaboration, platform engineering, and IT governance where agents must securely access on-disk files, join meeting calls to compliantly extract transcripts, and generate highly-polished, brand-conforming assets (Excel, PowerPoints) directly back to the team.
 
 ## What this proves
 
@@ -33,8 +30,9 @@ messages, credentials, or production-like state.
 4. Review [`docs/verification.md`](docs/verification.md) and
    [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-validation-receipt.md)
    for the evidence model.
-5. Read [`SECURITY.md`](SECURITY.md) and [`docs/threat-model.md`](docs/threat-model.md) for trust
-   boundaries, current gaps, and non-goals.
+5. Read [`docs/security-methodology.md`](docs/security-methodology.md), [`SECURITY.md`](SECURITY.md),
+   and [`docs/threat-model.md`](docs/threat-model.md) for methodology, trust boundaries, current gaps,
+   and non-goals.
 
 ## Implementation status
 
@@ -46,9 +44,9 @@ messages, credentials, or production-like state.
 | **Tier-2 microVM sandbox** | host-validated | Kata/containerd job boots, default-deny egress is tested, timeout/teardown are verified. |
 | **Production platform** | not claimed | This is a reference architecture and validated skeleton, not a turnkey managed platform. |
 
-> **Reference architecture.** Every host, address, account, and identifier here is illustrative
-> (`10.0.0.0/24`, `platform-host`, `agent-runtime`). Nothing points at real infrastructure, and no
-> secrets are present — secret *references* only.
+> **Reference architecture.** Every host, network, account, and identifier here is illustrative
+> (`example-network`, `platform-host`, `agent-runtime`). Nothing points at real infrastructure, and
+> no secrets are present — secret *references* only.
 
 ## Architecture at a glance
 
@@ -92,12 +90,43 @@ flowchart TB
 
 ## Why this matters
 
-AI agents are an awkward new workload class: they execute tool calls, hold credentials, reach
-networks and other agents, and can be *steered by untrusted input* (prompt injection, tool poisoning,
-excessive agency). Running several safely on shared infrastructure needs more than `docker run`. This
-platform applies established production discipline — Google SRE (SLOs, error budgets, canaries), AWS
-Well-Architected, supply-chain integrity (Sigstore/cosign, SLSA), MCP / OWASP-LLM tool-security, and
-NIST AI RMF governance — sized for a single host instead of a hyperscaler.
+Most organizations use AI via isolated browser tabs (like ChatGPT or Claude). This model lacks team visibility, fragments context, and relies on manual copying and pasting. Moving to a persistent **Agent Employee** model—where agents live inside team channels (Slack, Discord) to collaborate alongside humans—is far more powerful, but introduces major security risks. 
+
+AI agents execute tool calls, hold credentials, reach local file shares, and can be *steered by untrusted input* (prompt injection). This platform solves these concerns by providing:
+
+1. **Persistent Unified Context:** The agent employee can securely access team files on-disk in the VM, allowing it to produce highly-polished, brand-compliant deliverables (Excel sheets, PowerPoint decks) directly back to Slack or ClickUp.
+2. **Compliant Meeting Extraction:** The agent can safely join meeting calls (Google Meet/Zoom) to gather transcripts and compliantly extract action items and structured reports.
+3. **Repeatable Workflow Skills:** Human team members assign repeatable workflows (or skills) to the agent in group chats, which are executed inside the secure, default-deny virtual machine.
+4. **Extreme Cost Savings:** Automated execution of multi-step processes on isolated, predictable VM environments dramatically cuts down engineering overhead and manual task execution.
+
+Running several agent employees safely on shared infrastructure is aligned with common security practices used by mature infrastructure teams: SLOs and canaries, explicit release promotion, supply-chain integrity, tool allowlists, egress controls, evidence-backed rollback, and governance proportional to blast radius.
+
+## Security methodology
+
+`agent-vm` is not a company-endorsed deployment pattern or a vendor certification. It is a public,
+vendor-neutral reference architecture for applying practical infrastructure security to AI-agent
+workloads:
+
+- **Defense in depth** — runtime, network, release, and operator-workflow controls reinforce each
+  other instead of relying on prompts or one sandbox.
+- **Least privilege, fail closed** — agents receive only the tools, permissions, files, and network
+  paths needed for their role; missing policy denies access rather than falling back to broad defaults.
+- **Isolated, immutable runtime state** — long-running services run from promoted releases; release
+  symlinks or equivalent targets are deployment pointers, not edit locations.
+- **Egress and exfiltration resistance** — outbound access is mediated through allowlists or narrow
+  policy gates, and sensitive data is passed by reference instead of copied into prompts, logs, browser
+  pages, or generated artifacts.
+- **Temporary preview access** — demos and review paths should be explicit, time-bounded, narrow, and
+  easy to revoke; broad routing or persistent remote identities are avoided unless specifically needed.
+  See the [secure gated agent preview access](docs/architecture/05-secure-gated-agent-preview-access.md)
+  reference pattern.
+- **Auditability and rollback** — runtime state, process command, import/source path, promoted commit,
+  and rollback target are verifiable before claiming what is running.
+- **Governance overlay** — risk tiers, canary checks, tool allowlists, signed or digest-pinned supply
+  chain artifacts, audit trails, rollback proof, and secret-by-reference practices sit across the
+  architecture.
+
+See [`docs/security-methodology.md`](docs/security-methodology.md) for the public-safe methodology.
 
 ## The three layers
 
@@ -140,6 +169,10 @@ A **production-governance** overlay sits across all three: workload risk tiers, 
 MCP tool-agency security, secrets-by-reference, signed artifacts, audit, and tested rollback. →
 [`docs/architecture/04-production-governance.md`](docs/architecture/04-production-governance.md)
 
+The same governance posture applies to previews: agent/dev preview services should sit behind a
+temporary, revocable, least-privilege, auditable access gate rather than a public or standing tunnel.
+→ [`docs/architecture/05-secure-gated-agent-preview-access.md`](docs/architecture/05-secure-gated-agent-preview-access.md)
+
 ## What's been validated
 
 A working "walking skeleton" exercises the substrate end-to-end: nested-KVM golden VM provisioned as
@@ -157,6 +190,8 @@ and [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-va
 | `docs/decisions/` | Architecture decision records. |
 | `docs/operations/` | Operator quickstart and safe runbook entry points. |
 | `docs/evidence/` | Sanitized validation receipts and evidence packets. |
+| `docs/security-methodology.md` | Public-safe security methodology and operating principles. |
+| `docs/architecture/05-secure-gated-agent-preview-access.md` | Reference pattern for temporary, revocable, least-privilege preview access. |
 | `docs/verification.md` | Claim discipline and verification gates. |
 | `docs/threat-model.md` | Threat model, trust boundaries, and current limitations. |
 | `SECURITY.md` | Public security policy and reporting guidance. |

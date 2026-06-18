@@ -84,6 +84,14 @@ examples/manifests/tool-policy.example.yaml   # allowed/denied tools + schema ha
 - **Signed supply chain** — exact source SHA → digest-pinned image → cosign signature → SBOM/provenance
   ref → **deploy-time** verification (see `01`).
 
+## Secure gated preview access
+
+Preview surfaces are governed exposure, not casual tunnels. A development or agent-preview service may
+be opened only through a temporary, revocable, least-privilege, auditable gate with no broad routing,
+no public exposure, no standing remote identity, and no secret values in prompts, logs, repositories,
+or receipts. See [`05-secure-gated-agent-preview-access.md`](05-secure-gated-agent-preview-access.md)
+for the reference pattern and sanitized Tailscale example.
+
 ## Progressive delivery (measured exposure, not blind cutover)
 
 A workload is promoted through canary stages **beside** the existing one, never replacing it in one

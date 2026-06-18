@@ -1,16 +1,20 @@
 # 00 — Architecture overview
 
-## Threat model: an agent is an untrusted, tool-wielding workload
+## Shifting from chatbot tabs to governed, persistent 'Agent Employees'
+
+Most enterprise AI deployments suffer from isolated usage: employees run queries in individual, context-blind chatbot tabs. This setup has zero team visibility, fragmented context, and no secure path to access enterprise files. 
+
+`agent-vm` introduces a governed, persistent **Agent Employee** substrate. Instead of solitary chatbot tabs, agents live directly inside group chats (Slack, Discord, ClickUp), collaborating alongside human employees. 
+
+By executing repeatable workflows (or skills) securely on a dedicated, isolated VM with continuous access to on-disk project files, these digital workers deliver highly-polished assets (Excel models, PowerPoint presentations conforming to company templates) back to the team channel while driving extreme cost savings.
+
+To achieve this securely, the platform treats every agent employee as a workload that may be **compromised or misdirected at runtime**, and limits what that costs. Defense is layered, and each layer assumes the one above it can fail.
 
 Traditional services are mostly deterministic and operator-controlled. AI agents are not. They:
 
-- execute **tool calls** (shell, files, network, other agents, payment, messaging) under model control,
-- hold **credentials** and act on behalf of users,
-- ingest **untrusted input** — and that input can *redirect their behavior* (prompt injection, tool
-  poisoning, cross-agent shadowing, excessive agency).
-
-So the platform treats every agent as a workload that may be **compromised or misdirected at runtime**,
-and limits what that costs. Defense is layered, and each layer assumes the one above it can fail.
+- execute **tool calls** (shell, files, network, Slack notifications, meeting integrations) under model control,
+- hold **credentials** and act on behalf of the organization,
+- ingest **untrusted input** (including external files, email, and meeting transcripts) — and that input can *redirect their behavior* (prompt injection, tool poisoning, cross-agent shadowing, excessive agency).
 
 ## Layered defense
 
@@ -40,5 +44,7 @@ If a new agent arrives, it is classified into a **risk tier** and a **deployment
 2. `02-promotion-control-plane.md` — how code becomes a running release, safely and reversibly.
 3. `03-gateway-runtime-layout.md` — how one runtime serves many profiles without ambiguity.
 4. `04-production-governance.md` — the controls that gate a workload from lab to production.
+5. `05-secure-gated-agent-preview-access.md` — how to expose agent/dev previews behind a temporary,
+   revocable, auditable access gate without turning preview access into broad network access.
 
 Then `../reference-workloads/` for the two archetypes and `../decisions/` for key choices.
