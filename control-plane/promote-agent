@@ -17,7 +17,9 @@ while [ $# -gt 0 ]; do
     *) die "unknown arg: $1";;
   esac
 done
-[ -n "$SHA" ] && [ -n "$LABEL" ] && [ -n "$WT" ] || die "need --sha, --label, --worktree"
+if [ -z "$SHA" ] || [ -z "$LABEL" ] || [ -z "$WT" ]; then
+  die "need --sha, --label, --worktree"
+fi
 git -C "$WT" rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "worktree not found: $WT"
 full="$(git -C "$WT" rev-parse "$SHA")" || die "sha not resolvable in worktree"
 short="$(git -C "$WT" rev-parse --short "$full")"

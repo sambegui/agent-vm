@@ -76,7 +76,9 @@ cmd_promote() {
       *) die "unknown promote arg: $1" ;;
     esac
   done
-  [ -n "$sha" ] && [ -n "$label" ] && [ -n "$worktree" ] || die "promote needs --sha, --label, and --worktree"
+  if [ -z "$sha" ] || [ -z "$label" ] || [ -z "$worktree" ]; then
+    die "promote needs --sha, --label, and --worktree"
+  fi
   require_tool promote-agent
   local args=(--sha "$sha" --label "$label" --worktree "$worktree")
   [ "$apply" = 1 ] && args+=(--apply)

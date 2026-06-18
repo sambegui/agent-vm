@@ -9,5 +9,5 @@ cd "$(dirname "${BASH_SOURCE[0]}")/hello-agent"
 podman build --isolation chroot --build-arg "AGENT_VERSION=$VER" -t "$REF" .
 podman push --tls-verify=false "$REF"
 DIGEST="$(podman image inspect "$REF" --format '{{.Digest}}')"
-COSIGN_PASSWORD= cosign sign --allow-insecure-registry --tlog-upload=false --yes --key "$HOME/cosign.key" "$REG/hello-agent@$DIGEST"
+env COSIGN_PASSWORD="${COSIGN_PASSWORD:-}" cosign sign --allow-insecure-registry --tlog-upload=false --yes --key "$HOME/cosign.key" "$REG/hello-agent@$DIGEST"
 echo "DIGEST=$REG/hello-agent@$DIGEST"

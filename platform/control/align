@@ -8,4 +8,9 @@ want="$(grep -E '^  image:' "$M" | head -1 | awk '{print $2}' | sed 's/.*@//')"
 got="$(podman inspect "systemd-$name" --format '{{.ImageDigest}}' 2>/dev/null || echo none)"
 got="${got##*@}"
 echo "want=$want got=$got"
-[ "$want" = "$got" ] && { echo "ALIGNED"; exit 0; } || { echo "DRIFT"; exit 1; }
+if [ "$want" = "$got" ]; then
+  echo "ALIGNED"
+  exit 0
+fi
+echo "DRIFT"
+exit 1

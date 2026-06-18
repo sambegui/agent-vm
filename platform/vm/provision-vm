@@ -45,7 +45,7 @@ ensure_host_dns_firewall() {
 
 wait_for_ssh() {
   echo "waiting for ssh on $VM_IP ..."
-  for i in $(seq 1 "$SSH_ATTEMPTS"); do
+  for _ in $(seq 1 "$SSH_ATTEMPTS"); do
     if ssh -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new "$VM_NAME" true 2>/dev/null; then
       echo "$VM_NAME is up"
       return 0

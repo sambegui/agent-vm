@@ -5,7 +5,10 @@ set -euo pipefail
 M="${1:?need a manifest path}"
 name="$(grep -E '^  name:' "$M" | head -1 | awk '{print $2}')"
 image="$(grep -E '^  image:' "$M" | head -1 | awk '{print $2}')"
-[ -n "$name" ] && [ -n "$image" ] || { echo "bad manifest"; exit 1; }
+if [ -z "$name" ] || [ -z "$image" ]; then
+  echo "bad manifest"
+  exit 1
+fi
 case "$image" in *@sha256:*) ;; *) echo "REFUSED: image is not digest-pinned"; exit 1 ;; esac
 
 net=agent-tier1-internal
