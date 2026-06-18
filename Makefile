@@ -2,6 +2,7 @@ SHELL := /usr/bin/env bash
 
 BASH_SCRIPTS := $(shell grep -rl '^#!/usr/bin/env bash' control-plane platform | sort)
 YAML_FILES := $(shell find .github deploy docs examples platform -type f \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null | sort)
+PLATFORM_TESTS := $(shell find platform/tests -maxdepth 1 -type f -name '*-test' 2>/dev/null | sort)
 
 .PHONY: ci syntax lint yaml test docs
 
@@ -35,7 +36,11 @@ yaml:
 	fi
 
 test:
-	bash platform/tests/sandbox-runner-test
+	@set -e; \
+	for test_script in $(PLATFORM_TESTS); do \
+		echo "bash $$test_script"; \
+		bash "$$test_script"; \
+	done
 
 docs:
 	@echo "Start with README.md, then docs/operations/operator-quickstart.md and docs/verification.md"
