@@ -4,6 +4,24 @@ This repository is safe to inspect on any machine. The full substrate runbook ne
 with nested virtualization, libvirt, Podman, cosign, a local registry, and a configured SSH alias for
 the illustrative `agent-platform` VM.
 
+**Prerequisite:** an SSH public key at `~/.ssh/agent-platform.pub` must exist before running the
+provisioning script. Generate one if needed:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/agent-platform -C "agent-platform-lab"
+```
+
+**SSH host configuration:** add the following to `~/.ssh/config` so both `agent-platform` and
+`agent-runtime` resolve to the lab VM:
+
+```ssh-config
+Host agent-platform agent-runtime
+  HostName 10.0.0.60
+  User admin
+  IdentityFile ~/.ssh/agent-platform
+  StrictHostKeyChecking accept-new
+```
+
 The default posture is **review first, mutate only with explicit apply flags**.
 
 ## 1. Static checks anyone can run
@@ -50,7 +68,7 @@ platform/validate/acceptance
 Expected acceptance footer after a fully configured substrate run:
 
 ```text
-PASS=5 FAIL=0
+PASS=6 FAIL=0
 ```
 
 ## 4. In-VM Tier-1 flow

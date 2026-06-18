@@ -1,8 +1,10 @@
 # Threat model
 
-`agent-vm` treats AI agents as untrusted, tool-wielding workloads. The platform assumes an agent can be
-misdirected by untrusted input or compromised through its tools, dependencies, runtime, or operator
-workflow.
+This reference architecture treats AI agents as untrusted, tool-wielding workloads. The platform assumes an agent can be misdirected by untrusted input or compromised through its tools, dependencies, runtime, or operator workflow.
+
+## Methodology: STRIDE + PASTA
+
+This threat model follows the **STRIDE** taxonomy (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege) and is structured using the **PASTA** (Process for Attack Simulation and Threat Analysis) framework for risk-centric analysis.
 
 ## Assets
 

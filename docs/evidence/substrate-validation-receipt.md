@@ -21,7 +21,8 @@ sanitized portfolio evidence packet, not a live infrastructure log.
 | Nested microVM smoke | Firecracker microVM booted with KVM acceleration in the initial runtime guest. | PASS |
 | Golden VM nested validation | Firecracker microVM booted with KVM acceleration inside the illustrative `agent-platform` VM. | PASS |
 | Tier-2 Kata/containerd job | Kata runtime executed the example job and printed `hello-from-microvm`. | PASS |
-| Default-deny egress | External HTTP attempt returned blocked / unreachable instead of succeeding. | PASS |
+| Default-deny egress (direct IP) | External HTTP attempt returned blocked / unreachable instead of succeeding. | PASS |
+| Default-deny egress (DNS exfiltration) | DNS resolution attempt for external domain returned blocked. | PASS |
 | Timeout and teardown | Timeout path returned the expected timeout code and reported zero residual runtime artifacts. | PASS |
 
 ## Acceptance subset
@@ -29,16 +30,17 @@ sanitized portfolio evidence packet, not a live infrastructure log.
 The expected final acceptance summary for the configured lab host is:
 
 ```text
-PASS=5 FAIL=0
+PASS=6 FAIL=0
 ```
 
-The five checks are:
+The six checks are:
 
 1. Tier-1 health endpoint responds locally.
 2. Tier-1 running digest matches the pinned manifest.
 3. Tier-2 microVM boots.
-4. Tier-2 default-deny egress blocks external network access.
-5. Tier-2 teardown leaves zero residual runtime artifacts.
+4. Tier-2 default-deny egress blocks external network access (direct IP).
+5. Tier-2 default-deny egress blocks DNS exfiltration attempts.
+6. Tier-2 teardown leaves zero residual runtime artifacts.
 
 ## Non-claims
 

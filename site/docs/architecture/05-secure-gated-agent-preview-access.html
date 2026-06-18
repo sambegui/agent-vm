@@ -564,15 +564,17 @@ into a transcript.</p>
 </code></pre>
 <p>If the implementation supports disabling managed firewall changes, prefer explicit local firewall
 rules controlled by the operator. The exact commands depend on the host firewall. This nftables-shaped
-example allows only one reviewer IP and only one preview port on the overlay interface:</p>
+example implements a strict <strong>fail-closed (default-deny)</strong> posture on the overlay interface, allowing
+only the authorized operator IP and the specific preview port:</p>
 <pre><code class="language-bash">sudo nft add table inet agent_preview
-sudo nft add chain inet agent_preview input '{ type filter hook input priority 0; policy accept; }'
+sudo nft add chain inet agent_preview input '{ type filter hook input priority 0; policy drop; }'
 sudo nft add rule inet agent_preview input \
   iifname &quot;$OVERLAY_IFACE&quot; ip saddr &quot;$OPERATOR_TAILNET_IP&quot; tcp dport &quot;$PREVIEW_PORT&quot; accept \
   comment &quot;agent-preview-temporary&quot;
+# Explicit catch-all drop for any other traffic on the overlay interface
 sudo nft add rule inet agent_preview input \
-  iifname &quot;$OVERLAY_IFACE&quot; tcp dport { 4000-4099, 5173, 8000-9000 } drop \
-  comment &quot;agent-preview-temporary&quot;
+  iifname &quot;$OVERLAY_IFACE&quot; drop \
+  comment &quot;agent-preview-temporary-default-deny&quot;
 </code></pre>
 <p>Start the preview app through the normal development command for the project, with no secrets printed
 and no broad bind unless required by the framework:</p>

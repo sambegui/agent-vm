@@ -291,110 +291,130 @@
     </header>
     <main>
       <h1 id="security-methodology">Security methodology</h1>
-<p><code>agent-vm</code> shifts AI agents from isolated chatbot tabs into governed, persistent <strong>Agent Employees</strong> that live in team workspaces (Slack, Discord, ClickUp) collaborating alongside human employees. While this cooperative model unlocks massive productivity gains and cost savings, it exposes the runtime to a variety of untrusted inputs (files, chat history, meeting transcripts). </p>
-<p>Therefore, the platform treats these persistent digital workers as untrusted, tool-wielding workloads. The security model is aligned with common practices used by mature infrastructure teams: layered controls, least privilege, explicit promotion, auditable operations, and rollback evidence. It is a public reference architecture, not a certification, vendor endorsement, or provider-approved deployment pattern.</p>
-<p>This document intentionally avoids deployment-specific hostnames, addresses, identities, keys, firewall handles, private URLs, and operational paths. A real deployment should bind these principles to its own threat model, policies, and evidence trail.</p>
-<h2 id="1-defense-in-depth">1. Defense in depth</h2>
-<p>Guest workloads (agent employees) are not trusted because their behavior can be influenced by prompts, tools, dependencies, retrieved project files, Google Meet/Zoom transcripts, and operator mistakes. The platform therefore avoids relying on a single boundary.</p>
-<p>Controls are layered across:</p>
+<p>This document describes the security methodology used to design and review the reference architecture.
+It applies to the walking-skeleton code in <code>platform/</code> and <code>control-plane/</code>.</p>
+<h2 id="guiding-principles">Guiding principles</h2>
+<ol>
+<li><strong>Agents as untrusted workloads</strong> — Every AI agent runs as a sandboxed workload. The platform assumes
+   the agent process, its dependencies, and its tool descriptions can be subverted.</li>
+<li><strong>Default-deny at every layer</strong> — Network, filesystem, capabilities, and tool policies all default to
+   deny. Explicit allowlists with digest pinning are required for every capability.</li>
+<li><strong>Evidence over assertions</strong> — Security claims require receipts: command output, signatures, digests,
+   audit events, or configuration state. This repository records evidence in <code>docs/evidence/</code>.</li>
+<li><strong>Dry-run by default</strong> — Mutating operations print a plan and require an explicit <code>--apply</code> flag.</li>
+<li><strong>Rollback as a first-class operation</strong> — Every promotion captures a rollback target and documents
+   the rollback command.</li>
+</ol>
+<h2 id="architecture-layers">Architecture layers</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it protects</th>
+<th>Representative controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host control plane</td>
+<td>Scripts, manifests, promotion logic, registry</td>
+<td>ShellCheck, GitHub Actions, cosign, digest pinning</td>
+</tr>
+<tr>
+<td>Golden VM / Tier-1</td>
+<td>Persistent agent runtime, control APIs</td>
+<td>MicroVM (Firecracker/Kata), systemd, digest-pinned images, <code>align</code> verification</td>
+</tr>
+<tr>
+<td>Tier-2 sandbox</td>
+<td>Transient agent jobs, tool execution</td>
+<td>Kata/containerd microVM, default-deny egress, seccomp, capability drop, timeout reap</td>
+</tr>
+<tr>
+<td>Tool policy</td>
+<td>Which tools an agent may invoke</td>
+<td>Explicit allowlist, risk tiers, parameter schemas, human approval gate for sensitive writes</td>
+</tr>
+<tr>
+<td>Audit sink</td>
+<td>Auth, tool, egress, alignment, rollback events</td>
+<td>Structured JSON lines, tamper-evident storage, retention policy</td>
+</tr>
+</tbody>
+</table>
+<h2 id="hardening-baseline">Hardening baseline</h2>
 <ul>
-<li><strong>runtime boundaries</strong> — separate workload runtime from the host control plane;</li>
-<li><strong>network boundaries</strong> — deny by default, then allow only required paths;</li>
-<li><strong>release boundaries</strong> — promote known commits or artifacts instead of editing live runtime state;</li>
-<li><strong>operational workflows</strong> — dry-run first, record evidence, and require rollback paths for
-  higher-risk changes.</li>
+<li>Kernel: lockdown mode when available; module signing enforced.</li>
+<li>Init: minimal systemd unit set; no unnecessary services.</li>
+<li>Userspace: distroless or minimal container base images; static linking where practical.</li>
+<li>Runtime: seccomp default-deny; capability drop (CAP_DAC_OVERRIDE, CAP_SYS_ADMIN, etc.).</li>
+<li>Network: default-deny egress; explicit allowlists for registry, control plane, approved services.</li>
+<li>Storage: bounded mounts; no host filesystem exposure; digest verification on mount.</li>
+<li>Secrets: never in images, manifests, or logs; fetched at runtime from a secret store with audit.</li>
+<li>Supply chain: cosign signatures; SLSA provenance; SBOM generation; reproducible builds where practical.</li>
 </ul>
-<p>A control is useful only if the next layer still limits blast radius when it fails.</p>
-<h2 id="2-least-privilege-and-fail-closed-defaults">2. Least privilege and fail-closed defaults</h2>
-<p>Agents should receive only the permissions, tools, files, and network paths needed for their role.
-Access should be explicit, narrow, auditable, and revocable.</p>
-<p>Preferred defaults:</p>
+<h2 id="stride-mapping">STRIDE mapping</h2>
+<table>
+<thead>
+<tr>
+<th>STRIDE</th>
+<th>Mitigations in this architecture</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Spoofing</td>
+<td>SSH host keys; cosign image signatures; mTLS for control-plane APIs; digest pinning.</td>
+</tr>
+<tr>
+<td>Tampering</td>
+<td>Git-signed commits; digest-pinned images; immutable manifests; <code>align</code> verification.</td>
+</tr>
+<tr>
+<td>Repudiation</td>
+<td>Append-only audit sink; signed audit events; rollback drill records.</td>
+</tr>
+<tr>
+<td>Information Disclosure</td>
+<td>Default-deny egress; secret store with audit; no secrets in images/logs/manifests.</td>
+</tr>
+<tr>
+<td>Denial of Service</td>
+<td>Per-job resource quotas; timeout reap; microVM isolation; host control plane read-only CI.</td>
+</tr>
+<tr>
+<td>Elevation of Privilege</td>
+<td>Capability drop; seccomp; user namespaces; microVM boundary; no host docker socket.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pasta-alignment">PASTA alignment</h2>
+<p>This methodology aligns with <strong>PASTA Stage 1 (Define Objectives)</strong> through <strong>Stage 7 (Risk Mitigation)</strong>:
+1. Define business/security objectives (sandboxed agent workloads).
+2. Define technical scope (host control plane, golden VM, Tier-2 sandbox).
+3. Application decomposition (layers above).
+4. Threat analysis (STRIDE mapping above).
+5. Vulnerability analysis (hardening baseline, supply chain).
+6. Attack modeling (agent escape, tool misuse, promotion drift).
+7. Risk mitigation (controls above, evidence requirements, rollback drills).</p>
+<h2 id="preflight-and-post-session-gates">Preflight and post-session gates</h2>
+<p>Operators should run these checks before and after a preview or canary session:</p>
+<h3 id="preflight">Preflight</h3>
 <ul>
-<li>deny-by-default firewalling and explicit allowlists;</li>
-<li>tool discovery that exposes only approved tools;</li>
-<li>missing or invalid policy treated as a hard failure;</li>
-<li>short-lived or scoped credentials where possible;</li>
-<li>human approval gates for sensitive writes or irreversible actions.</li>
+<li><code>make ci</code> — static validation passes.</li>
+<li><code>platform/validate/nested-smoke</code> — host can boot nested microVMs.</li>
+<li><code>platform/validate/acceptance</code> — acceptance subset passes (PASS=6 FAIL=0).</li>
+<li>Digest alignment check — <code>~/platform/control/align</code> reports <code>ALIGNED</code>.</li>
+<li>Tool policy hash — recorded and match expected value.</li>
+<li>Secret scan — <code>gitleaks detect --no-git</code> and <code>trufflehog filesystem .</code> report no findings.</li>
 </ul>
-<p>A denied capability should be absent from the agent's available surface, not merely discouraged in
-documentation.</p>
-<h2 id="3-isolation-substrate">3. Isolation substrate</h2>
-<p>Runtime environments should be separated from the host control plane. The control plane decides what
-should run; isolated runtimes execute it with constrained authority.</p>
-<p>Operating principles:</p>
+<h3 id="post-session">Post-session</h3>
 <ul>
-<li>long-running services run from immutable promoted releases, not writable development directories;</li>
-<li>release symlinks or equivalent promotion targets are deployment pointers, not edit locations;</li>
-<li>promoted artifacts are identified by commit, digest, or package version;</li>
-<li>higher-risk or short-lived jobs use stronger isolation and explicit teardown;</li>
-<li>live runtime identity is verified before making claims about what is running.</li>
+<li>Audit sink integrity — events appended, tamper-evident seal intact.</li>
+<li>Rollback drill — <code>control-plane/rollback-agent</code> completes within recovery target.</li>
+<li>Secret rescan — no new secrets introduced in receipts or logs.</li>
+<li>Digest alignment re-check — running image still matches manifest.</li>
 </ul>
-<p>The goal is to make deployment state observable and reproducible instead of dependent on local shell
-history.</p>
-<h2 id="4-egress-and-exfiltration-resistance">4. Egress and exfiltration resistance</h2>
-<p>Agents can leak data through network calls, logs, browser pages, generated artifacts, and tool
-outputs. External access should therefore be mediated through narrow policy gates.</p>
-<p>Public-safe design principles:</p>
-<ul>
-<li>outbound network access is allowlisted or routed through a policy-aware proxy where practical;</li>
-<li>negative egress tests are part of validation, not an afterthought;</li>
-<li>sensitive data is passed by reference where possible, not copied into prompts, logs, pages, or
-  generated artifacts;</li>
-<li>receipts and audit logs record decisions and identifiers without storing raw secrets;</li>
-<li>public preview flows expose only intended development ports and do not grant broad network
-  reachability.</li>
-</ul>
-<p>Secret-by-reference is a design constraint: the agent may be allowed to request a capability, but
-the raw secret should not become normal prompt or artifact content.</p>
-<h2 id="5-temporary-access-for-previews">5. Temporary access for previews</h2>
-<p>Preview and review access should be explicit, time-bounded, and easy to revoke. The safest preview
-is the narrowest one that still lets a reviewer inspect the intended surface.</p>
-<p>Preferred patterns:</p>
-<ul>
-<li>ephemeral or on-demand access for demos and review;</li>
-<li>explicit preview ports rather than broad network access;</li>
-<li>no subnet routing, exit nodes, broad SSH access, or persistent remote identities unless a specific
-  review requires them;</li>
-<li>clear shutdown and revocation steps after the review window ends;</li>
-<li>no reuse of preview credentials as production credentials.</li>
-</ul>
-<p>A preview path should not silently become a standing management path.</p>
-<p>See <a href="architecture/05-secure-gated-agent-preview-access.html"><code>docs/architecture/05-secure-gated-agent-preview-access.html</code></a>
-for a standards-oriented reference pattern and sanitized Tailscale implementation example.</p>
-<h2 id="6-auditability-and-rollback">6. Auditability and rollback</h2>
-<p>A platform should be able to prove what is running before claiming it is fixed, deployed, or
-validated.</p>
-<p>Before promotion claims, verify:</p>
-<ul>
-<li>runtime state and process command;</li>
-<li>promoted commit, digest, package version, or equivalent source identity;</li>
-<li>import path or runtime source path;</li>
-<li>active policy and tool allowlist;</li>
-<li>expected network posture;</li>
-<li>rollback target and rollback command path.</li>
-</ul>
-<p>Operational changes should be reproducible, reviewable, and ideally represented as code. Promotions
-should record the previous known-good target so rollback is a tested operation rather than a hope.</p>
-<h2 id="7-governance-overlay">7. Governance overlay</h2>
-<p>Governance sits across all layers. It does not replace isolation; it decides which controls are
-required for each blast radius.</p>
-<p>Target operating principles:</p>
-<ul>
-<li>risk tiers for workloads and tool classes;</li>
-<li>SLO or canary checks before promotion;</li>
-<li>explicit tool allowlists with fail-closed loading;</li>
-<li>signed or digest-pinned supply chain artifacts where possible;</li>
-<li>audit trails for promotions, tool grants, policy decisions, and rollbacks;</li>
-<li>secret-by-reference practices for credentials and sensitive data;</li>
-<li>rollback proof for changes that can affect durable state.</li>
-</ul>
-<p>The point is not to make agents appear safe by policy alone. The point is to make each step
-observable, bounded, and reversible enough that failures can be contained.</p>
-<h2 id="non-goals">Non-goals</h2>
-<p><code>agent-vm</code> is a reference architecture and validated skeleton. It does not claim to be a turnkey
-production platform, a managed security product, or a deployment endorsed by any company. A
-production adoption needs its own environment-specific threat model, control mapping, incident
-process, monitoring, and evidence retention policy.</p>
     </main>
 
     <footer>

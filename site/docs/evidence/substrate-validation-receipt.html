@@ -351,8 +351,13 @@ sanitized portfolio evidence packet, not a live infrastructure log.</p>
 <td>PASS</td>
 </tr>
 <tr>
-<td>Default-deny egress</td>
+<td>Default-deny egress (direct IP)</td>
 <td>External HTTP attempt returned blocked / unreachable instead of succeeding.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Default-deny egress (DNS exfiltration)</td>
+<td>DNS resolution attempt for external domain returned blocked.</td>
 <td>PASS</td>
 </tr>
 <tr>
@@ -364,14 +369,15 @@ sanitized portfolio evidence packet, not a live infrastructure log.</p>
 </table>
 <h2 id="acceptance-subset">Acceptance subset</h2>
 <p>The expected final acceptance summary for the configured lab host is:</p>
-<pre><code class="language-text">PASS=5 FAIL=0
+<pre><code class="language-text">PASS=6 FAIL=0
 </code></pre>
-<p>The five checks are:</p>
+<p>The six checks are:</p>
 <ol>
 <li>Tier-1 health endpoint responds locally.</li>
 <li>Tier-1 running digest matches the pinned manifest.</li>
 <li>Tier-2 microVM boots.</li>
-<li>Tier-2 default-deny egress blocks external network access.</li>
+<li>Tier-2 default-deny egress blocks external network access (direct IP).</li>
+<li>Tier-2 default-deny egress blocks DNS exfiltration attempts.</li>
 <li>Tier-2 teardown leaves zero residual runtime artifacts.</li>
 </ol>
 <h2 id="non-claims">Non-claims</h2>
