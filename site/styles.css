@@ -262,7 +262,7 @@ h1 {
 
 h2 {
   margin-bottom: 1rem;
-  font-size: clamp(2.35rem, 5vw, 5.2rem);
+  font-size: clamp(1.85rem, 4vw, 3.4rem);
 }
 
 h3 {
@@ -507,12 +507,12 @@ code {
 }
 
 .section-heading {
-  max-width: 880px;
+  max-width: 940px;
   margin-bottom: clamp(1.8rem, 5vw, 3rem);
 }
 
 .section-heading.narrow {
-  max-width: 720px;
+  max-width: 800px;
   margin-inline: auto;
   text-align: center;
 }
