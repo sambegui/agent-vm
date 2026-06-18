@@ -73,25 +73,25 @@ NIST AI RMF governance — sized for a single host instead of a hyperscaler.
 ## The three layers
 
 ```
-   operator (host)        ┌──────────────────────────────────────────────┐
-   dry-run by default ───►│  PROMOTION CONTROL PLANE                      │
-                          │  immutable releases · drift detection ·       │
-                          │  state-as-truth · 2 deployment models         │
-                          └───────────────┬──────────────────────────────┘
+   operator (host)        ┌────────────────────────────────────────────────┐
+   dry-run by default ───►│  PROMOTION CONTROL PLANE                       │
+                          │  immutable releases · drift detection ·        │
+                          │  state-as-truth · 2 deployment models          │
+                          └───────────────┬────────────────────────────────┘
                                           │ promote exact commit (ssh, verified)
-                          ┌───────────────▼──────────────────────────────┐
-                          │  ISOLATION SUBSTRATE  (golden VM, as code)    │
-                          │  Tier-1 long-running service                  │
-                          │    cosign-signed · digest-pinned · reconciled │
-                          │  Tier-2 ephemeral microVM sandbox (Kata)      │
-                          │    default-deny egress · timeout · teardown   │
-                          └───────────────┬──────────────────────────────┘
+                          ┌───────────────▼────────────────────────────────┐
+                          │  ISOLATION SUBSTRATE  (golden VM, as code)     │
+                          │  Tier-1 long-running service                   │
+                          │    cosign-signed · digest-pinned · reconciled  │
+                          │  Tier-2 ephemeral microVM sandbox (Kata)       │
+                          │    default-deny egress · timeout · teardown    │
+                          └───────────────┬────────────────────────────────┘
                                           │ per-profile, isolated
-                          ┌───────────────▼──────────────────────────────┐
+                          ┌───────────────▼────────────────────────────────┐
                           │  GATEWAY RUNTIME LAYOUT                        │
-                          │  agent-gateway@<profile> · one runtime source │
-                          │  per profile · restart isolation              │
-                          └───────────────────────────────────────────────┘
+                          │  agent-gateway@<profile> · one runtime source  │
+                          │  per profile · restart isolation               │
+                          └────────────────────────────────────────────────┘
    governance overlay:  risk tiers L0–L5 · SLO/canary · MCP tool allowlist (fail-closed)
                         · secrets-by-reference · signed supply chain · audit · rollback proof
 ```
