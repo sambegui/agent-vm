@@ -41,18 +41,54 @@ TEMPLATE = """<!DOCTYPE html>
     }}
 
     .container {{
-      max-width: 800px;
+      max-width: 1040px;
       margin: 0 auto;
-      padding: clamp(1.5rem, 5vw, 4rem) 1.5rem;
+      padding: clamp(1rem, 4vw, 3rem) 1.5rem;
     }}
 
-    header {{
+    .site-header {{
+      position: sticky;
+      top: 16px;
+      z-index: 100;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2.5rem;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 1rem;
+      padding: 0.7rem 1.4rem;
+      border: 1px solid rgba(142, 246, 255, 0.18);
+      border-radius: 999px;
+      background: rgba(7, 11, 16, 0.74);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      margin-bottom: 3.5rem;
+    }}
+
+    .top-nav-group {{
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }}
+
+    .top-nav-link {{
+      color: var(--dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      border-bottom: none !important;
+    }}
+
+    .top-nav-link:hover:not(.disabled) {{
+      color: var(--cyan);
+    }}
+
+    .top-nav-link.disabled {{
+      color: rgba(127, 147, 168, 0.3);
+      cursor: not-allowed;
+    }}
+
+    .top-nav-separator {{
+      color: rgba(142, 246, 255, 0.15);
     }}
 
     .back-link {{
@@ -238,9 +274,13 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="site-header">
       <a class="back-link" href="{back_depth}index.html">← Back to Console</a>
-      <span style="color: var(--dim); font-family: var(--font-mono); font-size: 0.85rem;">spec v1.0</span>
+      <div class="top-nav-group">
+        {top_prev_html}
+        <span class="top-nav-separator">|</span>
+        {top_next_html}
+      </div>
     </header>
     <main>
       {content}
@@ -321,12 +361,29 @@ def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
     else:
         next_html = "<div></div>"
 
+    # Generate top-nav compact HTML
+    top_prev_html = ""
+    if prev_info:
+        prev_label, prev_link = prev_info
+        top_prev_html = f'<a href="{back_depth}{prev_link}" class="top-nav-link" title="{prev_label}">← Prev</a>'
+    else:
+        top_prev_html = '<span class="top-nav-link disabled">← Prev</span>'
+
+    top_next_html = ""
+    if next_html_info:
+        next_label, next_link = next_html_info
+        top_next_html = f'<a href="{back_depth}{next_link}" class="top-nav-link" title="{next_label}">Next →</a>'
+    else:
+        top_next_html = '<span class="top-nav-link disabled">Next →</span>'
+
     full_html = TEMPLATE.format(
         title=title,
         content=html_body,
         back_depth=back_depth,
         prev_html=prev_html,
-        next_html=next_html
+        next_html=next_html,
+        top_prev_html=top_prev_html,
+        top_next_html=top_next_html
     )
     
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
