@@ -1,9 +1,22 @@
 #!/usr/bin/env bash
-# destroy-vm — tear down agent-platform (idempotent). Host-side.
+# destroy-vm — tear down the configured lab VM (idempotent). Host-side.
 set -euo pipefail
-VIRSH="virsh -c qemu:///system"
-$VIRSH destroy agent-platform 2>/dev/null || true
-$VIRSH undefine agent-platform 2>/dev/null || true
-sudo rm -f /var/lib/libvirt/images/agent-platform/agent-platform.qcow2 \
-           /var/lib/libvirt/images/agent-platform/seed.iso
-echo "agent-platform destroyed (base image retained)"
+VM_NAME="${AGENT_VM_NAME:-agent-platform}"
+IMGDIR="${AGENT_VM_IMGDIR:-/var/lib/libvirt/images/$VM_NAME}"
+VM_DISK="${AGENT_VM_DISK:-$IMGDIR/$VM_NAME.qcow2}"
+SEED_ISO="${AGENT_VM_SEED_ISO:-$IMGDIR/seed.iso}"
+VIRSH_URI="${AGENT_VM_VIRSH_URI:-qemu:///system}"
+VIRSH="virsh -c $VIRSH_URI"
+
+if [ "${1:-}" = "--print-config" ]; then
+  printf 'AGENT_VM_NAME=%s\n' "$VM_NAME"
+  printf 'AGENT_VM_IMGDIR=%s\n' "$IMGDIR"
+  printf 'AGENT_VM_DISK=%s\n' "$VM_DISK"
+  printf 'AGENT_VM_SEED_ISO=%s\n' "$SEED_ISO"
+  exit 0
+fi
+
+$VIRSH destroy "$VM_NAME" 2>/dev/null || true
+$VIRSH undefine "$VM_NAME" 2>/dev/null || true
+sudo rm -f "$VM_DISK" "$SEED_ISO"
+echo "$VM_NAME destroyed (base image retained)"

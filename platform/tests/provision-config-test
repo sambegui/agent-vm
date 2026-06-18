@@ -31,4 +31,15 @@ grep -q 'AGENT_VM_SSH="custom-ssh"' <<<"$dry_run"
 grep -q 'AGENT_VM_IP="10.44.0.99"' <<<"$dry_run"
 grep -q 'AGENT_VM_USER="operator"' <<<"$dry_run"
 
+destroy_out="$(
+  AGENT_VM_NAME=custom-vm \
+  AGENT_VM_IMGDIR=/tmp/custom-agent-vm-images \
+  "$ROOT/platform/vm/destroy-vm" --print-config
+)"
+
+grep -q '^AGENT_VM_NAME=custom-vm$' <<<"$destroy_out"
+grep -q '^AGENT_VM_IMGDIR=/tmp/custom-agent-vm-images$' <<<"$destroy_out"
+grep -q '^AGENT_VM_DISK=/tmp/custom-agent-vm-images/custom-vm.qcow2$' <<<"$destroy_out"
+grep -q '^AGENT_VM_SEED_ISO=/tmp/custom-agent-vm-images/seed.iso$' <<<"$destroy_out"
+
 echo "provision config tests passed"

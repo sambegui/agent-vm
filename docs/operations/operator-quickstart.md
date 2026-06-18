@@ -1,18 +1,23 @@
 # Operator quickstart
 
-This repository is safe to inspect on any machine. The full substrate runbook needs a Linux lab host
-with nested virtualization, libvirt, Podman, cosign, a local registry, and a configured SSH alias for
-the illustrative `agent-platform` VM.
+This repository is a public **reference implementation + acceptance suite**. It is safe to inspect on
+any machine. The full substrate runbook needs an isolated Linux lab host with nested virtualization,
+hardware KVM exposed at `/dev/kvm`, libvirt/QEMU, Podman, containerd, Kata Containers, Firecracker,
+cosign, a local registry, and a configured SSH alias for the illustrative VM.
 
-**Prerequisite:** an SSH public key at `~/.ssh/agent-platform.pub` must exist before running the
-provisioning script. Generate one if needed:
+The defaults create an illustrative `agent-platform` VM, but the host, IP, user, and image paths are
+parameterized. Override them with `AGENT_VM_*` variables instead of editing scripts.
+
+**Prerequisite:** an SSH public key must exist before running the provisioning script. By default the
+key is `~/.ssh/agent-platform.pub`; override it with `AGENT_VM_PUBKEY`. Generate a default key if
+needed:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/agent-platform -C "agent-platform-lab"
 ```
 
-**SSH host configuration:** add the following to `~/.ssh/config` so both `agent-platform` and
-`agent-runtime` resolve to the lab VM:
+**SSH host configuration:** add the following to `~/.ssh/config` so `AGENT_VM_SSH=agent-platform`
+resolves to the lab VM:
 
 ```ssh-config
 Host agent-platform agent-runtime
@@ -23,6 +28,17 @@ Host agent-platform agent-runtime
 ```
 
 The default posture is **review first, mutate only with explicit apply flags**.
+
+Common provisioning overrides:
+
+```bash
+AGENT_VM_NAME=agent-platform
+AGENT_VM_SSH=agent-platform
+AGENT_VM_IP=10.0.0.60
+AGENT_VM_USER=agent
+AGENT_VM_PUBKEY="$HOME/.ssh/agent-platform.pub"
+AGENT_VM_IMGDIR=/var/lib/libvirt/images/agent-platform
+```
 
 ## 1. Static checks anyone can run
 
@@ -56,7 +72,7 @@ without nested KVM and the illustrative SSH aliases.
 
 ```bash
 # Host side: create or reconcile the illustrative golden VM.
-platform/vm/provision-vm
+make provision
 
 # Host side: prove nested hardware-backed microVM boot.
 platform/validate/nested-smoke
@@ -69,6 +85,12 @@ Expected acceptance footer after a fully configured substrate run:
 
 ```text
 PASS=6 FAIL=0
+```
+
+For a non-default lab VM, pass the same overrides to the acceptance runner:
+
+```bash
+AGENT_VM_SSH=agent-platform platform/validate/acceptance
 ```
 
 ## 4. In-VM Tier-1 flow
@@ -120,3 +142,16 @@ control-plane/status-agent
 Use [`docs/verification.md`](../verification.md) as the checklist and store the result in an evidence
 receipt like [`docs/evidence/substrate-validation-receipt.md`](../evidence/substrate-validation-receipt.md).
 A production claim requires live evidence; a design claim only requires docs and static checks.
+
+## 8. Teardown
+
+Use the same `AGENT_VM_*` identity and image-path overrides used for provisioning. Review the values
+first, then destroy the illustrative lab VM and its generated disk/seed image:
+
+```bash
+platform/vm/destroy-vm --print-config
+platform/vm/destroy-vm
+```
+
+This teardown is intentionally limited to the configured lab VM artifacts. It does not remove the base
+cloud image, local registry contents, signing keys, or unrelated libvirt resources.

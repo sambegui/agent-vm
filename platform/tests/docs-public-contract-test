@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+require_text() {
+  local file="$1"
+  local text="$2"
+  if ! grep -Fqi "$text" "$file"; then
+    echo "missing required public docs text in $file: $text" >&2
+    exit 1
+  fi
+}
+
+require_text "$ROOT/README.md" "reference implementation + acceptance suite"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "reference implementation + acceptance suite"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "make provision"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "AGENT_VM_SSH"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "nested virtualization"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "/dev/kvm"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "Kata"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "Firecracker"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "local registry"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "cosign"
+require_text "$ROOT/docs/operations/operator-quickstart.md" "teardown"
+
+echo "public docs contract tests passed"

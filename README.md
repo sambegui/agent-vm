@@ -2,7 +2,7 @@
 
 **A secure, governed substrate for hosting persistent AI Agent Employees as trusted collaborators.**
 
-This reference architecture and platform skeleton demonstrates how to transition AI agents from isolated, session-bound conversational interfaces into governed, persistent team collaborators that live inside group workspaces (Slack, Discord, ClickUp) alongside human employees. It enforces strict runtime isolation, exact-commit promotion, audit logging, and default-deny egress.
+This public **reference implementation + acceptance suite** demonstrates how to transition AI agents from isolated, session-bound conversational interfaces into governed, persistent team collaborators that live inside group workspaces (Slack, Discord, ClickUp) alongside human employees. It enforces strict runtime isolation, exact-commit promotion, audit logging, and default-deny egress.
 
 The architecture models a high-efficiency team substrate where employees delegate repeatable workflows to autonomous digital workers, which are executed securely on a private virtual machine.
 
@@ -44,9 +44,10 @@ This repository demonstrates how AI agents can be run as governed, persistent di
 | **Tier-2 microVM sandbox** | host-validated | Kata/containerd job boots, default-deny egress is tested, timeout/teardown are verified. |
 | **Production platform** | not claimed | This is a reference architecture and validated skeleton, not a turnkey managed platform. |
 
-> **Reference architecture.** Every host, network, account, and identifier here is illustrative
-> (`example-network`, `platform-host`, `agent-runtime`). Nothing points at real infrastructure, and
-> no secrets are present — secret *references* only.
+> **Reference implementation + acceptance suite.** Every host, network, account, and identifier here
+> is illustrative (`example-network`, `platform-host`, `agent-runtime`). Nothing points at real
+> infrastructure, and no secrets are present — secret *references* only. The repository proves a
+> reproducible lab skeleton and its validation checks, not a hosted managed product.
 
 ## Architecture at a glance
 
