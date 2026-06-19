@@ -328,7 +328,10 @@ def extract_description(html_content, fallback):
     text = re.sub(r'\s+', ' ', text).strip()
     if not text:
         return fallback
-    return text[:180]
+    if len(text) <= 180:
+        return text
+    truncated = text[:177].rsplit(' ', 1)[0].rstrip('.,;:')
+    return f"{truncated}..."
 
 def compile_file(src_path, dest_path, back_depth, prev_info, next_html_info):
     with open(src_path, 'r', encoding='utf-8') as f:
@@ -466,7 +469,8 @@ def main():
             compile_file(src, dest, depth, prev_info, next_html_info)
             print(f"Successfully compiled {rel_src} with prev/next navigation.")
         else:
-            print(f"Warning: Source file {src} not found!")
+            print(f"Error: Source file {src} not found!", file=sys.stderr)
+            raise SystemExit(1)
 
 if __name__ == '__main__':
     main()

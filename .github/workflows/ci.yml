@@ -15,5 +15,16 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Run static validation
         run: make ci
+
+      - name: Install docs dependencies
+        run: pip install -r requirements-docs.txt
+
+      - name: Validate docs build
+        run: make docs-build

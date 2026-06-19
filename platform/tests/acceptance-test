@@ -27,6 +27,9 @@ export SSH_HOST_LOG SSH_COMMAND_LOG
 PATH="$fakebin:$PATH" AGENT_VM_SSH=custom-host bash "$ACCEPTANCE" > "$tmp/out"
 
 grep -q 'PASS=6 FAIL=0' "$tmp/out"
+grep -q 'curl -fsS http://127.0.0.1:18080/healthz' "$SSH_COMMAND_LOG"
+grep -q 'platform/control/align' "$SSH_COMMAND_LOG"
+grep -q 'platform/sandbox/sandbox-runner' "$SSH_COMMAND_LOG"
 if grep -Fxvq 'custom-host' "$SSH_HOST_LOG"; then
   echo "acceptance did not use AGENT_VM_SSH for every ssh call" >&2
   echo "--- hosts ---" >&2
@@ -34,4 +37,4 @@ if grep -Fxvq 'custom-host' "$SSH_HOST_LOG"; then
   exit 1
 fi
 
-echo "acceptance tests passed"
+echo "acceptance harness routing tests passed"

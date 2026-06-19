@@ -21,56 +21,37 @@ forbid_text() {
   fi
 }
 
-hex_to_text() {
-  local hex="$1"
-  local out=""
-  local i
-  local char
-  if (( ${#hex} % 2 != 0 )); then
-    echo "invalid hex fixture length" >&2
-    exit 1
-  fi
-  for ((i = 0; i < ${#hex}; i += 2)); do
-    printf -v char '%b' "\\x${hex:i:2}"
-    out+="$char"
-  done
-  printf '%s' "$out"
-}
-
-forbid_hex_text() {
+forbid_hash_text() {
   local file="$1"
-  local hex="$2"
+  local length="$2"
+  local expected_sha="$3"
+  local label="$4"
+  python3 - "$file" "$length" "$expected_sha" "$label" <<'PY'
+import hashlib
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+length = int(sys.argv[2])
+expected_sha = sys.argv[3]
+label = sys.argv[4]
+text = path.read_text(errors="ignore").lower()
+if length <= 0:
+    raise SystemExit("invalid forbidden text length")
+for i in range(0, max(len(text) - length + 1, 0)):
+    if hashlib.sha256(text[i:i + length].encode()).hexdigest() == expected_sha:
+        print(f"forbidden public docs text in {path}: {label}", file=sys.stderr)
+        raise SystemExit(1)
+PY
+}
+
+forbid_hash_text_tree() {
+  local length="$1"
+  local expected_sha="$2"
   local label="$3"
-  local text
-  text="$(hex_to_text "$hex")"
-  if grep -Fqi "$text" "$file"; then
-    echo "forbidden public docs text in $file: $label" >&2
-    exit 1
-  fi
-}
-
-forbid_literal_fixture() {
-  local hex="$1"
-  local label="$2"
-  local text
-  text="$(hex_to_text "$hex")"
-  if grep -Fqi "$text" "$0"; then
-    echo "literal negative fixture leaked in docs contract test: $label" >&2
-    exit 1
-  fi
-}
-
-forbid_hex_text_tree() {
-  local hex="$1"
-  local label="$2"
-  local text
   local file
-  text="$(hex_to_text "$hex")"
   while IFS= read -r file; do
-    if grep -Fqi "$text" "$file"; then
-      echo "forbidden public docs text in $file: $label" >&2
-      exit 1
-    fi
+    forbid_hash_text "$file" "$length" "$expected_sha" "$label"
   done < <(
     find "$ROOT/README.md" "$ROOT/docs" "$ROOT/site" \
       -type f \( -name '*.md' -o -name '*.txt' -o -name '*.html' \) \
@@ -96,7 +77,7 @@ require_text "$ROOT/.github/workflows/pages.yml" "make docs-build"
 require_text "$ROOT/README.md" "reference implementation + acceptance suite"
 require_text "$ROOT/README.md" "governed-agent-workload-case-study.md"
 require_text "$ROOT/README.md" "demonstrates reference patterns for strict runtime isolation"
-require_text "$ROOT/README.md" "deploy-time cosign verification remains a hardening item"
+require_text "$ROOT/README.md" "reconcile-time signature verification remains a hardening item"
 require_text "$ROOT/README.md" "Architecture focus"
 require_text "$ROOT/docs/architecture/00-overview.md" "governed, persistent agent workloads"
 require_text "$ROOT/docs/architecture/00-overview.md" "compromised or misdirected"
@@ -144,44 +125,25 @@ forbid_text "$ROOT/site/docs/verification.html" 'href="evidence/governed-agent-w
 forbid_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../verification.md"'
 forbid_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" 'href="../threat-model.md"'
 
-forbid_literal_fixture "4167656e7420456d706c6f796565" "deprecated role framing"
-forbid_literal_fixture "536c61636b" "vendor-specific collaboration example"
-forbid_literal_fixture "446973636f7264" "vendor-specific collaboration example"
-forbid_literal_fixture "436c69636b5570" "vendor-specific collaboration example"
-forbid_literal_fixture "457863656c" "artifact-specific output example"
-forbid_literal_fixture "506f776572506f696e74" "artifact-specific output example"
-forbid_literal_fixture "65787472656d6520636f7374" "cost overclaim"
-forbid_literal_fixture "636f6d706c6574656c7920656c696d696e617465" "absolute-risk overclaim"
-forbid_literal_fixture "456c696d696e6174696e6720657865637574696f6e207269736b" "absolute-risk headline"
-forbid_literal_fixture "66726f6e7469657220736166657479207374616e6461726473" "standards overclaim"
-forbid_literal_fixture "7374726963742072756e74696d652069736f6c6174696f6e2c2065786163742d636f6d6d69742070726f6d6f74696f6e2c206175646974206c6f6767696e672c20616e642064656661756c742d64656e7920656772657373" "bundled enforcement overclaim"
-forbid_literal_fixture "6465706c6f792d74696d6520766572696669636174696f6e" "unsupported verification wording"
-forbid_literal_fixture "7472757374656420696e2070726f64756374696f6e" "trust wording"
-forbid_literal_fixture "7365637572656c7920686f7374696e67206167656e7420776f726b6c6f616473" "older llm framing"
-forbid_literal_fixture "636f7369676e20766572696669636174696f6e206f7574707574" "unsupported receipt evidence"
-forbid_literal_fixture "706f7274666f6c696f" "meta positioning language"
-forbid_literal_fixture "506f7274666f6c696f207369676e616c" "meta positioning heading"
-forbid_literal_fixture "5768617420746869732064656d6f6e73747261746573" "meta heading"
-
-forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "4167656e7420456d706c6f796565" "deprecated role framing"
-forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "536c61636b" "vendor-specific collaboration example"
-forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "446973636f7264" "vendor-specific collaboration example"
-forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "436c69636b5570" "vendor-specific collaboration example"
-forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "457863656c" "artifact-specific output example"
-forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "506f776572506f696e74" "artifact-specific output example"
-forbid_hex_text "$ROOT/docs/architecture/00-overview.md" "65787472656d6520636f7374" "cost overclaim"
-forbid_hex_text "$ROOT/site/index.html" "636f6d706c6574656c7920656c696d696e617465" "absolute-risk overclaim"
-forbid_hex_text "$ROOT/site/index.html" "456c696d696e6174696e6720657865637574696f6e207269736b" "absolute-risk headline"
-forbid_hex_text "$ROOT/site/index.html" "66726f6e7469657220736166657479207374616e6461726473" "standards overclaim"
-forbid_hex_text "$ROOT/README.md" "7374726963742072756e74696d652069736f6c6174696f6e2c2065786163742d636f6d6d69742070726f6d6f74696f6e2c206175646974206c6f6767696e672c20616e642064656661756c742d64656e7920656772657373" "bundled enforcement overclaim"
-forbid_hex_text "$ROOT/README.md" "6465706c6f792d74696d6520766572696669636174696f6e" "unsupported verification wording"
-forbid_hex_text "$ROOT/docs/architecture/04-production-governance.md" "6465706c6f792d74696d6520766572696669636174696f6e" "unsupported verification wording"
-forbid_hex_text "$ROOT/docs/architecture/04-production-governance.md" "7472757374656420696e2070726f64756374696f6e" "trust wording"
-forbid_hex_text "$ROOT/docs/evidence/substrate-validation-receipt.md" "636f7369676e20766572696669636174696f6e206f7574707574" "unsupported receipt evidence"
-forbid_hex_text "$ROOT/site/docs/llms.txt" "7365637572656c7920686f7374696e67206167656e7420776f726b6c6f616473" "older llm framing"
-forbid_hex_text "$ROOT/README.md" "506f7274666f6c696f207369676e616c" "meta positioning heading"
-forbid_hex_text "$ROOT/README.md" "5768617420746869732064656d6f6e73747261746573" "meta heading"
-forbid_hex_text_tree "706f7274666f6c696f" "meta positioning language"
+forbid_hash_text "$ROOT/docs/architecture/00-overview.md" 14 "4c4422249d3098656c38c794910d6d02b3d8db7260c083fcd9740f6c9e76c91a" "public-copy-policy-001"
+forbid_hash_text "$ROOT/docs/architecture/00-overview.md" 5 "877c3aec832cd41012590679bdb84ebe25e5ebbd71b6b81722b48b129feb76ae" "public-copy-policy-002"
+forbid_hash_text "$ROOT/docs/architecture/00-overview.md" 7 "e1ba4807a15d8579f79cfd90a07fc015e6125565c9271eb94aded0b2ebf86163" "public-copy-policy-003"
+forbid_hash_text "$ROOT/docs/architecture/00-overview.md" 7 "c0d67255424148d869b8c00b4e7c27645b97147e36aaf9538a661a3d87883098" "public-copy-policy-004"
+forbid_hash_text "$ROOT/docs/architecture/00-overview.md" 5 "faba1e00af8e6c89837f711eeb6f67c0d1bdb573c63abcdcdb2fbf7ab5ad2295" "public-copy-policy-005"
+forbid_hash_text "$ROOT/docs/architecture/00-overview.md" 10 "750fda7b74e35f2168cc9d25246d17d22b7c8aafad0395e68a36742ca143c547" "public-copy-policy-006"
+forbid_hash_text "$ROOT/docs/architecture/00-overview.md" 12 "1a4bbe3de927c100c4de15294c9b3ed244b96a573a423f05527caa432d570e82" "public-copy-policy-007"
+forbid_hash_text "$ROOT/site/index.html" 20 "587c61b81990262c33098bf708c85ec44b7912a4a08acacb67f04459d96cfe5a" "public-copy-policy-008"
+forbid_hash_text "$ROOT/site/index.html" 26 "e2872335fe33c316aaafd9f7335c3b0ff014363b6089a9bdfc18ab7524cc183d" "public-copy-policy-009"
+forbid_hash_text "$ROOT/site/index.html" 25 "567400ad2eb44a89b8bad330d1b568845f3394d9a9b59ca69a84c0cad5e114b5" "public-copy-policy-010"
+forbid_hash_text "$ROOT/README.md" 88 "17242586c60cb5ca031578311ca1f2333443bc2132fb9685f76b37874bbbcce5" "public-copy-policy-011"
+forbid_hash_text "$ROOT/README.md" 24 "90ab89013518dca58959e300120026ac32c9f556715526d0ad6297f86226927d" "public-copy-policy-012"
+forbid_hash_text "$ROOT/docs/architecture/04-production-governance.md" 24 "90ab89013518dca58959e300120026ac32c9f556715526d0ad6297f86226927d" "public-copy-policy-013"
+forbid_hash_text "$ROOT/docs/architecture/04-production-governance.md" 21 "0525027938138ef5f0ff76e099501fbc66794028865703b6ae90e8c0f01d634a" "public-copy-policy-014"
+forbid_hash_text "$ROOT/docs/evidence/substrate-validation-receipt.md" 26 "284fd89ad0971ec0414674ea40ce8d6ca79c9ef1a8cfd03c7525eff00a217a0f" "public-copy-policy-015"
+forbid_hash_text "$ROOT/site/docs/llms.txt" 32 "baace5549f7aa4f08d0a0760cc695dcd270bd19b4e602780349b2f62622520b3" "public-copy-policy-016"
+forbid_hash_text "$ROOT/README.md" 16 "3ac5ec6a222528db8fa3c633b1cf032f4de16246466e97966907108ea634e5d8" "public-copy-policy-017"
+forbid_hash_text "$ROOT/README.md" 22 "fc8685e1ffe6cea7d1e0b4aea563606b04284aafa5799385d08b50ca8cbcd665" "public-copy-policy-018"
+forbid_hash_text_tree 9 "0e6a8e0b849ed9b064c5a25e1ee5592f427e3eb9d250e42069ce46147d00e8d4" "public-copy-policy-019"
 require_text "$ROOT/site/docs/llms.txt" "governing untrusted autonomous AI-agent workloads"
 require_text "$ROOT/site/docs/llms.txt" "Reviewer path"
 

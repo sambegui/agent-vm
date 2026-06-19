@@ -43,7 +43,7 @@ The core pattern is platform/security architecture for autonomous agents: treat 
 |---|---|---|
 | **Archetype A — immutable release** | exercised | Python orchestrator-style agent promoted by exact commit with dry-run/apply and rollback flow. |
 | **Archetype B — package install** | captured/design | Node package-install workflows are documented with explicit stubs until package distribution and rollback mechanics are implemented. |
-| **Tier-1 signed service** | host-validated | Local registry, cosign signing, digest-pinned manifest, reconcile/align flow; deploy-time cosign verification remains a hardening item. |
+| **Tier-1 signed service** | host-validated | Local registry, cosign signing, digest-pinned manifest, reconcile/align flow; reconcile-time signature verification remains a hardening item. |
 | **Tier-2 microVM sandbox** | host-validated | Runner validates `egress.default=deny`; lab receipts show denied direct-IP/DNS probes, timeout, and teardown. |
 | **Production platform** | not claimed | This is a reference architecture and validated skeleton, not a turnkey managed platform. |
 
@@ -207,8 +207,8 @@ and [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-va
 ## Design principles
 
 - **Agent-agnostic** — agents are workloads, not the architecture.
-- **Immutable & verifiable** — exact commits, signed digests, explicit verification gates, no editing live; deploy-time cosign verification remains a hardening item.
-- **Dry-run by default** — every mutation previews before it acts; `--apply` is explicit.
+- **Immutable & verifiable** — exact commits, signed digests, explicit verification gates, no editing live; reconcile-time signature verification remains a hardening item.
+- **Review before mutation** — promotion and rollback preview before `--apply`; broader lab-host operations print context for operator review.
 - **Least authority, fail-closed** — default-deny egress, explicit tool allowlists, refuse to serve on policy-load failure.
 - **Evidence over assertion** — status re-derives ground truth; deploys carry provenance; rollback is proven, not assumed.
 

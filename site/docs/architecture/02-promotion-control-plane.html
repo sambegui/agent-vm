@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The control plane is a host-side set of small, idempotent scripts plus versioned Markdown &quot;truth&quot; files. It deploys agent runtimes over ssh against immutable releases — live servic">
+  <meta name="description" content="The control plane is a host-side set of small, idempotent scripts plus versioned Markdown &quot;truth&quot; files. It deploys agent runtimes over ssh against immutable releases — live...">
   <title>02 — Promotion control plane · agent-vm specs</title>
   <style>
     :root {
@@ -303,7 +303,7 @@ never run from a writable host mount, and live paths are never edited in place.<
     SHIP --&gt; PROV[&quot;write .release.json&quot;]
     PROV --&gt; FLIP[&quot;atomic current symlink flip&quot;]
     FLIP --&gt; RST[&quot;restart service&quot;]
-    RST --&gt; VER[&quot;verify active · symlink · source SHA&quot;]
+    RST --&gt; VER[&quot;verify active · symlink&quot;]
     VER --&gt; PREV[&quot;record previous target&lt;br/&gt;rollback-ready&quot;]
     VER --&gt; TRU[&quot;state-as-truth&quot;]
     STAT[&quot;status-agent · read-only&quot;] -.-&gt;|&quot;re-derive live SHA&quot;| TRU
@@ -316,18 +316,20 @@ never run from a writable host mount, and live paths are never edited in place.<
 <pre><code>git archive &lt;sha&gt;  →  stream over ssh  →  unpack into /opt/agent/releases/&lt;sha&gt;-&lt;label&gt;
                    →  write &lt;release&gt;/.release.json  (sha, label, source, promoter, timestamp)
                    →  atomic `ln -sfn` flip of /opt/agent/current
-                   →  restart the service  →  verify (active · symlink · source SHA)
+                   →  restart the service  →  verify (active · symlink)
 </code></pre>
-<p>The <code>.release.json</code> provenance stamp means a release is <strong>self-describing</strong>; the running source SHA is
-a fact you can read back, not a guess. The previous <code>current</code> target is recorded as the <strong>rollback
-target</strong> <em>before</em> the flip.</p>
+<p>The <code>.release.json</code> provenance stamp means a release is <strong>self-describing</strong>. <code>status-agent</code> and
+<code>agent-pr verify</code> re-read the release metadata/source path after promotion so the source SHA is a
+fact you can check, not a guess. The previous <code>current</code> target is recorded as the <strong>rollback target</strong>
+<em>before</em> the flip.</p>
 <pre><code>control-plane/promote-agent  --sha &lt;sha&gt; --label &lt;l&gt; --worktree &lt;path&gt; [--apply]
 control-plane/rollback-agent --to &lt;release-dirname|abs-path&gt; [--apply]
 </code></pre>
 <h2 id="dry-run-by-default">Dry-run by default</h2>
-<p>Every mutating script previews its plan and changes nothing unless <code>--apply</code> is passed. The exact
-commit, release path, symlink, and service it will touch are printed first. This makes the dangerous
-operations safe to run, read, and review.</p>
+<p>Promotion and rollback scripts preview their plan and change nothing unless <code>--apply</code> is passed. The
+exact commit, release path, symlink, and service they will touch are printed first. Platform
+lifecycle/bootstrap/reconcile commands are lab-host operations and should be reviewed with their
+printed context or <code>--print-config</code> path before use.</p>
 <h2 id="drift-detection-state-as-truth-re-derived">Drift detection (state-as-truth, re-derived)</h2>
 <p><code>state/*.md</code> records the durable truth (topology, runtimes, releases). But a live symlink can be
 re-pointed by another actor, so status tools <strong>re-derive ground truth on demand and flag drift</strong>

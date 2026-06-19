@@ -13,7 +13,7 @@ flowchart TB
     SHIP --> PROV["write .release.json"]
     PROV --> FLIP["atomic current symlink flip"]
     FLIP --> RST["restart service"]
-    RST --> VER["verify active · symlink · source SHA"]
+    RST --> VER["verify active · symlink"]
     VER --> PREV["record previous target<br/>rollback-ready"]
     VER --> TRU["state-as-truth"]
     STAT["status-agent · read-only"] -.->|"re-derive live SHA"| TRU
@@ -31,12 +31,13 @@ Promotion ships an **exact commit**, not a working tree:
 git archive <sha>  →  stream over ssh  →  unpack into /opt/agent/releases/<sha>-<label>
                    →  write <release>/.release.json  (sha, label, source, promoter, timestamp)
                    →  atomic `ln -sfn` flip of /opt/agent/current
-                   →  restart the service  →  verify (active · symlink · source SHA)
+                   →  restart the service  →  verify (active · symlink)
 ```
 
-The `.release.json` provenance stamp means a release is **self-describing**; the running source SHA is
-a fact you can read back, not a guess. The previous `current` target is recorded as the **rollback
-target** *before* the flip.
+The `.release.json` provenance stamp means a release is **self-describing**. `status-agent` and
+`agent-pr verify` re-read the release metadata/source path after promotion so the source SHA is a
+fact you can check, not a guess. The previous `current` target is recorded as the **rollback target**
+*before* the flip.
 
 ```
 control-plane/promote-agent  --sha <sha> --label <l> --worktree <path> [--apply]
@@ -45,9 +46,10 @@ control-plane/rollback-agent --to <release-dirname|abs-path> [--apply]
 
 ## Dry-run by default
 
-Every mutating script previews its plan and changes nothing unless `--apply` is passed. The exact
-commit, release path, symlink, and service it will touch are printed first. This makes the dangerous
-operations safe to run, read, and review.
+Promotion and rollback scripts preview their plan and change nothing unless `--apply` is passed. The
+exact commit, release path, symlink, and service they will touch are printed first. Platform
+lifecycle/bootstrap/reconcile commands are lab-host operations and should be reviewed with their
+printed context or `--print-config` path before use.
 
 ## Drift detection (state-as-truth, re-derived)
 

@@ -80,9 +80,9 @@ examples/manifests/tool-policy.example.yaml   # allowed/denied tools + schema ha
 - **Secrets by reference only** — manifests carry `secret://…` refs; never values. No secret in image
   layers, manifests, logs, SBOM, or git. Token *ids/hashes* may be recorded; values never.
 - **Default-deny egress** — internet, arbitrary DNS, work-plane APIs, model/messaging APIs all denied
-  unless explicitly allowed; a denied egress emits an audit event.
+  unless explicitly allowed; production gates should emit audit events for denied egress.
 - **Signed supply chain** — exact source SHA → digest-pinned image → cosign signature → SBOM/provenance
-  ref → explicit verification gates. Deploy-time cosign verification remains a hardening item.
+  ref → explicit verification gates. Reconcile-time signature verification remains a hardening item.
 
 ## Secure gated preview access
 

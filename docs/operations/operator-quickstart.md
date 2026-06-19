@@ -27,7 +27,9 @@ Host agent-platform agent-runtime
   StrictHostKeyChecking accept-new
 ```
 
-The default posture is **review first, mutate only with explicit apply flags**.
+The default posture is **review first**. Promotion and rollback scripts require explicit `--apply`;
+platform lifecycle/bootstrap/reconcile commands are mutating lab-host operations and should be run
+only after reviewing their printed configuration or command context.
 
 Common provisioning overrides:
 

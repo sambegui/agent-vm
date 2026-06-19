@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The substrate is a golden VM (agent-platform) defined as code on a nested-virtualization host. Agents never run on the host directly; the VM is the first boundary, and inside it wo">
+  <meta name="description" content="The substrate is a golden VM (agent-platform) defined as code on a nested-virtualization host. Agents never run on the host directly; the VM is the first boundary, and inside...">
   <title>01 — Isolation substrate · agent-vm specs</title>
   <style>
     :root {
@@ -311,7 +311,7 @@ split into tiers by blast radius.</p>
         end
         subgraph T2[&quot;Tier-2 · ephemeral Kata microVM&quot;]
             direction TB
-            JOB[&quot;signed jobspec&quot;] --&gt; MVM[&quot;Kata microVM&lt;br/&gt;default-deny egress&quot;]
+            JOB[&quot;digest-pinned jobspec&quot;] --&gt; MVM[&quot;Kata microVM&lt;br/&gt;default-deny egress&quot;]
             MVM --&gt; TDN[&quot;hard timeout&lt;br/&gt;verified teardown · 0 residual&quot;]
         end
         RUN -.-&gt;|&quot;escalate untrusted code / tools&quot;| JOB
@@ -340,42 +340,44 @@ split into tiers by blast radius.</p>
 <td><strong>Tier-1</strong></td>
 <td>long-running service</td>
 <td>container, reconciled</td>
-<td>cosign-signed + <strong>digest-pinned</strong> image, manifest-driven, health/readiness, alignment checks</td>
+<td>cosign-signed image, <strong>digest-pinned</strong> manifest, health/readiness, running-digest alignment checks</td>
 </tr>
 <tr>
 <td><strong>Tier-2</strong></td>
 <td>ephemeral job</td>
 <td><strong>microVM</strong> (Kata)</td>
-<td><strong>default-deny egress</strong>, hard timeout, verified teardown, signed job image</td>
+<td><code>egress.default=deny</code> jobspec gate, lab-recorded denied probes, hard timeout, verified teardown, digest-pinned job image</td>
 </tr>
 </tbody>
 </table>
 <h2 id="tier-1-long-running-services">Tier-1 — long-running services</h2>
 <p>A Tier-1 workload is described by a <strong>manifest</strong> that pins an image by <strong>digest</strong> (not tag). A small
 <strong>reconciler</strong> renders a supervised unit from the manifest and (re)starts it; an <strong>alignment</strong> check
-asserts the <em>running</em> image digest equals the <em>manifest</em> digest and that its signature verifies —
-<code>ALIGNED</code> or <code>DRIFT</code>. Promotion and rollback are just manifest digest changes, re-reconciled.</p>
+asserts the <em>running</em> image digest equals the <em>manifest</em> digest — <code>ALIGNED</code> or <code>DRIFT</code>. Cosign
+signing output is produced by the build path; the reconcile path does not yet verify cosign
+signatures, and adding that gate is a hardening item. Promotion and rollback are manifest digest
+changes, re-reconciled.</p>
 <pre><code>platform/manifests/hello.service.yaml      # digest-pinned manifest (reference)
 platform/control/reconcile &lt;manifest&gt;      # render + (re)start from the pinned digest
-platform/control/align &lt;manifest&gt;          # running_digest == manifest_digest &amp;&amp; signature verifies
+platform/control/align &lt;manifest&gt;          # running_digest == manifest_digest
 </code></pre>
 <p>This makes "what is actually running" a verifiable fact, not an assumption — the same idea the
 control plane (<code>02</code>) applies to release symlinks.</p>
 <h2 id="tier-2-ephemeral-microvm-sandbox">Tier-2 — ephemeral microVM sandbox</h2>
 <p>Untrusted or higher-risk jobs run in a <strong>Kata microVM</strong> via containerd — a real kernel boundary, not
-a shared-kernel container. The runner enforces:</p>
+a shared-kernel container. The runner and acceptance flow currently provide:</p>
 <ul>
-<li><strong>default-deny egress</strong> (no network unless explicitly allowed; a blocked probe is evidence, not a silent pass),</li>
+<li>a required <code>egress.default=deny</code> jobspec gate and lab receipts showing denied direct-IP/DNS probes,</li>
 <li>a <strong>hard timeout</strong>,</li>
 <li><strong>verified teardown</strong> — it confirms zero residual container/process after the job.</li>
 </ul>
 <pre><code>platform/sandbox/sandbox-runner &lt;jobspec.json&gt;   # Kata microVM · default-deny · timeout · teardown
-platform/sandbox/jobspec.example.json            # signed-by-digest job spec
+platform/sandbox/jobspec.example.json            # digest-pinned job spec
 </code></pre>
 <h2 id="supply-chain">Supply chain</h2>
 <p>Images are built, <strong>signed with cosign</strong>, pushed to a local registry, and only ever referenced by
-<strong>digest</strong>. Verification happens at <strong>deploy time</strong>, not just build time. This is the platform's
-SLSA-flavored answer to "is this the artifact we approved?"</p>
+<strong>digest</strong>. The current skeleton records signing output and validates running digest alignment;
+the reconcile path does not yet verify cosign signatures.</p>
 <pre><code>platform/images/build-sign-push &lt;version&gt;        # build → cosign sign → push → print digest
 </code></pre>
 <h2 id="provisioned-as-code">Provisioned as code</h2>
@@ -384,7 +386,8 @@ platform/vm/destroy-vm          # idempotent teardown
 platform/validate/nested-smoke  # prove a HW-backed microVM boots (closes the nested-virt gate)
 platform/validate/acceptance    # end-to-end: tier1 health · alignment · tier2 boot/egress-deny/teardown
 </code></pre>
-<p>The acceptance harness is the substrate's contract: if it is green, the isolation guarantees hold.</p>
+<p>The acceptance harness is the lab substrate contract: if it is green, the recorded skeleton checks
+passed. Stronger production claims require workload-specific canary and audit receipts.</p>
     </main>
 
     <footer>

@@ -21,7 +21,7 @@ flowchart TB
         end
         subgraph T2["Tier-2 · ephemeral Kata microVM"]
             direction TB
-            JOB["signed jobspec"] --> MVM["Kata microVM<br/>default-deny egress"]
+            JOB["digest-pinned jobspec"] --> MVM["Kata microVM<br/>default-deny egress"]
             MVM --> TDN["hard timeout<br/>verified teardown · 0 residual"]
         end
         RUN -.->|"escalate untrusted code / tools"| JOB
@@ -36,20 +36,22 @@ flowchart TB
 | Tier | Workload | Boundary | Controls |
 |---|---|---|---|
 | **Tier-0** | lab / synthetic | process | digest pinning, teardown, no secrets, local logs |
-| **Tier-1** | long-running service | container, reconciled | cosign-signed + **digest-pinned** image, manifest-driven, health/readiness, alignment checks |
-| **Tier-2** | ephemeral job | **microVM** (Kata) | **default-deny egress**, hard timeout, verified teardown, signed job image |
+| **Tier-1** | long-running service | container, reconciled | cosign-signed image, **digest-pinned** manifest, health/readiness, running-digest alignment checks |
+| **Tier-2** | ephemeral job | **microVM** (Kata) | `egress.default=deny` jobspec gate, lab-recorded denied probes, hard timeout, verified teardown, digest-pinned job image |
 
 ## Tier-1 — long-running services
 
 A Tier-1 workload is described by a **manifest** that pins an image by **digest** (not tag). A small
 **reconciler** renders a supervised unit from the manifest and (re)starts it; an **alignment** check
-asserts the *running* image digest equals the *manifest* digest and that its signature verifies —
-`ALIGNED` or `DRIFT`. Promotion and rollback are just manifest digest changes, re-reconciled.
+asserts the *running* image digest equals the *manifest* digest — `ALIGNED` or `DRIFT`. Cosign
+signing output is produced by the build path; the reconcile path does not yet verify cosign
+signatures, and adding that gate is a hardening item. Promotion and rollback are manifest digest
+changes, re-reconciled.
 
 ```
 platform/manifests/hello.service.yaml      # digest-pinned manifest (reference)
 platform/control/reconcile <manifest>      # render + (re)start from the pinned digest
-platform/control/align <manifest>          # running_digest == manifest_digest && signature verifies
+platform/control/align <manifest>          # running_digest == manifest_digest
 ```
 
 This makes "what is actually running" a verifiable fact, not an assumption — the same idea the
@@ -58,22 +60,22 @@ control plane (`02`) applies to release symlinks.
 ## Tier-2 — ephemeral microVM sandbox
 
 Untrusted or higher-risk jobs run in a **Kata microVM** via containerd — a real kernel boundary, not
-a shared-kernel container. The runner enforces:
+a shared-kernel container. The runner and acceptance flow currently provide:
 
-- **default-deny egress** (no network unless explicitly allowed; a blocked probe is evidence, not a silent pass),
+- a required `egress.default=deny` jobspec gate and lab receipts showing denied direct-IP/DNS probes,
 - a **hard timeout**,
 - **verified teardown** — it confirms zero residual container/process after the job.
 
 ```
 platform/sandbox/sandbox-runner <jobspec.json>   # Kata microVM · default-deny · timeout · teardown
-platform/sandbox/jobspec.example.json            # signed-by-digest job spec
+platform/sandbox/jobspec.example.json            # digest-pinned job spec
 ```
 
 ## Supply chain
 
 Images are built, **signed with cosign**, pushed to a local registry, and only ever referenced by
-**digest**. Verification happens at **deploy time**, not just build time. This is the platform's
-SLSA-flavored answer to "is this the artifact we approved?"
+**digest**. The current skeleton records signing output and validates running digest alignment;
+the reconcile path does not yet verify cosign signatures.
 
 ```
 platform/images/build-sign-push <version>        # build → cosign sign → push → print digest
@@ -88,4 +90,5 @@ platform/validate/nested-smoke  # prove a HW-backed microVM boots (closes the ne
 platform/validate/acceptance    # end-to-end: tier1 health · alignment · tier2 boot/egress-deny/teardown
 ```
 
-The acceptance harness is the substrate's contract: if it is green, the isolation guarantees hold.
+The acceptance harness is the lab substrate contract: if it is green, the recorded skeleton checks
+passed. Stronger production claims require workload-specific canary and audit receipts.

@@ -298,11 +298,13 @@ It applies to the walking-skeleton code in <code>platform/</code> and <code>cont
 <ol>
 <li><strong>Agents as untrusted workloads</strong> — Every AI agent runs as a sandboxed workload. The platform assumes
    the agent process, its dependencies, and its tool descriptions can be subverted.</li>
-<li><strong>Default-deny at every layer</strong> — Network, filesystem, capabilities, and tool policies all default to
-   deny. Explicit allowlists with digest pinning are required for every capability.</li>
+<li><strong>Default-deny design posture</strong> — Network, filesystem, capabilities, and tool policies are specified
+   as deny-by-default controls. The walking skeleton implements selected gates and records remaining
+   production controls as evidence requirements.</li>
 <li><strong>Evidence over assertions</strong> — Security claims require receipts: command output, signatures, digests,
    audit events, or configuration state. This repository records evidence in <code>docs/evidence/</code>.</li>
-<li><strong>Dry-run by default</strong> — Mutating operations print a plan and require an explicit <code>--apply</code> flag.</li>
+<li><strong>Review before mutation</strong> — Promotion and rollback scripts are dry-run by default; lab
+   lifecycle/bootstrap/reconcile commands are mutating operations and must be reviewed before use.</li>
 <li><strong>Rollback as a first-class operation</strong> — Every promotion captures a rollback target and documents
    the rollback command.</li>
 </ol>
@@ -324,26 +326,28 @@ It applies to the walking-skeleton code in <code>platform/</code> and <code>cont
 <tr>
 <td>Golden VM / Tier-1</td>
 <td>Persistent agent runtime, control APIs</td>
-<td>MicroVM (Firecracker/Kata), systemd, digest-pinned images, <code>align</code> verification</td>
+<td>MicroVM-capable substrate, systemd, digest-pinned images, running-digest alignment checks</td>
 </tr>
 <tr>
 <td>Tier-2 sandbox</td>
 <td>Transient agent jobs, tool execution</td>
-<td>Kata/containerd microVM, default-deny egress, seccomp, capability drop, timeout reap</td>
+<td>Kata/containerd microVM, <code>egress.default=deny</code> jobspec gate, lab-recorded denied probes, timeout reap</td>
 </tr>
 <tr>
 <td>Tool policy</td>
 <td>Which tools an agent may invoke</td>
-<td>Explicit allowlist, risk tiers, parameter schemas, human approval gate for sensitive writes</td>
+<td>Specified production gate: explicit allowlist, risk tiers, parameter schemas, human approval gate for sensitive writes</td>
 </tr>
 <tr>
 <td>Audit sink</td>
 <td>Auth, tool, egress, alignment, rollback events</td>
-<td>Structured JSON lines, tamper-evident storage, retention policy</td>
+<td>Specified production gate: structured events, tamper-evident storage, retention policy</td>
 </tr>
 </tbody>
 </table>
-<h2 id="hardening-baseline">Hardening baseline</h2>
+<h2 id="target-hardening-baseline">Target hardening baseline</h2>
+<p>This is the target posture used to review the architecture. The public walking skeleton implements a
+subset and records the remaining controls as production-readiness evidence requirements.</p>
 <ul>
 <li>Kernel: lockdown mode when available; module signing enforced.</li>
 <li>Init: minimal systemd unit set; no unnecessary services.</li>

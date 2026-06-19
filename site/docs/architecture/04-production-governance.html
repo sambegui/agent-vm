@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The substrate makes workloads isolatable; governance decides what a given workload is allowed to be, and gates it from lab to production with controls proportional to its blast rad">
+  <meta name="description" content="The substrate makes workloads isolatable; governance decides what a given workload is allowed to be, and gates it from lab to production with controls proportional to its blast...">
   <title>04 — Production governance · agent-vm specs</title>
   <style>
     :root {
@@ -438,9 +438,9 @@ terminal/file/delegation tools.</p>
 <li><strong>Secrets by reference only</strong> — manifests carry <code>secret://…</code> refs; never values. No secret in image
   layers, manifests, logs, SBOM, or git. Token <em>ids/hashes</em> may be recorded; values never.</li>
 <li><strong>Default-deny egress</strong> — internet, arbitrary DNS, work-plane APIs, model/messaging APIs all denied
-  unless explicitly allowed; a denied egress emits an audit event.</li>
+  unless explicitly allowed; production gates should emit audit events for denied egress.</li>
 <li><strong>Signed supply chain</strong> — exact source SHA → digest-pinned image → cosign signature → SBOM/provenance
-  ref → explicit verification gates. Deploy-time cosign verification remains a hardening item.</li>
+  ref → explicit verification gates. Reconcile-time signature verification remains a hardening item.</li>
 </ul>
 <h2 id="secure-gated-preview-access">Secure gated preview access</h2>
 <p>Preview surfaces are governed exposure, not casual tunnels. A development or agent-preview service may

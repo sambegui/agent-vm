@@ -7,11 +7,13 @@ It applies to the walking-skeleton code in `platform/` and `control-plane/`.
 
 1. **Agents as untrusted workloads** — Every AI agent runs as a sandboxed workload. The platform assumes
    the agent process, its dependencies, and its tool descriptions can be subverted.
-2. **Default-deny at every layer** — Network, filesystem, capabilities, and tool policies all default to
-   deny. Explicit allowlists with digest pinning are required for every capability.
+2. **Default-deny design posture** — Network, filesystem, capabilities, and tool policies are specified
+   as deny-by-default controls. The walking skeleton implements selected gates and records remaining
+   production controls as evidence requirements.
 3. **Evidence over assertions** — Security claims require receipts: command output, signatures, digests,
    audit events, or configuration state. This repository records evidence in `docs/evidence/`.
-4. **Dry-run by default** — Mutating operations print a plan and require an explicit `--apply` flag.
+4. **Review before mutation** — Promotion and rollback scripts are dry-run by default; lab
+   lifecycle/bootstrap/reconcile commands are mutating operations and must be reviewed before use.
 5. **Rollback as a first-class operation** — Every promotion captures a rollback target and documents
    the rollback command.
 
@@ -20,12 +22,15 @@ It applies to the walking-skeleton code in `platform/` and `control-plane/`.
 | Layer | What it protects | Representative controls |
 |---|---|---|
 | Host control plane | Scripts, manifests, promotion logic, registry | ShellCheck, GitHub Actions, cosign, digest pinning |
-| Golden VM / Tier-1 | Persistent agent runtime, control APIs | MicroVM (Firecracker/Kata), systemd, digest-pinned images, `align` verification |
-| Tier-2 sandbox | Transient agent jobs, tool execution | Kata/containerd microVM, default-deny egress, seccomp, capability drop, timeout reap |
-| Tool policy | Which tools an agent may invoke | Explicit allowlist, risk tiers, parameter schemas, human approval gate for sensitive writes |
-| Audit sink | Auth, tool, egress, alignment, rollback events | Structured JSON lines, tamper-evident storage, retention policy |
+| Golden VM / Tier-1 | Persistent agent runtime, control APIs | MicroVM-capable substrate, systemd, digest-pinned images, running-digest alignment checks |
+| Tier-2 sandbox | Transient agent jobs, tool execution | Kata/containerd microVM, `egress.default=deny` jobspec gate, lab-recorded denied probes, timeout reap |
+| Tool policy | Which tools an agent may invoke | Specified production gate: explicit allowlist, risk tiers, parameter schemas, human approval gate for sensitive writes |
+| Audit sink | Auth, tool, egress, alignment, rollback events | Specified production gate: structured events, tamper-evident storage, retention policy |
 
-## Hardening baseline
+## Target hardening baseline
+
+This is the target posture used to review the architecture. The public walking skeleton implements a
+subset and records the remaining controls as production-readiness evidence requirements.
 
 - Kernel: lockdown mode when available; module signing enforced.
 - Init: minimal systemd unit set; no unnecessary services.
