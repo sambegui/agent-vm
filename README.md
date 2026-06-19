@@ -103,7 +103,7 @@ AI agent workloads execute tool calls, touch external data, invoke APIs, and can
 3. **Repeatable workflow execution:** Operators can route durable workflows through the promotion control plane, isolation substrate, and governance overlay instead of relying on one-off local state.
 4. **Predictable operating model:** Reproducible environments make agent automation easier to review, rerun, roll back, and verify without overclaiming turnkey production readiness.
 
-Running several autonomous digital workers safely on shared infrastructure aligns with common security practices used by mature infrastructure teams: SLOs and canaries, explicit release promotion, supply-chain integrity, tool allowlists, egress controls, evidence-backed rollback, and governance proportional to blast radius.
+Running several autonomous agent workloads safely on shared infrastructure aligns with common security practices used by mature infrastructure teams: SLOs and canaries, explicit release promotion, supply-chain integrity, tool allowlists, egress controls, evidence-backed rollback, and governance proportional to blast radius.
 
 ## Security methodology
 
@@ -170,7 +170,7 @@ See [`docs/security-methodology.md`](docs/security-methodology.md) for the publi
    [`docs/architecture/03-gateway-runtime-layout.md`](docs/architecture/03-gateway-runtime-layout.md), [`deploy/agent-gateway/`](deploy/agent-gateway/)
 
 A **production-governance** overlay sits across all three: workload risk tiers, SLO/canary delivery,
-MCP tool-agency security, secrets-by-reference, signed artifacts, audit, and tested rollback. →
+fail-closed tool/data gates, secrets-by-reference, signed artifacts, audit, and tested rollback. →
 [`docs/architecture/04-production-governance.md`](docs/architecture/04-production-governance.md)
 
 The same governance posture applies to previews: agent/dev preview services should sit behind a

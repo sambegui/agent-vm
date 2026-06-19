@@ -7,3 +7,5 @@ Allow: /
 #
 # Full page map and citation guidance:
 # https://agent-vm.sabe.dev/docs/llms-full.txt
+
+Sitemap: https://agent-vm.sabe.dev/sitemap.xml
