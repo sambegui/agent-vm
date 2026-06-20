@@ -1,7 +1,7 @@
-# agent-vm full LLM guide
+# BoundaryKit full LLM guide
 
 Purpose:
-agent-vm documents a public, agent-agnostic reference architecture and validation suite for running AI-agent workloads in governed, isolated runtime layers. It separates public design claims, static checks, host-dependent substrate checks, and production-readiness evidence.
+BoundaryKit (formerly agent-vm) is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation. It documents a public, agent-agnostic reference architecture and validation suite for running AI-agent workloads in governed, isolated runtime layers. It separates public design claims, static checks, host-dependent substrate checks, and production-readiness evidence.
 
 Primary pages:
 - / : Public landing page with the trust-boundary map, validated scope, and evidence links.
