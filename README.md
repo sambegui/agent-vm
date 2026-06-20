@@ -1,4 +1,8 @@
-# agent-vm
+# BoundaryKit
+
+> **BoundaryKit** (formerly **agent-vm**) is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation.
+>
+> The project repository and public site remain hosted at `sambegui/agent-vm` and `agent-vm.sabe.dev`.
 
 **A framework-agnostic sandbox skeleton for governed AI-agent workloads that are treated as untrusted.**
 

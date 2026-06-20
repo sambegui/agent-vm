@@ -1,5 +1,5 @@
 <svg width="980" height="720" viewBox="0 0 980 720" role="img" xmlns="http://www.w3.org/2000/svg">
-  <title>agent-vm trust-boundary architecture</title>
+  <title>BoundaryKit trust-boundary architecture</title>
   <desc>Grounded trust boundary flow from host operators to control plane and isolation substrate with governance gates.</desc>
   <defs>
     <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">

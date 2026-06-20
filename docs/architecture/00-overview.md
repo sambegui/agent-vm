@@ -6,7 +6,7 @@ Most enterprise AI usage still happens through isolated browser tabs or ad hoc a
 fragments context, hides execution state, and gives reviewers little evidence about what ran, what
 authority was available, or how recovery would work.
 
-`agent-vm` presents a governed runtime architecture for autonomous AI-agent workloads that are
+`BoundaryKit` presents a governed runtime architecture for autonomous AI-agent workloads that are
 treated as untrusted. Agents can process approved messages, attached documents, external links,
 transcripts, API responses, and structured outputs, but the platform does not trust the agent or the
 inputs it receives.
