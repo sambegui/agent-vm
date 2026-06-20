@@ -94,9 +94,9 @@ require_text "$ROOT/site/index.html" 'rel="canonical"'
 require_text "$ROOT/site/index.html" 'property="og:title"'
 require_text "$ROOT/site/index.html" 'name="twitter:card"'
 require_text "$ROOT/site/index.html" 'aria-controls="nav-links"'
-require_text "$ROOT/site/docs/architecture/00-overview.html" "<title>00 — Architecture overview · agent-vm specs</title>"
+require_text "$ROOT/site/docs/architecture/00-overview.html" "<title>00 — Architecture overview · BoundaryKit specs</title>"
 require_text "$ROOT/site/docs/architecture/00-overview.html" '<meta name="description"'
-require_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" "<title>Case Study: Treating an Agent as an Untrusted Workload · agent-vm specs</title>"
+require_text "$ROOT/site/docs/evidence/governed-agent-workload-case-study.html" "<title>Case Study: Treating an Agent as an Untrusted Workload · BoundaryKit specs</title>"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "reference implementation + acceptance suite"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "make provision"
 require_text "$ROOT/docs/operations/operator-quickstart.md" "AGENT_VM_SSH"

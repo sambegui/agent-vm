@@ -1,6 +1,6 @@
 # Case Study: Treating an Agent as an Untrusted Workload
 
-This case study is an illustrative, vendor-neutral walkthrough for reading the `agent-vm`
+This case study is an illustrative, vendor-neutral walkthrough for reading the `BoundaryKit`
 architecture. It is not a product claim, customer deployment claim, or proof that a production
 workload is ready. Its purpose is to show how the repository's trust boundaries, operational
 controls, and evidence model apply when an autonomous AI-agent workload handles untrusted input.

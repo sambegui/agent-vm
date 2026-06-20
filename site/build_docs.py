@@ -16,7 +16,7 @@ TEMPLATE = """<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{description}">
-  <title>{title} · agent-vm specs</title>
+  <title>{title} · BoundaryKit specs</title>
   <style>
     :root {{
       color-scheme: dark;
@@ -307,7 +307,7 @@ TEMPLATE = """<!DOCTYPE html>
     </main>
 
     <footer>
-      agent-vm security substrate · open-source verification receipt
+      BoundaryKit security substrate · open-source verification receipt
     </footer>
   </div>
 </body>
