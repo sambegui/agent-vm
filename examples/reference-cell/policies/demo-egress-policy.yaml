@@ -1,0 +1,20 @@
+# example_only: fake egress policy for a public reference cell.
+policy_version: 1
+workload: boundarykit-reference-orchestrator
+default: deny
+allow:
+  - name: demo-audit-sink
+    purpose: append_only_audit
+    destination: https://audit.demo.invalid/ingest
+    methods: [POST]
+deny_examples:
+  - name: arbitrary-internet
+    destination: https://example.invalid/
+    expected_audit_event: egress.denied
+  - name: model-provider-direct
+    destination: https://model-api.demo.invalid/
+    expected_audit_event: egress.denied
+audit:
+  on_allow: true
+  on_deny: true
+  include_secret_values: false
