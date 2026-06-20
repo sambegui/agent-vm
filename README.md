@@ -55,6 +55,11 @@ The core pattern is platform/security architecture for autonomous agents: treat 
 > is illustrative (`example-network`, `platform-host`, `agent-runtime`). Nothing points at real
 > infrastructure, and no secrets are present — secret *references* only. The repository proves a
 > reproducible lab skeleton and executable validation checks, not a hosted managed product.
+>
+> Public/private release boundaries and example evidence are documented in
+> [`docs/public-private-boundary.md`](docs/public-private-boundary.md),
+> [`docs/declassification-checklist.md`](docs/declassification-checklist.md), and
+> [`docs/evidence-model.md`](docs/evidence-model.md).
 
 ## Architecture at a glance
 
@@ -207,6 +212,8 @@ and [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-va
 | `control-plane/` | Promotion / status / rollback scripts — **dry-run by default**, `--apply` to act. |
 | `deploy/agent-gateway/` | The templated multi-profile gateway (unit + launcher + example envs). |
 | `examples/` | Illustrative manifests and state-as-truth files (not live). |
+| `examples/reference-cell/` | Fake policy and evidence examples for the public reference cell. |
+| `scripts/public-safety-scan` | Local scan for common public-boundary mistakes in a branch diff. |
 
 ## Design principles
 

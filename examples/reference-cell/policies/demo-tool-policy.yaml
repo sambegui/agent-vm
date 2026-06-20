@@ -1,0 +1,31 @@
+# example_only: fake tool policy for a public reference cell.
+policy_version: 1
+workload: boundarykit-reference-orchestrator
+risk_tier: L1-internal-read-only
+allowed_tools:
+  - name: demo_context_list
+    schema_hash: "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    risk: L1
+    side_effects: none
+  - name: demo_context_get
+    schema_hash: "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    risk: L1
+    side_effects: none
+  - name: demo_status_read
+    schema_hash: "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+    risk: L1
+    side_effects: none
+denied_tools_absent_from_list:
+  - demo_message_send
+  - demo_secret_read_value
+  - demo_shell_exec
+forbidden_capability_classes:
+  - terminal
+  - file_mutation
+  - browser_control
+  - payment
+  - external_dispatch
+fail_closed:
+  unknown_allowed_tool: true
+  schema_hash_drift_blocks: true
+  policy_load_failure_refuses_to_serve: true
