@@ -12,3 +12,35 @@ __pycache__/
 *.pem
 *.token
 .secrets/
+
+# Private deployment overlay + local working artifacts — NEVER published.
+# (Also enforced locally via .git/info/exclude; duplicated here so the protection is durable and explicit.)
+# Keep all real IPs / hostnames / SSH keys / NAS paths / transcripts out of the public reference repo.
+.local/
+.superpowers/
+# Personal/local Claude Code config — never published.
+# (Skills under .claude/skills/ ARE tracked and are public-safe by design.)
+.claude/settings.local.json
+*.iso
+*.qcow2
+*.fd
+*-local-command-caveat*
+*.crt
+
+# --- Proactive private-tier hardening (2026-06-23) ---
+# Agent/session transcripts & raw logs (the note above says keep transcripts out — enforce it)
+*.jsonl
+transcripts/
+*-transcript*
+# SSH / FIDO private keys — STANDARD names only (these live in ~/.ssh, never this repo).
+# IMPORTANT: this .gitignore is itself PUBLIC. NEVER list a custom/private key name, hostname,
+# or IP here (a specific key filename would leak it). Use generic patterns + the .local/ catch-all.
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+# OS / editor cruft + local backups
+.DS_Store
+*.swp
+*.bak
+*~
