@@ -1,159 +1,118 @@
 # Operator quickstart
 
-This repository is a public **reference implementation + acceptance suite**. It is safe to inspect on
-any machine. The full substrate runbook needs an isolated Linux lab host with nested virtualization,
-hardware KVM exposed at `/dev/kvm`, libvirt/QEMU, Podman, containerd, Kata Containers, Firecracker,
-cosign, a local registry, and a configured SSH alias for the illustrative VM.
+This repository is a public case study plus reference acceptance suite. It is safe to inspect on any
+machine. The default public workflow is documentation review, static checks, safety scanning, and
+manual declassification review.
 
-The defaults create an illustrative `agent-platform` VM, but the host, IP, user, and image paths are
-parameterized. Override them with `AGENT_VM_*` variables instead of editing scripts.
+Host-dependent reference-lab commands are optional, illustrative, and expected to fail on ordinary
+laptops or CI runners without a configured virtualization lab. They are not required to preview the
+static site.
 
-**Prerequisite:** an SSH public key must exist before running the provisioning script. By default the
-key is `~/.ssh/agent-platform.pub`; override it with `AGENT_VM_PUBKEY`. Generate a default key if
-needed:
+## 1. Safe public checks
 
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/agent-platform -C "agent-platform-lab"
-```
-
-**SSH host configuration:** add the following to `~/.ssh/config` so `AGENT_VM_SSH=agent-platform`
-resolves to the lab VM:
-
-```ssh-config
-Host agent-platform agent-runtime
-  HostName 10.0.0.60
-  User admin
-  IdentityFile ~/.ssh/agent-platform
-  StrictHostKeyChecking accept-new
-```
-
-The default posture is **review first**. Promotion and rollback scripts require explicit `--apply`;
-platform lifecycle/bootstrap/reconcile commands are mutating lab-host operations and should be run
-only after reviewing their printed configuration or command context.
-
-Common provisioning overrides:
-
-```bash
-AGENT_VM_NAME=agent-platform
-AGENT_VM_SSH=agent-platform
-AGENT_VM_IP=10.0.0.60
-AGENT_VM_USER=agent
-AGENT_VM_PUBKEY="$HOME/.ssh/agent-platform.pub"
-AGENT_VM_IMGDIR=/var/lib/libvirt/images/agent-platform
-```
-
-## 1. Static checks anyone can run
+Run from the repository root:
 
 ```bash
 git status --short --branch
 make ci
+scripts/public-safety-scan
 git diff --check
 ```
 
-`make ci` performs:
+`make ci` performs shell syntax checks, optional ShellCheck lint, optional YAML parsing, and repository
+tests. It does not create VMs, push images, call cloud APIs, or mutate services.
 
-- Bash syntax checks for repo-owned shell scripts.
-- ShellCheck lint when `shellcheck` is installed.
-- YAML parsing when Ruby/Psych is available.
+## 2. Read the current public architecture
 
-The check is intentionally host-light. It does not create VMs, push images, call cloud APIs, or mutate
-services.
+1. [`README.md`](../../README.md) - public summary and repository map.
+2. [`docs/index.md`](../index.md) - reading order.
+3. [`docs/architecture/00-overview.md`](../architecture/00-overview.md) - current public case-study
+   architecture.
+4. [`docs/verification.md`](../verification.md) - claim vocabulary and verification levels.
+5. [`docs/evidence/boundary-receipt-01-inner-sandbox.md`](../evidence/boundary-receipt-01-inner-sandbox.md)
+   - inner sandbox boundary.
+6. [`docs/evidence/boundary-receipt-02-inference-boundary.md`](../evidence/boundary-receipt-02-inference-boundary.md)
+   - managed inference boundary.
 
-## 2. Read the architecture in order
+## 3. Preview the static site locally
 
-1. [`README.md`](../../README.md) — public summary and 90-second tour.
-2. [`docs/architecture/00-overview.md`](../architecture/00-overview.md) — threat model and layers.
-3. [`docs/architecture/01-isolation-substrate.md`](../architecture/01-isolation-substrate.md) — Tier-1/Tier-2 runtime boundary.
-4. [`docs/architecture/02-promotion-control-plane.md`](../architecture/02-promotion-control-plane.md) — dry-run promotion and rollback.
-5. [`docs/architecture/04-production-governance.md`](../architecture/04-production-governance.md) — governance gates and evidence requirements.
-
-## 3. Host-dependent substrate checks
-
-These commands are for an isolated lab host. They are expected to fail on a normal laptop or CI runner
-without nested KVM and the illustrative SSH aliases.
+The public site is static. If a local server is already running from `site/`, use it. Otherwise:
 
 ```bash
-# Host side: create or reconcile the illustrative golden VM and bootstrap the acceptance runtime.
+cd site
+python3 -m http.server 3000 --bind 127.0.0.1
+```
+
+Then open:
+
+```text
+http://127.0.0.1:3000/
+```
+
+## 4. Public/private blind-spot review
+
+Before publishing, manually scan the public diff for:
+
+- raw IPs outside documented placeholders;
+- host aliases, VM names, service names, routes, ports, and recovery paths;
+- SSH key names and key paths;
+- NAS or mount paths;
+- Telegram/user IDs/handles/tokens or messaging identifiers;
+- provider keys, token shapes, `.env` contents, and secret values;
+- private repo paths;
+- raw transcripts, logs, screenshots, operator approvals, or incident details.
+
+The public safety scanner is necessary but not sufficient.
+
+## 5. Reference acceptance-suite lab commands
+
+The `platform/` directory keeps a generic reference acceptance suite. These commands are illustrative
+lab fixtures, not the current public Agent VM runtime story.
+
+They require an isolated Linux lab host with virtualization support and locally installed tooling. Use
+the example defaults only as placeholders; replace them for your own lab.
+
+Depending on the reference fixture under test, the lab may require nested virtualization, `/dev/kvm`,
+Kata/containerd or Firecracker-style microVM support, a local registry, and cosign-style artifact
+signing. These are reference-lab requirements, not requirements for previewing the static site.
+
+```bash
+AGENT_VM_NAME=agent-platform
+AGENT_VM_IP=10.0.0.60
+AGENT_VM_USER=agent
+AGENT_VM_SSH=agent-platform
+AGENT_VM_PUBKEY="$HOME/.ssh/agent-platform.pub"
+```
+
+Reference-lab commands:
+
+```bash
 make provision
-
-# Host side: prove nested hardware-backed microVM boot.
 platform/validate/nested-smoke
-
-# Host side: run the walking-skeleton acceptance subset.
 platform/validate/acceptance
 ```
 
-Expected acceptance footer after a fully configured substrate run:
-
-```text
-PASS=6 FAIL=0
-```
-
-For a non-default lab VM, pass the same overrides to the acceptance runner:
+Inside the fictional lab VM, the reference suite may exercise:
 
 ```bash
-AGENT_VM_SSH=agent-platform platform/validate/acceptance
+platform/images/build-sign-push <version>
+platform/control/reconcile platform/manifests/hello.service.yaml
+platform/control/align platform/manifests/hello.service.yaml
+platform/sandbox/sandbox-runner platform/sandbox/jobspec.example.json
 ```
 
-## 4. In-VM Tier-1 flow
+Treat any result as reference-lab validation only. Production-ready language requires a separate
+workload-specific evidence packet with auth, egress, audit, rollback, and SLO evidence.
 
-Inside the illustrative VM:
-
-```bash
-~/platform/images/build-sign-push <version>
-# Copy the printed digest into platform/manifests/hello.service.yaml.
-~/platform/control/reconcile ~/platform/manifests/hello.service.yaml
-~/platform/control/align ~/platform/manifests/hello.service.yaml
-```
-
-The reconciler refuses non-digest-pinned images. `align` prints `ALIGNED` only when the running image
-digest matches the manifest.
-
-## 5. In-VM Tier-2 flow
-
-```bash
-~/platform/sandbox/sandbox-runner ~/platform/sandbox/jobspec.example.json
-```
-
-The important evidence is:
-
-- the job boots in a Kata/containerd microVM;
-- default-deny egress blocks an external network attempt;
-- timeout handling tears the job down;
-- residual containers/tasks are zero after teardown.
-
-## 6. Promotion-control-plane safety
-
-Promotion scripts are dry-run unless `--apply` is provided:
-
-```bash
-control-plane/promote-agent --sha <commit> --label <label> --worktree <path>
-control-plane/rollback-agent --to <release-dirname-or-path>
-```
-
-Only after reviewing the printed plan should an operator add `--apply`.
-
-```bash
-control-plane/promote-agent --sha <commit> --label <label> --worktree <path> --apply
-control-plane/smoke-agent
-control-plane/status-agent
-```
-
-## 7. Evidence to capture before claiming success
-
-Use [`docs/verification.md`](../verification.md) as the checklist and store the result in an evidence
-receipt like [`docs/evidence/substrate-validation-receipt.md`](../evidence/substrate-validation-receipt.md).
-A production claim requires live evidence; a design claim only requires docs and static checks.
-
-## 8. Teardown
+## 6. Teardown for the reference lab
 
 Use the same `AGENT_VM_*` identity and image-path overrides used for provisioning. Review the values
-first, then destroy the illustrative lab VM and its generated disk/seed image:
+first, then destroy only the illustrative lab VM artifacts:
 
 ```bash
 platform/vm/destroy-vm --print-config
 platform/vm/destroy-vm
 ```
 
-This teardown is intentionally limited to the configured lab VM artifacts. It does not remove the base
-cloud image, local registry contents, signing keys, or unrelated libvirt resources.
+This teardown is intentionally limited to the configured lab VM artifacts. It does not remove unrelated
+libvirt resources, private infrastructure, or local secrets.

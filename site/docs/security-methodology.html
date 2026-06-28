@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="This document describes the security methodology used to design and review the reference architecture. It applies to the walking-skeleton code in platform/ and control-plane/.">
+  <meta name="description" content="This document describes the public-safe methodology used to design and review the BoundaryKit Agent VM case study. It applies to the public architecture, static site, sanitized...">
   <title>Security methodology · BoundaryKit specs</title>
   <style>
     :root {
@@ -292,23 +292,26 @@
     </header>
     <main>
       <h1 id="security-methodology">Security methodology</h1>
-<p>This document describes the security methodology used to design and review the reference architecture.
-It applies to the walking-skeleton code in <code>platform/</code> and <code>control-plane/</code>.</p>
+<p>This document describes the public-safe methodology used to design and review the BoundaryKit Agent VM
+case study. It applies to the public architecture, static site, sanitized receipts, and reference
+acceptance fixtures.</p>
 <h2 id="guiding-principles">Guiding principles</h2>
 <ol>
-<li><strong>Agents as untrusted workloads</strong> — Every AI agent runs as a sandboxed workload. The platform assumes
-   the agent process, its dependencies, and its tool descriptions can be subverted.</li>
-<li><strong>Default-deny design posture</strong> — Network, filesystem, capabilities, and tool policies are specified
-   as deny-by-default controls. The walking skeleton implements selected gates and records remaining
-   production controls as evidence requirements.</li>
-<li><strong>Evidence over assertions</strong> — Security claims require receipts: command output, signatures, digests,
-   audit events, or configuration state. This repository records evidence in <code>docs/evidence/</code>.</li>
-<li><strong>Review before mutation</strong> — Promotion and rollback scripts are dry-run by default; lab
-   lifecycle/bootstrap/reconcile commands are mutating operations and must be reviewed before use.</li>
-<li><strong>Rollback as a first-class operation</strong> — Every promotion captures a rollback target and documents
-   the rollback command.</li>
+<li><strong>Agents as untrusted workloads</strong> - The agent process, dependencies, tool descriptions, retrieved
+   content, and model output can be subverted.</li>
+<li><strong>Default-deny posture</strong> - Network, filesystem, provider, capability, and tool policies start
+   closed and require explicit allowance.</li>
+<li><strong>Rootless runtime preference</strong> - The public case study favors rootless Podman and avoids presenting
+   a privileged Docker daemon as the runtime foundation.</li>
+<li><strong>Secrets by reference</strong> - Public examples use <code>secret://demo/...</code> references or placeholders, never
+   raw values.</li>
+<li><strong>Evidence over assertions</strong> - Claims require receipts, negative tests, digest/version identifiers,
+   audit events, or configuration state.</li>
+<li><strong>Review before mutation</strong> - Promotion and rollback are dry-run/review-first concepts; host-dependent
+   lab commands are clearly separated from safe public docs review.</li>
+<li><strong>Rollback as a first-class operation</strong> - Recovery evidence is part of the definition of done.</li>
 </ol>
-<h2 id="architecture-layers">Architecture layers</h2>
+<h2 id="current-architecture-layers">Current architecture layers</h2>
 <table>
 <thead>
 <tr>
@@ -319,45 +322,41 @@ It applies to the walking-skeleton code in <code>platform/</code> and <code>cont
 </thead>
 <tbody>
 <tr>
-<td>Host control plane</td>
-<td>Scripts, manifests, promotion logic, registry</td>
-<td>ShellCheck, GitHub Actions, cosign, digest pinning</td>
+<td>Policy and promotion boundary</td>
+<td>Operator intent, approved mutation, rollback</td>
+<td>dry-run plans, fail-closed policy, exact revision/artifact identifiers</td>
 </tr>
 <tr>
-<td>Golden VM / Tier-1</td>
-<td>Persistent agent runtime, control APIs</td>
-<td>MicroVM-capable substrate, systemd, digest-pinned images, running-digest alignment checks</td>
+<td>OpenShell sandbox + Hermes Agent</td>
+<td>Untrusted agent execution</td>
+<td>tool/data gates, filesystem/network negative tests, non-root posture</td>
 </tr>
 <tr>
-<td>Tier-2 sandbox</td>
-<td>Transient agent jobs, tool execution</td>
-<td>Kata/containerd microVM, <code>egress.default=deny</code> jobspec gate, lab-recorded denied probes, timeout reap</td>
+<td>Rootless Podman runtime</td>
+<td>Host privilege boundary</td>
+<td>no privileged Docker socket, capability drop, no-new-privileges posture</td>
 </tr>
 <tr>
-<td>Tool policy</td>
-<td>Which tools an agent may invoke</td>
-<td>Specified production gate: explicit allowlist, risk tiers, parameter schemas, human approval gate for sensitive writes</td>
+<td>Managed provider boundary</td>
+<td>Model/tool-provider credentials</td>
+<td>placeholders in sandbox, outside-boundary credential resolution, fail-closed misroutes</td>
 </tr>
 <tr>
-<td>Audit sink</td>
-<td>Auth, tool, egress, alignment, rollback events</td>
-<td>Specified production gate: structured events, tamper-evident storage, retention policy</td>
+<td>NUC-class VM substrate</td>
+<td>Backstop around sandbox runtime</td>
+<td>public summaries only, no live topology</td>
+</tr>
+<tr>
+<td>Evidence and recovery overlay</td>
+<td>Claim discipline</td>
+<td>sanitized receipts, non-claims, rollback expectations, manual declassification review</td>
 </tr>
 </tbody>
 </table>
-<h2 id="target-hardening-baseline">Target hardening baseline</h2>
-<p>This is the target posture used to review the architecture. The public walking skeleton implements a
-subset and records the remaining controls as production-readiness evidence requirements.</p>
-<ul>
-<li>Kernel: lockdown mode when available; module signing enforced.</li>
-<li>Init: minimal systemd unit set; no unnecessary services.</li>
-<li>Userspace: distroless or minimal container base images; static linking where practical.</li>
-<li>Runtime: seccomp default-deny; capability drop (CAP_DAC_OVERRIDE, CAP_SYS_ADMIN, etc.).</li>
-<li>Network: default-deny egress; explicit allowlists for registry, control plane, approved services.</li>
-<li>Storage: bounded mounts; no host filesystem exposure; digest verification on mount.</li>
-<li>Secrets: never in images, manifests, or logs; fetched at runtime from a secret store with audit.</li>
-<li>Supply chain: cosign signatures; SLSA provenance; SBOM generation; reproducible builds where practical.</li>
-</ul>
+<h2 id="reference-acceptance-suite">Reference acceptance suite</h2>
+<p><code>platform/</code> retains older/generic lab fixtures for VM, image, reconcile/align, and microVM-style
+acceptance checks. These are useful for testing portable design ideas, but they are not the primary
+public architecture for the current Agent VM case study.</p>
 <h2 id="stride-mapping">STRIDE mapping</h2>
 <table>
 <thead>
@@ -369,57 +368,55 @@ subset and records the remaining controls as production-readiness evidence requi
 <tbody>
 <tr>
 <td>Spoofing</td>
-<td>SSH host keys; cosign image signatures; mTLS for control-plane APIs; digest pinning.</td>
+<td>explicit source/artifact identifiers; provider boundary; auth-deny evidence for production claims</td>
 </tr>
 <tr>
 <td>Tampering</td>
-<td>Git-signed commits; digest-pinned images; immutable manifests; <code>align</code> verification.</td>
+<td>immutable revisions, digest-pinned examples, state re-derivation, receipt review</td>
 </tr>
 <tr>
 <td>Repudiation</td>
-<td>Append-only audit sink; signed audit events; rollback drill records.</td>
+<td>public receipts, audit-event expectations, rollback records</td>
 </tr>
 <tr>
-<td>Information Disclosure</td>
-<td>Default-deny egress; secret store with audit; no secrets in images/logs/manifests.</td>
+<td>Information disclosure</td>
+<td>default-deny egress, secrets by reference, no raw values in public artifacts</td>
 </tr>
 <tr>
-<td>Denial of Service</td>
-<td>Per-job resource quotas; timeout reap; microVM isolation; host control plane read-only CI.</td>
+<td>Denial of service</td>
+<td>timeout/recovery expectations, canary/SLO requirements before production claims</td>
 </tr>
 <tr>
-<td>Elevation of Privilege</td>
-<td>Capability drop; seccomp; user namespaces; microVM boundary; no host docker socket.</td>
+<td>Elevation of privilege</td>
+<td>rootless runtime posture, capability drop, no privileged Docker socket, sandbox boundary</td>
 </tr>
 </tbody>
 </table>
 <h2 id="pasta-alignment">PASTA alignment</h2>
-<p>This methodology aligns with <strong>PASTA Stage 1 (Define Objectives)</strong> through <strong>Stage 7 (Risk Mitigation)</strong>:
-1. Define business/security objectives (sandboxed agent workloads).
-2. Define technical scope (host control plane, golden VM, Tier-2 sandbox).
-3. Application decomposition (layers above).
-4. Threat analysis (STRIDE mapping above).
-5. Vulnerability analysis (hardening baseline, supply chain).
-6. Attack modeling (agent escape, tool misuse, promotion drift).
-7. Risk mitigation (controls above, evidence requirements, rollback drills).</p>
-<h2 id="preflight-and-post-session-gates">Preflight and post-session gates</h2>
-<p>Operators should run these checks before and after a preview or canary session:</p>
-<h3 id="preflight">Preflight</h3>
+<p>This methodology aligns with <strong>PASTA Stage 1</strong> through <strong>Stage 7</strong>:</p>
+<ol>
+<li>Define objectives: governed sandboxing for untrusted agent workloads.</li>
+<li>Define technical scope: policy boundary, sandbox runtime, provider boundary, VM substrate, evidence.</li>
+<li>Decompose application: public input, policy gate, sandbox, provider path, receipts.</li>
+<li>Threat analysis: prompt injection, credential exposure, egress, lateral movement, runtime drift.</li>
+<li>Vulnerability analysis: hardening baseline, supply chain, provider routing, public/private boundary.</li>
+<li>Attack modeling: boundary negative tests and fail-closed provider behavior.</li>
+<li>Risk mitigation: controls, receipts, rollback drills, and manual declassification review.</li>
+</ol>
+<h2 id="public-review-gates">Public review gates</h2>
+<p>Run these checks before publishing:</p>
+<pre><code class="language-bash">make ci
+scripts/public-safety-scan
+git diff --check
+</code></pre>
+<p>Then manually review for:</p>
 <ul>
-<li><code>make ci</code> — static validation passes.</li>
-<li><code>platform/validate/nested-smoke</code> — host can boot nested microVMs.</li>
-<li><code>platform/validate/acceptance</code> — acceptance subset passes (PASS=6 FAIL=0).</li>
-<li>Digest alignment check — <code>~/platform/control/align</code> reports <code>ALIGNED</code>.</li>
-<li>Tool policy hash — recorded and match expected value.</li>
-<li>Secret scan — <code>gitleaks detect --no-git</code> and <code>trufflehog filesystem .</code> report no findings.</li>
+<li>real hostnames, IPs, VM names, service names, routes, ports, SSH aliases, and key names;</li>
+<li>NAS/mount paths, private repo paths, raw logs, transcripts, and incident details;</li>
+<li>token values, token ids, key material, provider credentials, and secret shapes;</li>
+<li>architecture drift that makes reference acceptance fixtures sound like the current live design.</li>
 </ul>
-<h3 id="post-session">Post-session</h3>
-<ul>
-<li>Audit sink integrity — events appended, tamper-evident seal intact.</li>
-<li>Rollback drill — <code>control-plane/rollback-agent</code> completes within recovery target.</li>
-<li>Secret rescan — no new secrets introduced in receipts or logs.</li>
-<li>Digest alignment re-check — running image still matches manifest.</li>
-</ul>
+<p>Scanner success is necessary but not sufficient.</p>
     </main>
 
     <footer>

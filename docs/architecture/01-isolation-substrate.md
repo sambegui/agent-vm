@@ -1,94 +1,92 @@
-# 01 — Isolation substrate
+# 01 - Reference acceptance substrate
 
-The substrate is a **golden VM (`agent-platform`) defined as code** on a nested-virtualization host.
-Agents never run on the host directly; the VM is the first boundary, and inside it workloads are
-split into tiers by blast radius.
+> **Status:** Reference acceptance-suite material. This page describes a generic lab fixture retained
+> for portable validation ideas. It is not the current public runtime architecture for
+> `agent-vm.sabe.dev`.
+
+The current public case study is centered on an OpenShell sandbox running a Hermes Agent workload,
+rootless Podman runtime posture, a managed provider boundary, a NUC-class VM substrate, and public
+evidence receipts. This page preserves an older/generic acceptance substrate that can still be useful
+for validating isolation concepts in a fictional lab.
+
+## What this page is for
+
+Use this page when you want to understand the reference acceptance suite under `platform/`:
+
+- a fictional lab VM named `agent-platform`;
+- signed or digest-pinned artifact examples;
+- reconcile/align checks that compare declared state to running state;
+- a higher-risk job fixture that demonstrates microVM-style default-deny egress and teardown checks.
+
+Do not read it as live topology, current private deployment state, or proof that the current public
+case study uses this exact runtime layout.
+
+## Reference fixture shape
 
 ```mermaid
 flowchart TB
-    subgraph SUP["Supply chain · host"]
-        SRC["source @ exact SHA"] --> PIPE["build · cosign sign · push<br/>image @ digest"]
+    subgraph LAB["fictional lab host"]
+        SRC["source @ exact SHA"] --> PIPE["build · sign · print digest"]
     end
-    subgraph VM["Golden VM · isolation substrate"]
-        direction LR
-        subgraph T1["Tier-1 · long-running service"]
-            direction TB
-            MAN["digest-pinned manifest"] --> REC["reconcile · render + (re)start"]
-            REC --> RUN["running service"]
-            RUN --> ALN{"alignment check"}
-            ALN -->|ALIGNED| SRV["serve"]
-            ALN -->|DRIFT| HLT["flag / halt"]
-        end
-        subgraph T2["Tier-2 · ephemeral Kata microVM"]
-            direction TB
-            JOB["digest-pinned jobspec"] --> MVM["Kata microVM<br/>default-deny egress"]
-            MVM --> TDN["hard timeout<br/>verified teardown · 0 residual"]
-        end
-        RUN -.->|"escalate untrusted code / tools"| JOB
+    subgraph VM["reference VM · agent-platform"]
+        direction TB
+        MAN["digest-pinned manifest"] --> REC["reconcile"]
+        REC --> RUN["reference long-running service"]
+        RUN --> ALN{"alignment check"}
+        ALN -->|ALIGNED| OK["host-validated fixture"]
+        ALN -->|DRIFT| HALT["flag drift"]
+        JOB["higher-risk jobspec"] --> MVM["microVM-style sandbox<br/>default-deny egress"]
+        MVM --> TDN["timeout<br/>teardown check"]
     end
     PIPE --> MAN
+    RUN -.->|"escalate higher-risk work"| JOB
 ```
 
-*Solid = verified pipeline; dotted = risk escalation into the microVM boundary.*
+Solid arrows describe the reference acceptance path. Dotted arrows describe escalation from a
+long-running fixture into a stronger isolation fixture.
 
-## Workload tiers
+## Reference checks
 
-| Tier | Workload | Boundary | Controls |
-|---|---|---|---|
-| **Tier-0** | lab / synthetic | process | digest pinning, teardown, no secrets, local logs |
-| **Tier-1** | long-running service | container, reconciled | cosign-signed image, **digest-pinned** manifest, health/readiness, running-digest alignment checks |
-| **Tier-2** | ephemeral job | **microVM** (Kata) | `egress.default=deny` jobspec gate, lab-recorded denied probes, hard timeout, verified teardown, digest-pinned job image |
+| Check | Purpose | Current public meaning |
+|---|---|---|
+| Digest-pinned manifest | Prove declared artifact identity is explicit. | Useful supply-chain pattern, not current live deployment evidence. |
+| Reconcile/align | Compare running state against declared state. | Useful state-as-truth pattern, not a claim about private topology. |
+| MicroVM-style job | Exercise stronger isolation for higher-risk work. | Reference acceptance fixture; current public receipts lead with OpenShell sandbox and provider-boundary measurements. |
+| Default-deny egress | Verify denied outbound attempts in the fixture. | Same control objective as the current case study, but separate evidence. |
+| Teardown check | Confirm no residual fixture runtime remains after the job. | Reference-lab hygiene check, not production readiness. |
 
-## Tier-1 — long-running services
+## Commands
 
-A Tier-1 workload is described by a **manifest** that pins an image by **digest** (not tag). A small
-**reconciler** renders a supervised unit from the manifest and (re)starts it; an **alignment** check
-asserts the *running* image digest equals the *manifest* digest — `ALIGNED` or `DRIFT`. Cosign
-signing output is produced by the build path; the reconcile path does not yet verify cosign
-signatures, and adding that gate is a hardening item. Promotion and rollback are manifest digest
-changes, re-reconciled.
+These commands are host-dependent lab commands. They are expected to fail on ordinary laptops or CI
+without the required virtualization stack. They are not needed to read or validate the public static
+site.
 
-```
-platform/manifests/hello.service.yaml      # digest-pinned manifest (reference)
-platform/control/reconcile <manifest>      # render + (re)start from the pinned digest
-platform/control/align <manifest>          # running_digest == manifest_digest
-```
-
-This makes "what is actually running" a verifiable fact, not an assumption — the same idea the
-control plane (`02`) applies to release symlinks.
-
-## Tier-2 — ephemeral microVM sandbox
-
-Untrusted or higher-risk jobs run in a **Kata microVM** via containerd — a real kernel boundary, not
-a shared-kernel container. The runner and acceptance flow currently provide:
-
-- a required `egress.default=deny` jobspec gate and lab receipts showing denied direct-IP/DNS probes,
-- a **hard timeout**,
-- **verified teardown** — it confirms zero residual container/process after the job.
-
-```
-platform/sandbox/sandbox-runner <jobspec.json>   # Kata microVM · default-deny · timeout · teardown
-platform/sandbox/jobspec.example.json            # digest-pinned job spec
+```bash
+platform/vm/provision-vm
+platform/validate/nested-smoke
+platform/validate/acceptance
 ```
 
-## Supply chain
+Inside the fictional lab VM, the reference suite uses:
 
-Images are built, **signed with cosign**, pushed to a local registry, and only ever referenced by
-**digest**. The current skeleton records signing output and validates running digest alignment;
-the reconcile path does not yet verify cosign signatures.
-
-```
-platform/images/build-sign-push <version>        # build → cosign sign → push → print digest
-```
-
-## Provisioned as code
-
-```
-platform/vm/provision-vm        # idempotent: create/customize the golden VM, wait for SSH
-platform/vm/destroy-vm          # idempotent teardown
-platform/validate/nested-smoke  # prove a HW-backed microVM boots (closes the nested-virt gate)
-platform/validate/acceptance    # end-to-end: tier1 health · alignment · tier2 boot/egress-deny/teardown
+```bash
+platform/images/build-sign-push <version>
+platform/control/reconcile platform/manifests/hello.service.yaml
+platform/control/align platform/manifests/hello.service.yaml
+platform/sandbox/sandbox-runner platform/sandbox/jobspec.example.json
 ```
 
-The acceptance harness is the lab substrate contract: if it is green, the recorded skeleton checks
-passed. Stronger production claims require workload-specific canary and audit receipts.
+## Non-claims
+
+This page does not claim:
+
+- that the public site exposes live deployment topology;
+- that the current Agent VM case study uses this exact lab fixture;
+- that every outer containment boundary is measured;
+- that production readiness exists for a real workload;
+- that any private credential, token, host, VM, registry, or incident detail is present.
+
+For the current public evidence trail, start with
+[`../evidence/boundary-receipt-01-inner-sandbox.md`](../evidence/boundary-receipt-01-inner-sandbox.md)
+and
+[`../evidence/boundary-receipt-02-inference-boundary.md`](../evidence/boundary-receipt-02-inference-boundary.md).

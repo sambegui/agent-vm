@@ -1,110 +1,77 @@
-# 03 — Gateway runtime layout
+# 03 - Reference gateway runtime layout
 
-A single agent runtime often serves several **profiles** at once (a primary channel gateway, an HTTP
-API surface, an MCP/SSE endpoint, …). The failure this layer prevents: many profiles sharing one
-mutable runtime symlink, each setting the runtime via *conflicting* `Environment=` lines spread across
-a unit fragment and several drop-ins — so "which runtime is this profile importing, and did I restart
-the right service?" becomes genuinely ambiguous.
+> **Status:** Reference acceptance-suite material. This page describes a legacy/generic per-profile
+> gateway fixture. It is not the current public runtime architecture for `agent-vm.sabe.dev`.
+
+The current public case study centers an OpenShell sandbox running a Hermes Agent workload, rootless
+Podman runtime posture, a managed provider boundary, a NUC-class VM substrate, and evidence receipts.
+This page is retained because its design lessons are still useful: avoid ambiguous runtime sources,
+avoid shared mutable profile state, and prove what is running before making claims.
+
+## Why the fixture existed
+
+The legacy fixture modeled several agent profiles served by one template:
+
+- one declared runtime source per profile;
+- independent restart boundaries;
+- separate profile homes and logs;
+- dry-run alignment proof before a smoke test;
+- no broad central dashboard mutation.
+
+Those are still good governance ideas. The current public case study expresses them through sandbox,
+provider-boundary, and receipt language rather than through a public `agent-gateway@<profile>` runtime
+map.
+
+## Reference fixture shape
 
 ```mermaid
 flowchart TB
-    classDef warn fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111827;
-    TMPL["agent-gateway@&lt;profile&gt; · one template"]
-    subgraph P1["profile: core · OS user agent-core"]
-        direction TB
-        E1["env · one runtime source"] --> C1["current → release"]
-        H1["AGENT_HOME /opt/agent/gateways/core/home · 0700"]
-    end
-    subgraph P2["profile: api · OS user agent-api"]
-        direction TB
-        E2["env · one runtime source"] --> C2["current → release"]
-        H2["AGENT_HOME /opt/agent/gateways/api/home · 0700"]
-    end
-    TMPL --> P1
-    TMPL --> P2
-    WARN["app-state profiles are NOT a file-security boundary"]:::warn
-    HARD["OS boundary = per-profile Linux user + hardened systemd unit<br/>ProtectSystem=strict · ProtectHome · NoNewPrivileges · CapabilityBoundingSet= · IPAddressDeny"]:::warn
-    EXEC["untrusted code / tools → Tier-2 microVM (never the gateway)"]
-    P1 -.->|"cannot read"| P2
-    P1 -.->|"untrusted exec"| EXEC
-    HARD -.-> P1
-    HARD -.-> P2
+    REG["fictional profile registry"]
+    P1["profile: core<br/>one runtime source"]
+    P2["profile: api<br/>one runtime source"]
+    PROOF["alignment banner<br/>pid · cwd · runtime · source"]
+    DENY["cross-profile reads denied"]
+    EXEC["higher-risk execution<br/>separate sandbox fixture"]
+
+    REG --> P1
+    REG --> P2
+    P1 --> PROOF
+    P2 --> PROOF
+    P1 -.-> DENY
+    P2 -.-> DENY
+    P1 -.-> EXEC
 ```
 
-*Solid = template instantiated per profile; dotted = the isolation boundaries (cross-profile read denial, OS hardening, untrusted-exec escalation).*
+This diagram is a fictional reference fixture. It omits real service names, hostnames, ports, users,
+paths, and deployment details.
 
-## One template, one runtime source per profile
+## Lessons retained
 
-```
-/etc/systemd/system/agent-gateway@.service     # the template (deploy/agent-gateway/systemd/)
-/opt/agent/_lib/launch                          # shared launcher (deploy/agent-gateway/_lib/launch)
-/opt/agent/gateways/<profile>/
-    current -> /opt/agent/releases/<sha>-<label>   # THIS profile's runtime — the single source of truth
-    env                                            # EnvironmentFile: declares the runtime ONCE
-    home/                                          # AGENT_HOME (config/state/.env)
-    logs/
-```
+| Lesson | Public-safe formulation |
+|---|---|
+| One runtime source | A workload should have one declared source of truth, not scattered environment overrides. |
+| Independent lifecycle | Restarting or rolling back one profile/workload should not disturb unrelated profiles. |
+| State isolation | Application-level state separation is not automatically a security boundary. |
+| Alignment proof | Before a smoke test, re-derive what code/artifact is actually running. |
+| Higher-risk work | Move untrusted or higher-blast-radius execution into a stronger boundary and record a receipt. |
 
-The runtime source (`AGENT_ROOT` / `PYTHONPATH`) is declared **exactly once**, in the profile's `env`,
-pointing at that profile's **own** `current` symlink. The unit sets no `PYTHONPATH`, and **no drop-in
-may**. A lint reduces to: `systemctl cat agent-gateway@<p>` shows zero `PYTHONPATH` (it comes from the
-env file), and the running process shows exactly one.
+## Relationship to the current case study
 
-## Per-profile isolation
+For `agent-vm.sabe.dev`, use these current terms first:
 
-- **Independent runtime version** — promoting a new build to one profile (e.g. a smoke profile) never
-  touches the others. Each `current` symlink is flipped on its own.
-- **Independent lifecycle** — the units carry no `Requires=`/`PartOf=`/`BindsTo=` on each other, so
-  `systemctl restart agent-gateway@<p>` disturbs nothing else. Plugins are imported at process start,
-  so a plugin change is picked up only by restarting *that* instance.
-- **Unambiguous targets** — the profile is in the unit name; `agent-gateway` with no instance is not
-  runnable, so an ambiguous "the gateway" can never be started by accident.
+- **OpenShell sandbox + Hermes Agent** for the public runtime boundary.
+- **Rootless Podman** for the least-privilege runtime posture.
+- **Managed provider boundary** for model/tool-provider credential handling.
+- **Evidence receipts** for measured behavior.
 
-## Two entrypoint modes, one template
+Only use this gateway fixture when discussing the reference acceptance suite or older portable design
+lessons.
 
-A shared launcher resolves the entrypoint from the profile env, prints an **alignment banner**
-(`pid / cwd / PYTHONPATH / runtime / sha`), then `exec`s the real process:
+## Non-claims
 
-- `AGENT_GATEWAY_MODE=cli` → `python -m agent_cli.main gateway run --replace` (standard CLI gateway).
-- `AGENT_GATEWAY_MODE=script` → `python $AGENT_PROFILE_EXEC` (bespoke per-profile entrypoint).
+This page does not claim:
 
-## Isolation boundaries — three layers, not one
-
-Per-profile *app-state* separation (each profile's own config / memory / sessions) is an
-**application** convenience, **not** a security boundary: two profiles running under the **same OS
-user** can still read each other's files. Production isolation therefore uses three distinct boundaries:
-
-| Boundary | Mechanism | What it stops |
-|---|---|---|
-| App-state | per-profile home / config / sessions | accidental state mixing (not a security control) |
-| **File / OS** | **one Linux user + one hardened systemd unit + one home per profile** | one profile reading another profile's files |
-| **Execution** | Tier-2 microVM / Kata sandbox | untrusted tool/code escaping the long-lived gateway |
-
-In **production-isolation mode** the template runs each profile as its **own service account**
-(`User=agent-<profile>`) with systemd hardening — `ProtectSystem=strict`, `ProtectHome=yes`,
-`PrivateTmp`, `NoNewPrivileges`, `CapabilityBoundingSet=` (drop all), `IPAddressDeny=any` + a
-per-profile allowlist — writing only its own `home/` and `logs/` (`ReadWritePaths`). The runtime tree
-(`current` → an immutable release) stays **read-only**. Untrusted code is never run in the gateway; it
-is escalated to a **Tier-2 microVM**. See
-[`agent-gateway@.service`](../../deploy/agent-gateway/systemd/agent-gateway@.service).
-
-### Two modes
-
-- **Convenience mode** — one OS user, one home, many app-state profiles, one dashboard switcher. Fine
-  for dev / low-risk same-owner profiles; *not* a file-isolation boundary.
-- **Production-isolation mode** *(recommended)* — one OS user + one hardened system service + one home
-  per profile, a per-profile status endpoint, and a central **read-only** registry view.
-
-A profile is only "isolated" once it is **proven** that cross-profile read is denied, denied tools are
-absent, egress is default-denied, its dashboard sees only its own state, and it can be stopped/rolled
-back without touching siblings.
-
-## Alignment proof
-
-Because the launcher banner and `/proc/<pid>/environ` expose the actual cwd, `PYTHONPATH`, runtime
-path, and source SHA, you can *prove* a given profile is running the intended release before any live
-smoke test — and prove sibling profiles were untouched. `AGENT_LAUNCH_DRYRUN=1` resolves the command
-off-host without executing anything (see `deploy/agent-gateway/README.md`).
-
-This is the same "verify, don't assume" stance as Tier-1 alignment (`01`) and control-plane drift
-detection (`02`), applied to multi-profile service hosting.
+- that `agent-gateway@<profile>` is the current public runtime stage;
+- that public docs reveal private service units, users, home paths, or ports;
+- that application profile separation is sufficient as a security boundary;
+- that a reference fixture is production-ready.

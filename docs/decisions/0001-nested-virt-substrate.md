@@ -1,15 +1,17 @@
 # ADR 0001 — Nested-virtualization substrate with microVM sandboxing
 
 ## Status
-Accepted.
+Accepted for the reference acceptance suite. Superseded as the current public Agent VM runtime story by
+the OpenShell/Hermes, rootless Podman, managed-provider-boundary case study in
+[`../architecture/00-overview.md`](../architecture/00-overview.md).
 
 ## Context
-The platform hosts AI agents that execute tool calls under model control and may be misdirected by
+The reference acceptance suite hosts AI-agent fixtures that execute tool calls under model control and may be misdirected by
 untrusted input. Shared-kernel containers alone are a weak boundary for an agent job that might be
 compromised or coerced at runtime.
 
 ## Decision
-Run all workloads inside a golden VM defined as code (KVM), and run higher-risk **Tier-2** jobs in
+For the reference fixture, run workloads inside a golden VM defined as code (KVM), and run higher-risk **Tier-2** jobs in
 **Kata microVMs** (via containerd `io.containerd.kata.v2`) rather than plain containers — a real
 kernel boundary per job — with default-deny egress, a hard timeout, and verified teardown. This
 requires **nested virtualization**, validated by a boot smoke test before anything depends on it.

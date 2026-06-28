@@ -3,8 +3,15 @@
 `BoundaryKit` uses evidence to keep production claims honest. A workload is not ready because a file
 exists or a command was intended to run; it is ready only when current evidence proves the gate.
 
-This document describes the public reference model. Example receipts in this repo are fake and marked
-`example_only`.
+This document describes the public case-study evidence model. Public evidence in this repository has
+three allowed forms:
+
+- **Example receipts** are fake and marked `example_only`.
+- **Reference acceptance receipts** are sanitized summaries for generic lab fixtures and do not prove
+  the current Agent VM runtime.
+- **Sanitized public summaries** describe a boundary class or validation result that was measured
+  elsewhere, but they are newly written, stripped of raw logs and private values, and scoped to what
+  the public text can safely claim.
 
 ## Evidence Principles
 
@@ -46,9 +53,12 @@ This document describes the public reference model. Example receipts in this rep
 | Rollback | target, command, elapsed time, post-rollback health |
 | Promotion | evidence packet review and explicit decision |
 
-## Fake Evidence In This Repo
+## Public Evidence In This Repo
 
 Files under `examples/reference-cell/evidence/` demonstrate receipt shape only. They use fake
 registries, fake digests, fake signatures, fake checksums, and synthetic command output.
 
-Do not treat public example receipts as proof of any private deployment.
+Files under `docs/evidence/` may include sanitized public summaries. They are not raw evidence logs,
+do not expose private topology, and do not authorize production-readiness claims.
+
+Do not treat public example receipts or sanitized summaries as proof of any private deployment.

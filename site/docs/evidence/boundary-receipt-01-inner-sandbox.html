@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="This public case study treats AI agents as untrusted, tool-wielding workloads. The platform assumes an agent can be misdirected by untrusted input or compromised through its...">
-  <title>Threat model · BoundaryKit specs</title>
+  <meta name="description" content="This is a sanitized public summary of a privately held boundary receipt. It records the first adversarially measured isolation boundary in the BoundaryKit reference...">
+  <title>Boundary receipt #1 — inner sandbox, measured · BoundaryKit specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -283,179 +283,149 @@
 <body>
   <div class="container">
     <header class="site-header">
-      <a class="back-link" href="../index.html">← Back to Console</a>
+      <a class="back-link" href="../../index.html">← Back to Console</a>
       <div class="top-nav-group">
-        <a href="../docs/security-methodology.html" class="top-nav-link" title="Security Methodology">← Prev</a>
+        <a href="../../docs/evidence/substrate-validation-receipt.html" class="top-nav-link" title="Reference Acceptance Receipt">← Prev</a>
         <span class="top-nav-separator">|</span>
-        <a href="../docs/verification.html" class="top-nav-link" title="Verification Model">Next →</a>
+        <a href="../../docs/evidence/boundary-receipt-02-inference-boundary.html" class="top-nav-link" title="Boundary Receipt #2 — Inference Boundary">Next →</a>
       </div>
     </header>
     <main>
-      <h1 id="threat-model">Threat model</h1>
-<p>This public case study treats AI agents as untrusted, tool-wielding workloads. The platform assumes an
-agent can be misdirected by untrusted input or compromised through its tools, dependencies, runtime, or
-operator workflow.</p>
-<h2 id="assets">Assets</h2>
+      <h1 id="boundary-receipt-1-inner-sandbox-measured">Boundary receipt #1 — inner sandbox, measured</h1>
+<p>This is a sanitized public summary of a privately held boundary receipt. It records the first
+<strong>adversarially measured</strong> isolation boundary in the <code>BoundaryKit</code> reference architecture: the
+<strong>inner sandbox</strong> that wraps an agent runtime. It is a generalized lesson, not a live infrastructure
+log — no private hosts, addresses, image digests, or command transcripts appear here.</p>
+<p>The narrative it advances is deliberately small: one inner runtime boundary moved from <em>designed</em> to
+<em>measured</em>. The honest frame is a <strong>sequence</strong>, not a completion. Neighboring boundaries, including
+credential mediation and outer containment, require their own receipts.</p>
+<h2 id="scope">Scope</h2>
 <table>
 <thead>
 <tr>
-<th>Asset</th>
-<th>Why it matters</th>
+<th>Item</th>
+<th>Value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Operator intent and policy</td>
-<td>The system must distinguish approved authority from prompt-driven behavior.</td>
+<td>Boundary measured</td>
+<td>Inner sandbox around an agent runtime (container + kernel filesystem policy + application-layer egress proxy + network namespace)</td>
 </tr>
 <tr>
-<td>Sandbox state</td>
-<td>Files, sessions, task state, and local caches may contain sensitive or integrity-critical data.</td>
+<td>Method</td>
+<td>Adversarial negative-test matrix run from inside the sandbox</td>
 </tr>
 <tr>
-<td>Provider credentials</td>
-<td>Model/tool-provider credentials must not be copied into the sandbox or public receipts.</td>
+<td>Runtime identity</td>
+<td>Non-root process</td>
 </tr>
 <tr>
-<td>Runtime boundary</td>
-<td>A compromised agent should not become a compromised host or sibling workload.</td>
+<td>Default policy</td>
+<td>Read-write workspace only; system paths read-only; <strong>deny-by-default egress</strong></td>
 </tr>
 <tr>
-<td>Tool surface</td>
-<td>Shell, file, browser, network, messaging, and orchestration tools can create real-world effects.</td>
+<td>Mutating production systems</td>
+<td>None</td>
 </tr>
 <tr>
-<td>Evidence receipts</td>
-<td>Operators need reliable proof for denied crossings, provider routing, rollback, and non-claims.</td>
+<td>Secrets included</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Claim supported</td>
+<td>The inner sandbox boundary holds under the tested probes — <strong>not</strong> credential mediation, outer containment, or production readiness</td>
 </tr>
 </tbody>
 </table>
-<h2 id="actors">Actors</h2>
+<h2 id="negative-test-matrix">Negative-test matrix</h2>
+<p>Each row is an attempt to cross the boundary. The boundary holds when the attempt is <strong>refused</strong>.</p>
 <table>
 <thead>
 <tr>
-<th>Actor</th>
-<th>Capability</th>
+<th>Probe</th>
+<th>Observed</th>
+<th>Verdict</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Prompt-injection attacker</td>
-<td>Supplies content that tries to steer the agent into unsafe tool use or data exfiltration.</td>
+<td>External HTTPS egress</td>
+<td>Connection refused by the application-layer proxy (403 CONNECT-tunnel failure)</td>
+<td>Blocked</td>
 </tr>
 <tr>
-<td>Compromised agent workload</td>
-<td>Executes unexpected tool calls or attempts lateral movement.</td>
+<td>External HTTP egress</td>
+<td>Request refused (403)</td>
+<td>Blocked</td>
 </tr>
 <tr>
-<td>Malicious dependency or artifact</td>
-<td>Enters through package install, image build, or copied runtime assets.</td>
+<td>Cloud-metadata SSRF (link-local <code>169.254.0.0/16</code> range), HTTP and HTTPS</td>
+<td>Refused with an explicit policy-denied response</td>
+<td>Blocked</td>
 </tr>
 <tr>
-<td>Mistaken operator</td>
-<td>Runs the wrong command, deploys the wrong revision, or skips rollback proof.</td>
+<td>LAN lateral movement to an internal service</td>
+<td>Refused</td>
+<td>Blocked</td>
 </tr>
 <tr>
-<td>Network attacker</td>
-<td>Attempts unauthorized access to exposed endpoints or relies on unexpected outbound reachability.</td>
+<td><strong>Raw-socket bypass of the proxy</strong></td>
+<td>Refused even with a direct socket — the denial is <strong>structural, not merely policy</strong></td>
+<td>Blocked</td>
 </tr>
 <tr>
-<td>Repository attacker</td>
-<td>Attempts to alter workflows, scripts, manifests, or docs to weaken validation.</td>
+<td>External DNS resolution</td>
+<td>No external resolver available</td>
+<td>Blocked</td>
+</tr>
+<tr>
+<td>Write to a read-only system path</td>
+<td>Permission denied by kernel filesystem policy</td>
+<td>Denied</td>
+</tr>
+<tr>
+<td>Write to the designated workspace</td>
+<td>Allowed</td>
+<td>Expected</td>
+</tr>
+<tr>
+<td>Provider credentials in process environment</td>
+<td>None present</td>
+<td>See non-claims</td>
 </tr>
 </tbody>
 </table>
-<h2 id="trust-boundaries">Trust boundaries</h2>
-<pre><code class="language-text">public input / operator intent
-        |
-        v
-policy and promotion boundary
-        |
-        v
-OpenShell sandbox running Hermes Agent
-        |                         |
-        v                         v
-rootless Podman runtime      managed provider boundary
-        \                         /
-         v                       v
-       NUC-class VM substrate and evidence receipts
-</code></pre>
-<p>Boundary rules:</p>
+<p><strong>Headline:</strong> deny-by-default egress was confirmed at the application-layer proxy <em>and</em> held when an
+attacker bypassed the proxy with a raw socket — so egress denial does not depend on a single
+cooperating control. Cloud-metadata SSRF, LAN lateral movement, external egress, and external DNS
+were all refused; the filesystem is read-only outside the workspace; the process runs non-root.</p>
+<h2 id="what-this-receipt-does-not-claim">What this receipt does NOT claim</h2>
+<p>This is the part that matters most, and the part almost nobody publishes. The discipline of the
+architecture is that unproven boundaries are named, not implied.</p>
 <ul>
-<li>The repository contains examples, manifests, docs, and scripts, not live secrets.</li>
-<li>Public diagrams are reference models, not live deployment maps.</li>
-<li>The sandbox is treated as a lower-trust execution boundary.</li>
-<li>Provider credentials are represented by references or placeholders inside the sandbox.</li>
-<li>Rootless runtime posture is preferred over a privileged Docker daemon.</li>
-<li>Tool allowlists fail closed; denied or unknown tools should not silently become available.</li>
-<li>Public receipts state what was measured and what remains pending.</li>
+<li><strong>This is the inner sandbox boundary, not an outer containment boundary.</strong> It does not prove that a
+  sandbox escape is contained by a VM, hypervisor, or host-management boundary.</li>
+<li><strong>The credential-non-leakage check is scoped.</strong> The original check confirmed no provider credential
+  was present in this sandbox, but it did not by itself prove the governed model path. That follow-on
+  is covered separately by <a href="boundary-receipt-02-inference-boundary.html">boundary receipt #2</a>.</li>
+<li><strong>No formal proof yet.</strong> The matrix is empirical. A formal "deny-except-allowlist" proof that
+  searches for counterexamples is a separate, complementary step.</li>
 </ul>
-<h2 id="primary-threats-and-controls">Primary threats and controls</h2>
-<table>
-<thead>
-<tr>
-<th>Threat</th>
-<th>Control</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Prompt injection triggers unsafe tools</td>
-<td>Explicit tool/data gates, risk tiers, human approval for sensitive writes, audit events.</td>
-</tr>
-<tr>
-<td>Agent exfiltrates data over the network</td>
-<td>Default-deny egress, SSRF/lateral/DNS negative tests, managed provider path.</td>
-</tr>
-<tr>
-<td>Provider credential lands in sandbox</td>
-<td>Secrets by reference, placeholder-in-sandbox configuration, host/provider-side resolution.</td>
-</tr>
-<tr>
-<td>Agent escapes into host or sibling workload</td>
-<td>OpenShell sandboxing, rootless Podman posture, NUC-class VM substrate, bounded mounts.</td>
-</tr>
-<tr>
-<td>Runtime drift or stale claims</td>
-<td>Status checks, exact revision/artifact identifiers, receipts, and non-claim sections.</td>
-</tr>
-<tr>
-<td>Secret exposure in git/logs/images</td>
-<td><code>.gitignore</code>, public-safety scan, manual declassification review, no raw values in receipts.</td>
-</tr>
-<tr>
-<td>Broken rollback</td>
-<td>Rollback target and recovery evidence required before production-ready language.</td>
-</tr>
-<tr>
-<td>CI or docs drift preserves stale architecture</td>
-<td>Docs contract tests and architecture-language lint should enforce current public terminology.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="current-limitations">Current limitations</h2>
-<ul>
-<li>The public case study has measured specific inner sandbox and provider-boundary behavior, not every
-  outer containment layer.</li>
-<li>The reference acceptance suite in <code>platform/</code> is generic lab material, not the current public runtime
-  map.</li>
-<li>Example host names, addresses, paths, registries, and secret references are fictional.</li>
-<li>This repository does not include a real secret manager, audit backend, customer deployment, or
-  external monitoring stack.</li>
-</ul>
-<h2 id="security-invariants">Security invariants</h2>
-<p>These requirements should not be waived for production use:</p>
-<ul>
-<li>missing or invalid auth is denied;</li>
-<li>denied tools are absent or fail closed;</li>
-<li>unknown tools fail closed;</li>
-<li>raw secrets never appear in git, logs, manifests, images, or receipts;</li>
-<li>egress is denied by default and has a negative test;</li>
-<li>provider credentials stay outside the sandbox boundary;</li>
-<li>rollback is tested and timed;</li>
-<li>runtime identity is proven before smoke-test claims;</li>
-<li>production promotion is based on evidence, not on unit creation alone.</li>
-</ul>
+<h2 id="next-boundary-classes">Next boundary classes</h2>
+<p>The immediate credential follow-on is now public as
+<a href="boundary-receipt-02-inference-boundary.html">boundary receipt #2</a>. Deeper containment claims, such as
+whether an escaped sandbox is confined by an outer virtualization or host-management-plane boundary,
+remain separately scoped. Until a public summary exists for that boundary, language such as "hard
+boundary," "proven isolation," or "unescapable" is intentionally withheld.</p>
+<h2 id="evidence-level">Evidence level</h2>
+<p>Read this against the <a href="../verification.html">verification model</a>. This receipt is a <strong>boundary
+measurement</strong>: stronger than a lab smoke test because the boundary was attacked, weaker than a
+production canary because no real workload, credential, or SLO is in scope. It sits between
+host-substrate validation and production-readiness evidence, and it covers exactly one boundary.</p>
+<p>Read alongside <a href="boundary-receipt-02-inference-boundary.html">boundary receipt #2 — inference boundary</a>,
+the <a href="governed-agent-workload-case-study.html">governed-agent-workload case study</a>, and the
+<a href="substrate-validation-receipt.html">substrate validation receipt</a>.</p>
     </main>
 
     <footer>

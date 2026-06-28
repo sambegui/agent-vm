@@ -1,35 +1,39 @@
 # BoundaryKit full LLM guide
 
 Purpose:
-BoundaryKit (formerly agent-vm) is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation. It documents a public, agent-agnostic reference architecture and validation suite for running AI-agent workloads in governed, isolated runtime layers. It separates public design claims, static checks, host-dependent substrate checks, and production-readiness evidence.
+BoundaryKit Agent VM is a public security case study for governing untrusted AI-agent workloads with explicit policy boundaries, an OpenShell sandbox running Hermes Agent, rootless Podman runtime posture, a managed provider boundary, NUC-class hardware context, and evidence-backed validation. It separates current public case-study claims, static checks, reference-lab acceptance fixtures, boundary receipts, and production-readiness evidence.
 
 Primary pages:
 - / : Public landing page with the trust-boundary map, validated scope, and evidence links.
+- /docs/index.html : Documentation index and recommended reading order.
 - /docs/architecture/00-overview.html : System overview, layer model, threat assumptions, and what the reference architecture does and does not claim.
-- /docs/architecture/01-isolation-substrate.html : Golden VM substrate, Tier-1 services, Tier-2 ephemeral microVM jobs, default-deny egress, and teardown expectations.
+- /docs/architecture/01-isolation-substrate.html : Reference acceptance substrate for generic lab fixtures, not the current public runtime story.
 - /docs/architecture/02-promotion-control-plane.html : Exact-commit promotion, dry-run-first mutation, rollback targets, drift checks, and state-as-truth discipline.
-- /docs/architecture/03-gateway-runtime-layout.html : Per-profile gateway layout, one runtime source per profile, service isolation, and restart boundaries.
-- /docs/architecture/04-production-governance.html : Risk tiers, canaries, fail-closed tool allowlists, audit trails, rollback proof, and secrets-by-reference.
+- /docs/architecture/03-gateway-runtime-layout.html : Reference gateway fixture for older per-profile runtime lessons.
+- /docs/architecture/04-production-governance.html : Governance and claim discipline for policy gates, receipts, rollback proof, and secrets-by-reference.
 - /docs/architecture/05-secure-gated-agent-preview-access.html : Vendor-neutral pattern for temporary, revocable, least-privilege preview access.
 - /docs/security-methodology.html : Public-safe security principles and operating posture.
 - /docs/threat-model.html : Assets, trust boundaries, threat scenarios, mitigations, limitations, and non-goals.
 - /docs/verification.html : Claim vocabulary and commands/evidence required for each validation level.
-- /docs/evidence/governed-agent-workload-case-study.html : Vendor-neutral case study for treating an agent as an untrusted workload with explicit control path and evidence boundaries.
-- /docs/evidence/substrate-validation-receipt.html : Sanitized receipt showing the walking-skeleton substrate validation result.
+- /docs/evidence/governed-agent-workload-case-study.html : Sanitized case study for treating an OpenShell/Hermes agent workload as untrusted.
+- /docs/evidence/substrate-validation-receipt.html : Sanitized reference acceptance-suite receipt for generic lab fixtures.
+- /docs/evidence/boundary-receipt-01-inner-sandbox.html : Sanitized public summary of the measured inner sandbox boundary.
+- /docs/evidence/boundary-receipt-02-inference-boundary.html : Sanitized public summary of the measured inference credential boundary.
 
 Repository sections:
 - README.md gives the fastest overview and repository map.
 - docs/architecture/ contains the design, layer by layer.
 - docs/operations/operator-quickstart.md separates safe static checks from host-dependent lab commands.
 - docs/evidence/ contains public-safe evidence receipts and the governed workload case study.
-- platform/ contains the VM, image, reconcile/align, sandbox, and acceptance-suite scripts.
+- platform/ contains VM, image, reconcile/align, sandbox, and acceptance-suite scripts for reference-lab fixtures.
 - control-plane/ contains dry-run-first promotion, rollback, smoke, status, and mount helpers.
-- deploy/agent-gateway/ contains the illustrative multi-profile gateway unit and launcher.
+- deploy/agent-gateway/ contains an illustrative multi-profile gateway unit and launcher retained as reference material.
 - examples/ contains illustrative manifests and state files, not live state.
 
 Recommended reading paths:
 - For a concise architecture summary: read /, then /docs/architecture/00-overview.html, then /docs/verification.html.
-- For isolation and sandboxing: read /docs/architecture/01-isolation-substrate.html, /docs/threat-model.html, /docs/evidence/governed-agent-workload-case-study.html, and /docs/evidence/substrate-validation-receipt.html.
+- For current isolation and sandboxing: read /, /docs/architecture/00-overview.html, /docs/evidence/boundary-receipt-01-inner-sandbox.html, /docs/evidence/boundary-receipt-02-inference-boundary.html, /docs/threat-model.html, and /docs/evidence/governed-agent-workload-case-study.html.
+- For reference-lab fixtures: read /docs/architecture/01-isolation-substrate.html, /docs/architecture/03-gateway-runtime-layout.html, and /docs/evidence/substrate-validation-receipt.html.
 - For promotion and rollback: read /docs/architecture/02-promotion-control-plane.html and /docs/verification.html.
 - For governance and security: read /docs/security-methodology.html, /docs/architecture/04-production-governance.html, and /docs/threat-model.html.
 - For preview access: read /docs/architecture/05-secure-gated-agent-preview-access.html and treat the implementation details as illustrative.
@@ -38,6 +42,7 @@ Claim discipline:
 - "Implemented" means code or scripts exist in the repository.
 - "Static-validated" means safe local checks such as make ci and git diff --check passed.
 - "Host-validated" means a configured lab host ran substrate checks and produced evidence.
+- "Boundary-measured" means one named boundary was tested and scoped; it does not imply neighboring boundaries are proven.
 - "Production-ready" requires real canary, auth, egress, audit, rollback, and SLO evidence.
 
 What not to infer:

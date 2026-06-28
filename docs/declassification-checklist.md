@@ -20,7 +20,10 @@ or reveal a private deployment.
 - [ ] Secret examples use references only, such as `secret://demo/...`.
 - [ ] Artifact examples use fake registries and fake digests.
 - [ ] Tool examples use fake tool names and fake schema hashes.
-- [ ] Evidence examples are fake receipts, not excerpts from real logs.
+- [ ] Evidence examples are fake receipts, and any public evidence summary is newly written from the
+      generalizable lesson rather than copied from private logs.
+- [ ] Public evidence summaries include no raw command transcripts, private addresses, real artifact
+      identifiers, operator approvals, or incident-specific details.
 - [ ] Public text does not claim that a private system, client, or workload was validated.
 
 ## Governance Checks

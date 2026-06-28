@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The substrate makes workloads isolatable; governance decides what a given workload is allowed to be, and gates it from lab to production with controls proportional to its blast...">
-  <title>04 — Production governance · BoundaryKit specs</title>
+  <meta name="description" content="Governance decides what an agent workload is allowed to do and what evidence is required before a claim gets stronger. The current public case study does not claim a managed...">
+  <title>04 - Governance and claim discipline · BoundaryKit specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -285,209 +285,146 @@
     <header class="site-header">
       <a class="back-link" href="../../index.html">← Back to Console</a>
       <div class="top-nav-group">
-        <a href="../../docs/architecture/03-gateway-runtime-layout.html" class="top-nav-link" title="03 — Gateway Runtime Layout">← Prev</a>
+        <a href="../../docs/architecture/03-gateway-runtime-layout.html" class="top-nav-link" title="03 — Reference Gateway Fixture">← Prev</a>
         <span class="top-nav-separator">|</span>
         <a href="../../docs/architecture/05-secure-gated-agent-preview-access.html" class="top-nav-link" title="05 — Gated Preview Access">Next →</a>
       </div>
     </header>
     <main>
-      <h1 id="04-production-governance">04 — Production governance</h1>
-<p>The substrate makes workloads <em>isolatable</em>; governance decides <strong>what a given workload is allowed to
-be</strong>, and gates it from lab to production with controls proportional to its blast radius. The unit of
-governance is a <strong>production cell</strong>: one workload, with a contract, a signed artifact, a manifest,
-isolation, auth, observability, progressive delivery, and proven rollback.</p>
-<pre><code class="language-mermaid">flowchart TB
-    classDef gov fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111827;
-    subgraph RINGS[&quot;isolation ring model · trust ↓, controls ↑&quot;]
-        direction TB
-        R0[&quot;Ring 0 · operator / control&quot;] --&gt; R1[&quot;Ring 1 · conversation-plane · no terminal/file/delegation&quot;]
-        R1 --&gt; R2[&quot;Ring 2 · trusted worker · bounded work dirs&quot;]
-        R2 --&gt; R3[&quot;Ring 3 · code / build · sandboxed terminal backend&quot;]
-        R3 --&gt; R4[&quot;Ring 4 · untrusted exec · ephemeral microVM&quot;]
-        R4 --&gt; R5[&quot;Ring 5 · public / client · separate user / VM&quot;]
-    end
-    subgraph CAN[&quot;progressive delivery · beside legacy&quot;]
-        direction TB
-        S0[&quot;Stage 0 · deploy-only&quot;] --&gt; S1[&quot;Stage 1 · read-only canary&quot;]
-        S1 --&gt; S2[&quot;Stage 2 · limited production&quot;]
-        S2 --&gt; DEC{&quot;promote?&quot;}
-        DEC --&gt;|&quot;evidence: cross-profile read denied · egress denied · auth · rollback &amp;lt; 5m&quot;| PRO[&quot;promote&quot;]
-        DEC --&gt;|else| RB[&quot;rollback · proven&quot;]
-    end
-    GOV[&quot;governance gate · production-ready = canary evidence, not unit creation&quot;]:::gov
-    GOV -.-&gt;|&quot;controls scale with ring&quot;| RINGS
-    GOV -.-&gt;|&quot;gates promotion&quot;| CAN
-</code></pre>
-<p><em>Solid = the trust ladder and canary progression; dotted = governance gating both.</em></p>
-<h2 id="risk-tiers-controls-scale-with-autonomyblast-radius">Risk tiers (controls scale with autonomy/blast radius)</h2>
+      <h1 id="04-governance-and-claim-discipline">04 - Governance and claim discipline</h1>
+<p>Governance decides what an agent workload is allowed to do and what evidence is required before a
+claim gets stronger. The current public case study does not claim a managed production platform; it
+shows how policy, sandboxing, provider boundaries, receipts, and rollback expectations fit together.</p>
+<h2 id="risk-tiers">Risk tiers</h2>
 <table>
 <thead>
 <tr>
 <th>Tier</th>
-<th>Example</th>
-<th>Required controls</th>
+<th>Example public description</th>
+<th>Required public evidence before stronger claims</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>L0</strong> Lab</td>
-<td>synthetic job</td>
-<td>digest pinning, teardown, no secrets, local logs</td>
+<td><strong>L0 lab</strong></td>
+<td>synthetic checks, no real secrets</td>
+<td>static checks, fake values, teardown notes</td>
 </tr>
 <tr>
-<td><strong>L1</strong> Internal read-only</td>
-<td>read-only awareness endpoint</td>
-<td>auth, <strong>tool allowlist</strong>, isolated state, <strong>default-deny egress</strong>, audit</td>
+<td><strong>L1 bounded read-only</strong></td>
+<td>reads approved inputs and returns summaries</td>
+<td>auth denial, tool allowlist, default-deny egress, no raw secrets</td>
 </tr>
 <tr>
-<td><strong>L2</strong> Internal limited action</td>
-<td>approved read/send tools</td>
-<td>human approval for writes, stronger audit, tested rollback, scoped tokens</td>
+<td><strong>L2 limited action</strong></td>
+<td>invokes approved tools with bounded effects</td>
+<td>human approval for writes, scoped credentials, audit events, rollback drill</td>
 </tr>
 <tr>
-<td><strong>L3</strong> Owner-facing prod</td>
-<td>a primary service</td>
-<td>high SLO, full incident loop, backup/restore, live runtime proof</td>
+<td><strong>L3 owner-facing</strong></td>
+<td>affects a real owner workflow</td>
+<td>canary packet, SLO comparison, recovery proof, incident loop</td>
 </tr>
 <tr>
-<td><strong>L4</strong> Client-facing</td>
-<td>external surface</td>
-<td>tenant isolation, data policy, external-audit-ready evidence, stronger identity</td>
+<td><strong>L4 client-facing</strong></td>
+<td>touches external/client data</td>
+<td>tenant/data isolation, external-audit-ready evidence, stronger identity</td>
 </tr>
 <tr>
-<td><strong>L5</strong> Regulated</td>
-<td>high-autonomy/sensitive</td>
-<td>compliance review, strict retention, dedicated environment</td>
+<td><strong>L5 regulated/sensitive</strong></td>
+<td>high autonomy or regulated data</td>
+<td>compliance review, retention policy, dedicated environment</td>
 </tr>
 </tbody>
 </table>
-<p>A workload may not deploy with controls below its tier; raising autonomy raises the bar.</p>
-<h2 id="isolation-ring-model-profile-classes">Isolation ring model (profile classes)</h2>
-<p>Risk tiers say <em>how much control</em> a workload needs; isolation <strong>rings</strong> say <em>what boundary and file /
-tool posture</em> a profile class gets. They complement each other.</p>
+<p>The public Agent VM material currently stays below production-ready claims. It can show measured
+boundaries and architecture discipline without claiming that a real workload passed every canary gate.</p>
+<h2 id="current-governance-overlay">Current governance overlay</h2>
+<pre><code class="language-mermaid">flowchart TB
+    RQ[&quot;untrusted request / content&quot;]
+    POL[&quot;policy gate&lt;br/&gt;allowlists · review · dry-run&quot;]
+    SBX[&quot;sandbox boundary&lt;br/&gt;OpenShell + Hermes Agent&quot;]
+    PROV[&quot;provider boundary&lt;br/&gt;secrets outside sandbox&quot;]
+    EVD[&quot;evidence receipts&lt;br/&gt;measured vs pending&quot;]
+    REC[&quot;recovery discipline&lt;br/&gt;rollback expected before promotion&quot;]
+
+    RQ --&gt; POL --&gt; SBX --&gt; PROV --&gt; EVD --&gt; REC
+</code></pre>
+<h2 id="tool-and-data-gates">Tool and data gates</h2>
+<p>For agents that expose tools, the tool surface is the attack surface:</p>
+<ul>
+<li>tools are an explicit allowlist;</li>
+<li>denied tools should be absent or fail closed;</li>
+<li>unknown tools fail closed;</li>
+<li>policy load failures stop serving rather than falling back to broad permissions;</li>
+<li>tool descriptions and schemas are treated as injection surfaces;</li>
+<li>sensitive writes require human approval and audit evidence.</li>
+</ul>
+<h2 id="secrets-and-provider-boundaries">Secrets and provider boundaries</h2>
+<p>Public examples use secret references, not values. A useful public provider-boundary receipt should
+show:</p>
+<ul>
+<li>the sandbox sees a placeholder or reference, not a raw provider credential;</li>
+<li>the provider path resolves outside the sandbox;</li>
+<li>a broken or misrouted provider path fails closed;</li>
+<li>logs, images, manifests, and receipts do not contain raw token material.</li>
+</ul>
+<h2 id="egress-and-exfiltration">Egress and exfiltration</h2>
+<p>Default-deny egress is a control objective, not a slogan. A public boundary receipt should name the
+boundary under test and include denied crossing attempts such as:</p>
+<ul>
+<li>direct outbound network attempts;</li>
+<li>raw-socket or bypass attempts where relevant;</li>
+<li>SSRF-style metadata probes;</li>
+<li>lateral movement attempts;</li>
+<li>external DNS attempts;</li>
+<li>filesystem and privilege checks when those are in scope.</li>
+</ul>
+<h2 id="progressive-evidence">Progressive evidence</h2>
+<p>Use these terms precisely:</p>
 <table>
 <thead>
 <tr>
-<th>Ring</th>
-<th>Class</th>
-<th>Boundary</th>
-<th>File access</th>
-<th>Tool posture</th>
+<th>Term</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>0</td>
-<td>operator / control</td>
-<td>human-gated</td>
-<td>observe registry &amp; receipts; not all homes</td>
-<td>owner-gated admin only</td>
+<td><strong>Architecture narrative</strong></td>
+<td>the design is explained; no runtime behavior is proven</td>
 </tr>
 <tr>
-<td>1</td>
-<td>conversation-plane</td>
-<td>dedicated user + hardened unit</td>
-<td>own home only</td>
-<td>no terminal / file / delegation</td>
+<td><strong>Static-validated</strong></td>
+<td>public repo checks ran locally or in CI</td>
 </tr>
 <tr>
-<td>2</td>
-<td>trusted worker</td>
-<td>dedicated user + bounded dirs</td>
-<td>own home + assigned worktree</td>
-<td>limited tools by role</td>
+<td><strong>Reference-lab validated</strong></td>
+<td>a fictional/generic lab fixture ran the acceptance suite</td>
 </tr>
 <tr>
-<td>3</td>
-<td>code / build</td>
-<td>dedicated user + sandboxed terminal backend</td>
-<td>assigned worktree only</td>
-<td>terminal via container / microVM</td>
+<td><strong>Boundary-measured</strong></td>
+<td>one named boundary refused a defined negative-test matrix</td>
 </tr>
 <tr>
-<td>4</td>
-<td>untrusted exec</td>
-<td>ephemeral microVM</td>
-<td>scratch only</td>
-<td>default-deny egress, teardown verified</td>
-</tr>
-<tr>
-<td>5</td>
-<td>public / client</td>
-<td>separate user, preferably separate VM</td>
-<td>client home only</td>
-<td>no private memory / cross-client</td>
+<td><strong>Production-ready</strong></td>
+<td>a real workload produced canary, auth, egress, audit, rollback, and SLO evidence</td>
 </tr>
 </tbody>
 </table>
-<p>A read-only conversation-plane endpoint is <strong>Ring 1</strong>: dedicated OS user, own home only, no
-terminal/file/delegation tools.</p>
-<h2 id="tool-agency-security-the-ai-specific-danger-surface">Tool-agency security (the AI-specific danger surface)</h2>
-<p>For agents that expose tools (e.g. via MCP), the tool surface <em>is</em> the attack surface:</p>
+<h2 id="public-non-claims">Public non-claims</h2>
+<p>The public docs must not imply:</p>
 <ul>
-<li>tools are an <strong>explicit allowlist</strong>, not "whatever is convenient";</li>
-<li><strong>denied tools are absent from <code>tools/list</code></strong>, not merely rejected on call;</li>
-<li>an <strong>unknown allowed tool fails closed</strong>; a tool <strong>schema-hash drift blocks</strong> the workload;</li>
-<li>policy that cannot be loaded → <strong>refuse to serve</strong> (never fall back to a permissive default);</li>
-<li>tool <em>descriptions/schemas</em> are treated as injection surfaces; sensitive actions require approval.</li>
+<li>live deployment topology;</li>
+<li>customer deployment evidence;</li>
+<li>raw private logs or incident details;</li>
+<li>token values or token shapes;</li>
+<li>production readiness from unit creation alone;</li>
+<li>endorsement by upstream projects beyond public credit and links.</li>
 </ul>
-<pre><code>examples/manifests/tool-policy.example.yaml   # allowed/denied tools + schema hashes + fail-closed flags
-</code></pre>
-<h2 id="secrets-egress-supply-chain">Secrets, egress, supply chain</h2>
-<ul>
-<li><strong>Secrets by reference only</strong> — manifests carry <code>secret://…</code> refs; never values. No secret in image
-  layers, manifests, logs, SBOM, or git. Token <em>ids/hashes</em> may be recorded; values never.</li>
-<li><strong>Default-deny egress</strong> — internet, arbitrary DNS, work-plane APIs, model/messaging APIs all denied
-  unless explicitly allowed; production gates should emit audit events for denied egress.</li>
-<li><strong>Signed supply chain</strong> — exact source SHA → digest-pinned image → cosign signature → SBOM/provenance
-  ref → explicit verification gates. Reconcile-time signature verification remains a hardening item.</li>
-</ul>
-<h2 id="secure-gated-preview-access">Secure gated preview access</h2>
-<p>Preview surfaces are governed exposure, not casual tunnels. A development or agent-preview service may
-be opened only through a temporary, revocable, least-privilege, auditable gate with no broad routing,
-no public exposure, no standing remote identity, and no secret values in prompts, logs, repositories,
-or receipts. See <a href="05-secure-gated-agent-preview-access.html"><code>05-secure-gated-agent-preview-access.html</code></a>
-for the reference pattern and sanitized Tailscale example.</p>
-<h2 id="progressive-delivery-measured-exposure-not-blind-cutover">Progressive delivery (measured exposure, not blind cutover)</h2>
-<p>A workload is promoted through canary stages <strong>beside</strong> the existing one, never replacing it in one
-motion:</p>
-<pre><code>Stage 0  deploy-only dry canary   — health, auth-deny, egress-deny, alignment, audit; no clients
-Stage 1  read-only canary         — one trusted client, read calls only, observe
-Stage 2  limited production canary — one/two clients, narrow approved actions, old service still live
-Promotion decision                — only if SLO met, rollback proven, no tool/egress/secret surprises
-</code></pre>
-<p>SLO/error-budget thinking, synthetic probes with baseline/control comparison, and <strong>rollback proven
-before promotion</strong> are required — and you do not claim stronger reliability than your probe volume
-supports.</p>
-<h2 id="audit-rollback">Audit &amp; rollback</h2>
-<p>Minimum audit events — <code>service.start/stop</code>, <code>auth.accepted/denied</code>, <code>tool.allowed/denied</code>,
-<code>egress.denied</code>, <code>secret.loaded</code>, <code>alignment.checked</code>, <code>rollback.executed</code> — shipped <strong>off-box</strong>,
-append-only, no secret values. <strong>Rollback is a tested drill</strong> (endpoint and manifest-digest), with a
-recorded receipt, not an assumption.</p>
-<p>This overlay is how a new agent crosses from "runs in the lab" to evidence-gated production use
-without the platform having to trust the agent.</p>
-<h2 id="dashboards-control-plane">Dashboards &amp; control plane</h2>
-<p>A single dashboard that can edit every profile's home is a powerful cross-profile authority — it
-collapses the isolation it sits above. The production pattern:</p>
-<ul>
-<li><strong>per-profile</strong> dashboards / status endpoints, each bound to loopback or a private socket, reading
-  only their own profile;</li>
-<li>a <strong>central dashboard that is read-only by default</strong> — a registry / observability view (profile
-  name, ring, unit, health, canary state, rollback target, evidence path) with <strong>no broad
-  profile-home access</strong>;</li>
-<li>any central mutation is an <strong>explicit, approved, profile-scoped</strong> admin action through a narrow
-  helper that writes a receipt — never a broad filesystem mount.</li>
-</ul>
-<p>The non-secret registry that drives it:
-<a href="https://github.com/sambegui/agent-vm/blob/main/examples/manifests/profile-registry.example.yaml"><code>examples/manifests/profile-registry.example.yaml</code></a>;
-a per-profile capability contract:
-<a href="https://github.com/sambegui/agent-vm/blob/main/examples/manifests/profile-capability.example.yaml"><code>examples/manifests/profile-capability.example.yaml</code></a>.</p>
-<h2 id="production-ready-means-evidence-not-unit-creation">Production-ready means evidence, not unit creation</h2>
-<p>Creating users and units is not production. A workload is production-ready only when <strong>recorded
-evidence</strong> shows it runs the intended code, <strong>cross-profile read is denied</strong>, denied tools are absent,
-egress policy is enforced, secrets are not logged, <strong>rollback works</strong>, and the canary survived real
-traffic. The scaffold and first canary can land the same day; the <em>production claim</em> waits for the
-evidence packet.</p>
+<p>Governance is the discipline that keeps the public case study honest: if a boundary was not measured,
+say it is pending; if a command was not run, say it was not run; if evidence is private, publish only a
+newly written sanitized summary with fictional values.</p>
     </main>
 
     <footer>

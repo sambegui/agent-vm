@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="This receipt summarizes the public, non-secret evidence recorded in platform/state/substrate-validation.md. It is a sanitized public evidence packet, not a live infrastructure log.">
-  <title>Substrate validation receipt · BoundaryKit specs</title>
+  <meta name="description" content="This receipt summarizes public, non-secret evidence recorded for the generic platform/ reference acceptance suite. It is a sanitized public evidence packet for a fictional lab...">
+  <title>Reference acceptance-suite receipt · BoundaryKit specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -287,14 +287,14 @@
       <div class="top-nav-group">
         <a href="../../docs/evidence/governed-agent-workload-case-study.html" class="top-nav-link" title="Governed Workload Case Study">← Prev</a>
         <span class="top-nav-separator">|</span>
-        <span class="top-nav-link disabled">Next →</span>
+        <a href="../../docs/evidence/boundary-receipt-01-inner-sandbox.html" class="top-nav-link" title="Boundary Receipt #1 — Inner Sandbox">Next →</a>
       </div>
     </header>
     <main>
-      <h1 id="substrate-validation-receipt">Substrate validation receipt</h1>
-<p>This receipt summarizes the public, non-secret evidence recorded in
-<a href="https://github.com/sambegui/agent-vm/blob/main/platform/state/substrate-validation.md"><code>platform/state/substrate-validation.md</code></a>. It is a
-sanitized public evidence packet, not a live infrastructure log.</p>
+      <h1 id="reference-acceptance-suite-receipt">Reference acceptance-suite receipt</h1>
+<p>This receipt summarizes public, non-secret evidence recorded for the generic <code>platform/</code> reference
+acceptance suite. It is a sanitized public evidence packet for a fictional lab fixture, not a live
+infrastructure log and not the current Agent VM runtime map.</p>
 <h2 id="scope">Scope</h2>
 <table>
 <thead>
@@ -306,11 +306,11 @@ sanitized public evidence packet, not a live infrastructure log.</p>
 <tbody>
 <tr>
 <td>Repository area</td>
-<td><code>platform/</code> walking skeleton</td>
+<td><code>platform/</code> reference acceptance suite</td>
 </tr>
 <tr>
 <td>Evidence type</td>
-<td>Lab-host substrate validation</td>
+<td>Reference-lab validation</td>
 </tr>
 <tr>
 <td>Mutating production systems</td>
@@ -322,7 +322,11 @@ sanitized public evidence packet, not a live infrastructure log.</p>
 </tr>
 <tr>
 <td>Claim supported</td>
-<td>Host-validated substrate skeleton, not production service readiness</td>
+<td>Generic lab fixture passed its acceptance checks</td>
+</tr>
+<tr>
+<td>Claim not supported</td>
+<td>Current private deployment state, production readiness, or complete outer containment proof</td>
 </tr>
 </tbody>
 </table>
@@ -338,17 +342,17 @@ sanitized public evidence packet, not a live infrastructure log.</p>
 <tbody>
 <tr>
 <td>Nested microVM smoke</td>
-<td>Firecracker microVM booted with KVM acceleration in the initial runtime guest.</td>
+<td>Reference lab showed a hardware-backed microVM-style boot check.</td>
 <td>PASS</td>
 </tr>
 <tr>
-<td>Golden VM nested validation</td>
-<td>Firecracker microVM booted with KVM acceleration inside the illustrative <code>agent-platform</code> VM.</td>
+<td>Reference VM validation</td>
+<td>Fictional <code>agent-platform</code> lab fixture completed the substrate check.</td>
 <td>PASS</td>
 </tr>
 <tr>
-<td>Tier-2 Kata/containerd job</td>
-<td>Kata runtime executed the example job and printed <code>hello-from-microvm</code>.</td>
+<td>Higher-risk job fixture</td>
+<td>Example job printed the expected reference output.</td>
 <td>PASS</td>
 </tr>
 <tr>
@@ -369,36 +373,45 @@ sanitized public evidence packet, not a live infrastructure log.</p>
 </tbody>
 </table>
 <h2 id="acceptance-subset">Acceptance subset</h2>
-<p>The expected final acceptance summary for the configured lab host is:</p>
+<p>The expected final acceptance summary for the configured reference lab is:</p>
 <pre><code class="language-text">PASS=6 FAIL=0
 </code></pre>
 <p>The six checks are:</p>
 <ol>
-<li>Tier-1 health endpoint responds locally.</li>
-<li>Tier-1 running digest matches the pinned manifest.</li>
-<li>Tier-2 microVM boots.</li>
-<li>Tier-2 default-deny egress blocks external network access (direct IP).</li>
-<li>Tier-2 default-deny egress blocks DNS exfiltration attempts.</li>
-<li>Tier-2 teardown leaves zero residual runtime artifacts.</li>
+<li>reference service health responds locally;</li>
+<li>running image digest matches the pinned manifest;</li>
+<li>higher-risk sandbox fixture boots;</li>
+<li>default-deny egress blocks external network access;</li>
+<li>default-deny egress blocks DNS exfiltration attempts;</li>
+<li>teardown leaves zero residual runtime artifacts.</li>
 </ol>
+<h2 id="relationship-to-current-public-evidence">Relationship to current public evidence</h2>
+<p>This receipt is useful background for the reference acceptance suite. The current public case-study
+evidence starts with narrower measured boundaries:</p>
+<ul>
+<li><a href="boundary-receipt-01-inner-sandbox.html">Boundary receipt #1 - inner sandbox</a></li>
+<li><a href="boundary-receipt-02-inference-boundary.html">Boundary receipt #2 - inference boundary</a></li>
+</ul>
+<p>Those receipts answer "does this named boundary refuse a crossing?" or "does this credential boundary
+hold?" This reference receipt answers "did the generic lab fixture pass its acceptance checks?"</p>
 <h2 id="non-claims">Non-claims</h2>
 <p>This receipt does <strong>not</strong> claim:</p>
 <ul>
 <li>that this repository is a turnkey production product;</li>
 <li>that every possible agent framework has been deployed;</li>
-<li>that a live customer or owner-facing workload has passed canary gates;</li>
-<li>that cloud-hosted infrastructure exists behind the example host names;</li>
-<li>that any private credential, token, or endpoint is present in the repository.</li>
+<li>that a live customer or owner-facing workload passed canary gates;</li>
+<li>that cloud-hosted infrastructure exists behind example host names;</li>
+<li>that any private credential, token, endpoint, VM name, host path, or incident detail is present;</li>
+<li>that the current Agent VM runtime is the same as the reference acceptance suite.</li>
 </ul>
 <h2 id="follow-up-evidence-needed-for-production-readiness">Follow-up evidence needed for production readiness</h2>
 <p>Before any real workload is called production-ready, capture:</p>
 <ul>
-<li>exact source SHA and artifact digest;</li>
-<li>cosign signing output and digest reference;</li>
-<li>SBOM/provenance reference;</li>
-<li>tool-policy hash and fail-closed test;</li>
+<li>exact source SHA or artifact digest;</li>
+<li>policy version and fail-closed test;</li>
 <li>auth allow/deny events without token values;</li>
-<li>egress deny audit event;</li>
+<li>provider-boundary proof without printing credential material;</li>
+<li>egress-deny audit event;</li>
 <li>rollback drill output and elapsed time;</li>
 <li>canary health/SLO comparison against a baseline.</li>
 </ul>

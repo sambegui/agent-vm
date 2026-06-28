@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="This case study is an illustrative, vendor-neutral walkthrough for reading the BoundaryKit architecture. It is not a product claim, customer deployment claim, or proof that a...">
-  <title>Case Study: Treating an Agent as an Untrusted Workload · BoundaryKit specs</title>
+  <meta name="description" content="This case study is a sanitized public walkthrough for reading the BoundaryKit Agent VM architecture. It is not a product claim, customer deployment claim, live topology map, or...">
+  <title>Case Study: Governing an OpenShell/Hermes Agent Workload · BoundaryKit specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -287,117 +287,89 @@
       <div class="top-nav-group">
         <a href="../../docs/verification.html" class="top-nav-link" title="Verification Model">← Prev</a>
         <span class="top-nav-separator">|</span>
-        <a href="../../docs/evidence/substrate-validation-receipt.html" class="top-nav-link" title="Evidence Receipt">Next →</a>
+        <a href="../../docs/evidence/substrate-validation-receipt.html" class="top-nav-link" title="Reference Acceptance Receipt">Next →</a>
       </div>
     </header>
     <main>
-      <h1 id="case-study-treating-an-agent-as-an-untrusted-workload">Case Study: Treating an Agent as an Untrusted Workload</h1>
-<p>This case study is an illustrative, vendor-neutral walkthrough for reading the <code>BoundaryKit</code>
-architecture. It is not a product claim, customer deployment claim, or proof that a production
-workload is ready. Its purpose is to show how the repository's trust boundaries, operational
-controls, and evidence model apply when an autonomous AI-agent workload handles untrusted input.</p>
+      <h1 id="case-study-governing-an-openshellhermes-agent-workload">Case Study: Governing an OpenShell/Hermes Agent Workload</h1>
+<p>This case study is a sanitized public walkthrough for reading the <code>BoundaryKit Agent VM</code>
+architecture. It is not a product claim, customer deployment claim, live topology map, or proof that a
+production workload is ready.</p>
 <h2 id="scenario">Scenario</h2>
-<p>An AI agent receives three inputs from an approved collaboration surface:</p>
+<p>An AI-agent workload receives approved input from an operator-facing workflow:</p>
 <ol>
-<li>a team message asking for a summary and follow-up plan;</li>
-<li>an attached document with task details and embedded instructions;</li>
-<li>an external link that may contain supporting context.</li>
+<li>a message or task request;</li>
+<li>attached or retrieved context that may contain hostile instructions;</li>
+<li>a need to call tools or a model provider to complete the task.</li>
 </ol>
-<p>The agent is a probabilistic actor. It may misread the request, follow malicious instructions in the
-document, invoke the wrong tool, or attempt to reach data beyond the approved scope. The message,
-document, link, model output, tool arguments, and retrieved content are all treated as untrusted.</p>
-<p>The workload objective is narrow: process approved inputs, produce a structured output, and leave an
-audit trail that can be reviewed without exposing secrets.</p>
-<h2 id="risk">Risk</h2>
-<p>The architecture assumes the agent can be compromised, misdirected, or confused. The relevant risks
-include:</p>
-<ul>
-<li><strong>Prompt injection:</strong> the attached document or linked content instructs the agent to ignore policy,
-  reveal hidden context, or call unauthorized tools.</li>
-<li><strong>Secret access attempts:</strong> the agent asks for credentials, environment variables, local key
-  material, or raw token values instead of using secrets-by-reference.</li>
-<li><strong>File exfiltration attempts:</strong> the agent tries to read or copy files outside the approved input
-  set.</li>
-<li><strong>Lateral movement attempts:</strong> the agent tries to reach host services, internal networks, adjacent
-  runtimes, or other workload state.</li>
-<li><strong>Dependency or tool misuse:</strong> generated code, package downloads, shell commands, or parser tools
-  behave differently than intended.</li>
-</ul>
-<p>These are workload-governance risks, not chatbot UX problems. The architecture is designed around
-blast-radius control when the workload behaves badly.</p>
+<p>The workload is treated as a probabilistic actor. It may misread the request, follow malicious
+instructions in content, invoke the wrong tool, attempt credential access, or try to reach data beyond
+the approved scope.</p>
+<p>The public architecture places that workload inside an OpenShell sandbox running Hermes Agent, with
+rootless Podman runtime posture, a managed provider boundary, and evidence receipts for measured
+behavior.</p>
 <h2 id="control-path">Control path</h2>
-<p>The request moves through explicit controls before any high-blast-radius action is allowed.</p>
-<ol>
-<li><strong>Promotion control plane</strong></li>
-<li>Runtime code is promoted by exact source revision or equivalent immutable artifact.</li>
-<li>Mutations are dry-run first.</li>
-<li>The previous release target is recorded so rollback remains available.</li>
-<li>
-<p>Drift checks re-derive what is running instead of trusting a deployment note.</p>
-</li>
-<li>
-<p><strong>Isolation substrate</strong></p>
-</li>
-<li>Long-running services run in a bounded runtime layer.</li>
-<li>Higher-risk execution can be escalated to an ephemeral sandbox.</li>
-<li>
-<p>The VM is an implementation substrate; the deeper boundary is between operator intent,
-     governed runtime state, and untrusted agent execution.</p>
-</li>
-<li>
-<p><strong>Default-deny egress</strong></p>
-</li>
-<li>Network access starts closed.</li>
-<li>External reachability must be explicitly allowed.</li>
-<li>
-<p>Direct IP and DNS exfiltration attempts are negative-test candidates.</p>
-</li>
-<li>
-<p><strong>Fail-closed tool and data gates</strong></p>
-</li>
-<li>Tool policy is allowlist-based.</li>
-<li>Missing policy denies access instead of falling back to broad permissions.</li>
-<li>
-<p>Unknown tools, denied files, and denied network paths should leave audit evidence.</p>
-</li>
-<li>
-<p><strong>Secrets-by-reference</strong></p>
-</li>
-<li>The agent receives references, handles, or scoped capabilities rather than raw secret values.</li>
-<li>
-<p>Receipts and logs must prove denial or use without printing token material.</p>
-</li>
-<li>
-<p><strong>Audit trail</strong></p>
-</li>
-<li>The system records source identity, artifact or image digest, policy decision, egress denial,
-     alignment result, and rollback target.</li>
-<li>
-<p>The audit trail is useful only if it separates what was requested, what was allowed, what was
-     denied, and what actually ran.</p>
-</li>
-<li>
-<p><strong>Rollback target</strong></p>
-</li>
-<li>The rollback target is part of the control path, not an afterthought.</li>
-<li>Recovery evidence matters as much as deployment evidence because autonomous workloads can fail
-     in surprising ways.</li>
-</ol>
-<h2 id="expected-result">Expected result</h2>
-<p>For this scenario, a governed run should end with these outcomes:</p>
+<pre><code class="language-text">operator intent
+  -&gt; policy and promotion boundary
+  -&gt; OpenShell sandbox running Hermes Agent
+  -&gt; rootless Podman runtime posture
+  -&gt; managed provider boundary
+  -&gt; NUC-class VM substrate
+  -&gt; public receipts and recovery expectations
+</code></pre>
+<h2 id="risks-addressed">Risks addressed</h2>
 <ul>
-<li>unauthorized file, tool, credential, and network access is denied;</li>
-<li>default-deny egress blocks unapproved outbound connections;</li>
-<li>each boundary hit is auditable without exposing secret values;</li>
-<li>host/runtime spillover is prevented by isolation and least-authority policy;</li>
-<li>the promoted runtime can be compared against its expected source or digest;</li>
-<li>rollback remains available if the workload, policy, or deployment proves unsafe.</li>
+<li><strong>Prompt injection:</strong> task content instructs the agent to ignore policy or reveal hidden context.</li>
+<li><strong>Credential access attempts:</strong> the agent asks for environment variables, key material, provider
+  tokens, or raw secret values.</li>
+<li><strong>Network exfiltration:</strong> the agent tries direct outbound access, DNS exfiltration, SSRF, or lateral
+  movement.</li>
+<li><strong>Filesystem escape:</strong> the agent attempts to read or write outside the approved sandbox scope.</li>
+<li><strong>Provider misroute:</strong> model/tool-provider access breaks or points to an unapproved path.</li>
+<li><strong>Runtime drift:</strong> public claims no longer match what was measured.</li>
 </ul>
-<p>The result is not "the agent is trusted." The result is that the agent can be useful while still
-being governed as an untrusted workload.</p>
-<h2 id="evidence-level">Evidence level</h2>
-<p>Do not collapse architecture narrative, static checks, lab validation, and production proof into one
-claim.</p>
+<h2 id="expected-controls">Expected controls</h2>
+<ol>
+<li><strong>Policy and promotion boundary</strong></li>
+<li>Changes are reviewed before stronger claims are made.</li>
+<li>Missing policy follows a fail-closed posture.</li>
+<li>
+<p>Rollback and recovery expectations include a named rollback target before stronger claims are made.</p>
+</li>
+<li>
+<p><strong>OpenShell sandbox boundary</strong></p>
+</li>
+<li>Agent execution is treated as lower trust.</li>
+<li>Tool, file, and network behavior are constrained.</li>
+<li>Default-deny egress is the starting posture; allowed provider paths are explicit exceptions.</li>
+<li>
+<p>Negative tests record denied crossing attempts.</p>
+</li>
+<li>
+<p><strong>Rootless runtime posture</strong></p>
+</li>
+<li>The public case study favors rootless Podman.</li>
+<li>
+<p>A privileged Docker daemon or broad host socket is not part of the public runtime claim.</p>
+</li>
+<li>
+<p><strong>Managed provider boundary</strong></p>
+</li>
+<li>The sandbox sees a placeholder or reference, not raw provider credentials.</li>
+<li>Secrets-by-reference is the public rule; raw provider tokens never enter public examples or receipts.</li>
+<li>Credentials resolve outside the sandbox boundary.</li>
+<li>
+<p>Broken provider routing fails closed.</p>
+</li>
+<li>
+<p><strong>Evidence receipts</strong></p>
+</li>
+<li>Each measured boundary has a public-safe summary.</li>
+<li>Each receipt includes non-claims.</li>
+<li>Private logs, hostnames, IPs, VM names, ports, routes, key names, and incident details stay out of
+     public docs.</li>
+</ol>
+<h2 id="public-evidence-level">Public evidence level</h2>
 <table>
 <thead>
 <tr>
@@ -408,43 +380,49 @@ claim.</p>
 </thead>
 <tbody>
 <tr>
-<td>Illustrative narrative</td>
-<td>The threat model and control path are understandable.</td>
-<td>No runtime behavior is proven.</td>
+<td>Architecture narrative</td>
+<td>The public control path is understandable.</td>
+<td>Runtime behavior is proven.</td>
 </tr>
 <tr>
 <td>Static repo checks</td>
-<td>Scripts, manifests, links, and public docs are reviewable.</td>
-<td>A VM or sandbox actually ran.</td>
+<td>Public docs and scripts are reviewable.</td>
+<td>A sandbox or provider path actually ran.</td>
 </tr>
 <tr>
-<td>Lab validation</td>
-<td>The host substrate can run the acceptance checks in an isolated lab.</td>
-<td>A real workload is production-ready.</td>
+<td>Reference-lab validation</td>
+<td>Generic <code>platform/</code> fixtures passed in a lab.</td>
+<td>Current Agent VM runtime uses those exact fixtures.</td>
 </tr>
 <tr>
-<td>Promotion validation</td>
-<td>Delivery controls, status checks, and rollback mechanics work for a promoted revision.</td>
-<td>Policy coverage for every workload.</td>
+<td>Boundary measurement</td>
+<td>One named boundary refused a negative-test matrix.</td>
+<td>Neighboring or deeper boundaries are proven.</td>
 </tr>
 <tr>
 <td>Production proof</td>
-<td>A specific real workload passed canary, auth, egress, audit, rollback, and SLO gates.</td>
+<td>A real workload passed canary, auth, egress, audit, rollback, and SLO gates.</td>
 <td>General safety for all future workloads.</td>
 </tr>
 </tbody>
 </table>
-<p>This case study is an illustrative narrative. The repository also contains static repo checks and
-lab validation receipts. Production proof requires a separate workload-specific canary packet with
-auth, tool-policy, egress, audit, rollback, and SLO evidence.</p>
+<h2 id="current-public-receipts">Current public receipts</h2>
+<ul>
+<li><a href="boundary-receipt-01-inner-sandbox.html">Boundary receipt #1 - inner sandbox</a> summarizes refused
+  egress, SSRF, lateral movement, external DNS, read-only filesystem, and non-root checks.</li>
+<li><a href="boundary-receipt-02-inference-boundary.html">Boundary receipt #2 - inference boundary</a> summarizes
+  placeholder-in-sandbox credentials and fail-closed behavior on the governed model path.</li>
+</ul>
 <h2 id="reviewer-takeaway">Reviewer takeaway</h2>
-<p>Read this as an operating model, not as a claim that a sandbox alone is sufficient:</p>
+<p>Read this as an operating model:</p>
 <blockquote>
-<p>autonomous agent workloads are treated as untrusted, their authority is mediated by policy, their
-claims are tied to evidence, and rollback remains part of the definition of done.</p>
+<p>autonomous agent workloads are treated as untrusted, their authority is mediated by policy, provider
+access is kept outside the sandbox boundary, claims are tied to evidence, and rollback remains part
+of the definition of done.</p>
 </blockquote>
 <p>Read this alongside <a href="../verification.html"><code>../verification.html</code></a>, <a href="../threat-model.html"><code>../threat-model.html</code></a>,
-and <a href="substrate-validation-receipt.html"><code>substrate-validation-receipt.html</code></a>.</p>
+<a href="boundary-receipt-01-inner-sandbox.html"><code>boundary-receipt-01-inner-sandbox.html</code></a>, and
+<a href="boundary-receipt-02-inference-boundary.html"><code>boundary-receipt-02-inference-boundary.html</code></a>.</p>
     </main>
 
     <footer>

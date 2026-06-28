@@ -1,19 +1,18 @@
 # Verification model
 
-This repository separates **static validation**, **host-dependent substrate validation**, and
-**production-readiness evidence**. Do not collapse those into one claim.
-
-For a concrete, vendor-neutral scenario that keeps those boundaries separate, read
-[`docs/evidence/governed-agent-workload-case-study.md`](evidence/governed-agent-workload-case-study.md).
+This repository separates **architecture narrative**, **static validation**, **reference-lab
+validation**, **boundary measurement**, and **production-readiness evidence**. Do not collapse those
+into one claim.
 
 ## Verification levels
 
-| Level | What it proves | Commands / evidence |
+| Level | What it supports | What it does not support |
 |---|---|---|
-| Static | Repository scripts and manifests are syntactically reviewable. | `make ci`, `git diff --check`, GitHub Actions. |
-| Host substrate | The illustrative lab host can boot nested microVMs and enforce Tier-1/Tier-2 controls. | `platform/validate/nested-smoke`, `platform/validate/acceptance`, substrate receipt. |
-| Promotion control plane | A specific source commit can be dry-run, promoted, smoke-tested, status-checked, and rolled back. | `control-plane/promote-agent`, `smoke-agent`, `status-agent`, `rollback-agent`. |
-| Production canary | A real workload meets auth, tool-policy, egress, audit, rollback, and SLO gates beside the legacy path. | Canary receipt, audit sink proof, rollback drill, baseline comparison. |
+| Architecture narrative | The public trust-boundary model is understandable. | Runtime behavior, production readiness, or live topology. |
+| Static validation | Public docs, scripts, examples, and generated site files are reviewable. | That a VM, sandbox, provider path, or workload actually ran. |
+| Reference-lab validation | The generic `platform/` acceptance fixtures can run in a configured lab. | That the current Agent VM case-study runtime uses those exact fixtures. |
+| Boundary measurement | One named boundary refused a defined set of adversarial crossing attempts. | That neighboring or deeper boundaries are proven. |
+| Production-ready | A real workload produced canary, auth, egress, audit, rollback, and SLO evidence. | General safety for all future workloads. |
 
 ## Static validation
 
@@ -21,64 +20,73 @@ Run from the repository root:
 
 ```bash
 make ci
+scripts/public-safety-scan
 git diff --check
 ```
 
-`make ci` is intentionally safe for CI. It does not require VM access or secrets.
+`make ci` is intentionally safe for CI. It does not require VM access or secrets. The public safety
+scan is necessary but not sufficient; manual declassification review is still required.
 
-## Substrate validation
+## Current public boundary measurements
 
-Run only on an isolated lab host with nested virtualization enabled:
+- [Governed workload case study](evidence/governed-agent-workload-case-study.md) explains how the
+  current OpenShell/Hermes workload is treated as untrusted before reading individual receipts.
+- [Boundary receipt #1 - inner sandbox](evidence/boundary-receipt-01-inner-sandbox.md) summarizes
+  egress, SSRF, lateral movement, external DNS, read-only filesystem, and non-root execution checks
+  against the inner sandbox boundary.
+- [Boundary receipt #2 - inference boundary](evidence/boundary-receipt-02-inference-boundary.md)
+  summarizes placeholder-in-sandbox credential handling and fail-closed behavior on the governed model
+  path.
+
+Each receipt covers one boundary. Deeper containment claims, such as an escaped sandbox being confined
+by an outer virtualization or host-management-plane boundary, require their own public summary before
+they are described as measured here.
+
+## Reference-lab validation
+
+The `platform/` directory contains a generic reference acceptance suite. Its host-dependent commands
+are illustrative and require a configured lab environment:
 
 ```bash
 platform/validate/nested-smoke
 platform/validate/acceptance
 ```
 
-A passing acceptance run should prove:
+A passing reference-lab run supports the claim that the generic lab fixture passed. It does not prove
+the current private system, a public managed service, or production readiness.
 
-1. Tier-1 health responds locally.
-2. Running image digest matches the pinned manifest.
-3. Tier-2 microVM boots.
-4. Tier-2 default-deny egress blocks external network access (both direct IP and external DNS resolution).
-5. Tier-2 DNS exfiltration attempt is blocked.
-6. Teardown leaves zero residual containers/tasks.
+## Boundary receipt requirements
 
-## Promotion and rollback validation
+A valid public boundary receipt should include:
 
-A valid promotion receipt should include:
+- the exact boundary under test, named precisely;
+- a negative-test matrix where each row is a crossing attempt;
+- the observed refusal or fail-closed behavior;
+- an explicit "what this does not prove" section;
+- no raw command transcripts, private addresses, private hostnames, token material, live VM names, or
+  incident-specific details.
 
-- exact source commit;
-- release label and release path;
-- dry-run plan reviewed before apply;
-- previous release target captured before flip;
-- post-apply service state;
-- live symlink target;
-- live source SHA read back from the runtime;
-- rollback command and result;
-- post-rollback smoke/status output.
+## Promotion and rollback evidence
 
-## Security gate validation
+A promotion or recovery receipt should include:
 
-Before a workload is described as production-ready, the evidence packet must include:
-
-- token/auth denial for missing or invalid credentials;
-- valid-token attribution without exposing token values;
-- denied tools absent from the tool listing;
-- unknown tools failing closed;
-- default-deny egress negative test;
-- no raw secrets in logs, manifests, images, or receipts;
-- audit events for auth, tool, egress, alignment, and rollback paths;
-- rollback under the stated recovery target.
+- exact source revision, artifact digest, policy version, or equivalent identifier;
+- dry-run/review record before apply;
+- rollback target captured before apply;
+- post-change boundary checks;
+- recovery or rollback result;
+- remaining non-claims.
 
 ## Claim discipline
 
 Use these terms precisely:
 
-- **Implemented** — code or scripts exist in the repository.
-- **Static-validated** — static checks ran and passed.
-- **Host-validated** — a lab host executed the substrate checks and produced evidence.
-- **Production-ready** — a real canary produced the security, rollback, audit, and SLO evidence.
+- **Implemented** - code, docs, or scripts exist in the repository.
+- **Static-validated** - safe local checks ran and passed.
+- **Reference-lab validated** - a configured lab host executed the generic acceptance suite.
+- **Boundary-measured** - an adversarial behavior test confirmed one named boundary.
+- **Production-ready** - a real workload produced canary, auth, egress, audit, rollback, and SLO
+  evidence.
 
 If a command cannot be run in the current environment, record it as **not run** rather than implying it
 passed.

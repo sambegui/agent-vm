@@ -1,229 +1,140 @@
 # BoundaryKit
 
-> **BoundaryKit** (formerly **agent-vm**) is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation.
+> **BoundaryKit** (formerly **agent-vm**) is a public security case study for governing untrusted
+> AI-agent workloads with explicit policy boundaries, rootless runtime isolation, provider-boundary
+> controls, rollback discipline, and evidence-backed validation.
 >
-> The project repository and public site remain hosted at `sambegui/agent-vm` and `agent-vm.sabe.dev`.
+> The project repository and public site remain hosted at `sambegui/agent-vm` and
+> `agent-vm.sabe.dev`.
 
-**A framework-agnostic sandbox skeleton for governed AI-agent workloads that are treated as untrusted.**
+**A public, static case study for running an untrusted agent workload inside a governed
+sandbox without publishing private topology.**
 
-This public **reference implementation + acceptance suite** demonstrates how to host AI-agent workloads inside governed, persistent runtime layers without coupling the substrate to any single agent framework or collaboration product. It demonstrates reference patterns for strict runtime isolation and exact-commit promotion, with audit logging and default-deny egress treated as evidence-gated controls; the evidence is split between static checks, host-validated lab receipts, and workload-specific canary packets.
+BoundaryKit Agent VM demonstrates the control pattern around a current public-safe architecture:
+operator intent moves through a policy/promotion boundary into an OpenShell sandbox running a Hermes
+Agent workload, with rootless Podman runtime posture, a managed provider/inference boundary,
+NUC-class VM substrate, and public evidence receipts.
 
-The architecture models an operator-controlled sandbox skeleton where approved queues, collaboration surfaces, transcripts, external files, API responses, and structured outputs are handled through auditable containment boundaries.
+The project gives credit where it is due: NVIDIA OpenShell is the sandbox boundary, Hermes Agent is
+the agent workload, rootless Podman keeps the runtime away from a privileged Docker daemon, and
+NUC-class hardware shows the pattern on modest local infrastructure. NVIDIA NemoClaw is credited as
+blueprint/control-lineage material, not as the live public runtime stage.
 
-## Architecture focus
+## What This Public Repo Is
 
-The core pattern is platform/security architecture for autonomous agents: treat agents as untrusted workloads, mediate their authority through promotion controls and runtime boundaries, and tie claims to validation evidence. The pattern maps to enterprise AI automation, workspace collaboration, platform engineering, and IT governance where agents process external files, approved transcripts, API responses, and structured outputs inside auditable containment boundaries.
+- A public architecture narrative for treating agent workloads as untrusted.
+- A static site for `agent-vm.sabe.dev`.
+- Sanitized public evidence summaries for specific measured boundaries.
+- A reference acceptance suite that demonstrates older/generic substrate ideas with fictional values.
+- Public safety and documentation checks for keeping private deployment details out of the repo.
 
-## Validation scope
+## What It Is Not
 
-- workload isolation for tool-using agents
-- dry-run-first promotion and rollback workflows
-- signed / digest-pinned deployment patterns
-- runtime drift detection and state-as-truth checks
-- tiered controls for higher-blast-radius execution
-- human/operator governance around automation
-- practical shell, Python, systemd, virtualization, and CI hygiene
+- Not a managed platform or hosted service.
+- Not a live deployment map.
+- Not proof that every private or future workload is production-ready.
+- Not a copy of private runbooks, receipts, host topology, SSH paths, VM names, NAS paths, tokens, or
+  incident details.
 
-## 90-second tour
+Public examples use fictional placeholders such as `agent-platform`, `demo-client`,
+`demo-registry.example`, `secret://demo/...`, `10.0.0.60`, `0000000`, and all-zero digests.
 
-1. Start with the architecture diagram below to see the control-plane/substrate boundary.
-2. Read [`platform/state/substrate-validation.md`](platform/state/substrate-validation.md) for the
-   run-backed substrate evidence.
-3. Read the vendor-neutral
-   [governed workload case study](docs/evidence/governed-agent-workload-case-study.md) for the
-   threat model, control path, and claim boundaries in one concrete scenario.
-4. Skim [`docs/operations/operator-quickstart.md`](docs/operations/operator-quickstart.md) for safe
-   local checks versus host-dependent and mutating commands.
-5. Review [`docs/verification.md`](docs/verification.md) and
-   [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-validation-receipt.md)
-   for the evidence model.
-6. Read [`docs/security-methodology.md`](docs/security-methodology.md), [`SECURITY.md`](SECURITY.md),
-   and [`docs/threat-model.md`](docs/threat-model.md) for methodology, trust boundaries, current gaps,
-   and non-goals.
-
-## Implementation status
-
-| Area | Status | Notes |
-|---|---|---|
-| **Archetype A — immutable release** | exercised | Python orchestrator-style agent promoted by exact commit with dry-run/apply and rollback flow. |
-| **Archetype B — package install** | captured/design | Node package-install workflows are documented with explicit stubs until package distribution and rollback mechanics are implemented. |
-| **Tier-1 signed service** | host-validated | Local registry, cosign signing, digest-pinned manifest, reconcile/align flow; reconcile-time signature verification remains a hardening item. |
-| **Tier-2 microVM sandbox** | host-validated | Runner validates `egress.default=deny`; lab receipts show denied direct-IP/DNS probes, timeout, and teardown. |
-| **Production platform** | not claimed | This is a reference architecture and validated skeleton, not a turnkey managed platform. |
-
-> **Reference implementation + acceptance suite.** Every host, network, account, and identifier here
-> is illustrative (`example-network`, `platform-host`, `agent-runtime`). Nothing points at real
-> infrastructure, and no secrets are present — secret *references* only. The repository proves a
-> reproducible lab skeleton and executable validation checks, not a hosted managed product.
->
-> Public/private release boundaries and example evidence are documented in
-> [`docs/public-private-boundary.md`](docs/public-private-boundary.md),
-> [`docs/declassification-checklist.md`](docs/declassification-checklist.md), and
-> [`docs/evidence-model.md`](docs/evidence-model.md).
-
-## Architecture at a glance
+## Current Public Architecture
 
 ```mermaid
 flowchart TB
-    classDef gov fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111827;
-    classDef plane fill:#dbeafe,stroke:#1d4ed8,color:#0b1324;
+    PUB["public input / operator intent"]
+    POL["policy and promotion boundary<br/>dry-run first · fail closed · rollback evidence"]
+    RUN["OpenShell sandbox + Hermes Agent<br/>tool/data gates · measured inner boundary"]
+    POD["rootless Podman runtime<br/>least-privilege execution posture"]
+    PROV["managed provider boundary<br/>credentials resolved outside the sandbox"]
+    VM["NUC-class VM substrate<br/>public summaries only"]
+    REC["evidence and recovery overlay<br/>receipts · claim discipline · declassification review"]
 
-    subgraph HOST["Host — operator trust domain"]
-        direction TB
-        OP["Operator<br/>dry-run by default"]
-        A["Archetype A<br/>Python orchestrator<br/>immutable git-release"]
-        B["Archetype B<br/>Node agent-pool<br/>versioned package"]
-        CP["Promotion control plane<br/>exact-commit releases · drift detection · state-as-truth"]:::plane
-        OP --> CP
-        A --> CP
-        B --> CP
-    end
-
-    GOV["Governance overlay<br/>risk&nbsp;tiers&nbsp;L0–L5&nbsp;·&nbsp;SLO/canary&nbsp;·&nbsp;fail-closed&nbsp;tool&nbsp;allowlist<br/>secret&nbsp;refs&nbsp;·&nbsp;signed&nbsp;supply&nbsp;chain&nbsp;·&nbsp;audit&nbsp;·&nbsp;rollback&nbsp;proof"]:::gov
-
-    subgraph VM["Golden VM substrate"]
-        direction TB
-        subgraph T1["Tier-1 service"]
-            T1S["cosign-signed · digest-pinned<br/>reconcile → align"]
-        end
-        subgraph T2["Tier-2 · ephemeral Kata microVM"]
-            T2J["default-deny egress · hard timeout<br/>verified teardown"]
-        end
-        GW["agent-gateway@<profile><br/>one runtime source per profile · restart isolation"]
-        T1S --> GW
-        T1S -.->|"escalate higher-risk work"| T2J
-    end
-
-    CP -->|"promote exact commit (ssh, verified)"| T1S
-    GOV -.->|gates| CP
-    GOV -.->|gates| VM
+    PUB --> POL --> RUN
+    RUN --> POD
+    RUN --> PROV
+    POD --> VM
+    PROV --> VM
+    VM --> REC
 ```
 
-*Vertical flow is the trust boundary (operator → control plane → substrate). **Solid** = verified promotion flow; **dotted** = governance/policy & risk escalation; the highlighted node is the cross-cutting governance overlay.*
+The diagram is a reference model, not live topology. It intentionally omits hostnames, IP addresses,
+VM names, ports, routes, service names, key names, mount paths, incidents, and recovery paths.
 
-## Why this matters
+## Evidence Status
 
-Most organizations use AI through isolated browser tabs or ad hoc automation. This model lacks team visibility, fragments context, and relies on manual copying and pasting. Moving agent workloads into persistent collaboration paths is more powerful, but it introduces execution, credential, and data-boundary risks.
+| Area | Public status | Notes |
+|---|---|---|
+| Current sandbox runtime | boundary-measured | Public receipt #1 summarizes denied egress, SSRF, lateral movement, external DNS, read-only filesystem, and non-root checks for the inner sandbox boundary. |
+| Managed inference boundary | boundary-measured | Public receipt #2 summarizes placeholder-in-sandbox credential handling and fail-closed behavior on the governed model path. |
+| Rootless runtime posture | public architecture claim | The public case study favors rootless Podman and least-privilege runtime posture; private operational details stay private. |
+| NUC-class substrate | public case-study context | The hardware class is intentionally generic and modest; no private host map is published. |
+| Reference acceptance suite | lab/reference material | `platform/` keeps older generic VM, signed-image, and microVM acceptance fixtures as illustrative tests, not as the current public runtime story. |
+| Production platform | not claimed | Production readiness requires workload-specific canary, auth, egress, audit, rollback, and SLO evidence. |
 
-AI agent workloads execute tool calls, touch external data, invoke APIs, and can be steered by untrusted input. This reference skeleton addresses those concerns by treating agent workloads as governed and untrusted:
+## 90-Second Tour
 
-1. **Persistent bounded context:** Agent workloads can process approved queues, transcripts, external files, API responses, and structured outputs inside the isolated substrate.
-2. **Auditable containment boundaries:** File, network, credential, and tool access are routed through default-deny controls with explicit evidence for what ran.
-3. **Repeatable workflow execution:** Operators can route durable workflows through the promotion control plane, isolation substrate, and governance overlay instead of relying on one-off local state.
-4. **Predictable operating model:** Reproducible environments make agent automation easier to review, rerun, roll back, and verify without overclaiming turnkey production readiness.
+1. Start with [`docs/index.md`](docs/index.md) for the public reading order.
+2. Read [`docs/architecture/00-overview.md`](docs/architecture/00-overview.md) for the current case-study
+   architecture.
+3. Read [`docs/evidence/governed-agent-workload-case-study.md`](docs/evidence/governed-agent-workload-case-study.md)
+   for the current OpenShell/Hermes workload walkthrough.
+4. Read [`docs/evidence/boundary-receipt-01-inner-sandbox.md`](docs/evidence/boundary-receipt-01-inner-sandbox.md)
+   and [`docs/evidence/boundary-receipt-02-inference-boundary.md`](docs/evidence/boundary-receipt-02-inference-boundary.md)
+   for the public measured boundaries.
+5. Read [`docs/verification.md`](docs/verification.md) for the claim vocabulary.
+6. Read [`docs/security-methodology.md`](docs/security-methodology.md), [`docs/threat-model.md`](docs/threat-model.md),
+   and [`SECURITY.md`](SECURITY.md) for the public-safe security posture.
+7. Treat [`platform/`](platform/) as a reference acceptance suite, not as the current live deployment design.
 
-Running several autonomous agent workloads safely on shared infrastructure aligns with common security practices used by mature infrastructure teams: SLOs and canaries, explicit release promotion, supply-chain integrity, tool allowlists, egress controls, evidence-backed rollback, and governance proportional to blast radius.
-
-## Security methodology
-
-This reference architecture is not a company-endorsed deployment pattern or a vendor certification. It is a public,
-vendor-neutral reference architecture for applying practical infrastructure security to AI-agent
-workloads:
-
-- **Defense in depth** — runtime, network, release, and operator-workflow controls reinforce each
-  other instead of relying on prompts or one sandbox.
-- **Least privilege, fail closed** — agents receive only the tools, permissions, files, and network
-  paths needed for their role; missing policy denies access rather than falling back to broad defaults.
-- **Isolated, immutable runtime state** — long-running services run from promoted releases; release
-  symlinks or equivalent targets are deployment pointers, not edit locations.
-- **Egress and exfiltration resistance** — outbound access is mediated through allowlists or narrow
-  policy gates, and sensitive data is passed by reference instead of copied into prompts, logs, browser
-  pages, or generated artifacts.
-- **Temporary preview access** — demos and review paths should be explicit, time-bounded, narrow, and
-  easy to revoke; broad routing or persistent remote identities are avoided unless specifically needed.
-  See the [secure gated agent preview access](docs/architecture/05-secure-gated-agent-preview-access.md)
-  reference pattern.
-- **Auditability and rollback** — runtime state, process command, import/source path, promoted commit,
-  and rollback target are verifiable before claiming what is running.
-- **Governance overlay** — risk tiers, canary checks, tool allowlists, signed or digest-pinned supply
-  chain artifacts, audit trails, rollback proof, and secret-by-reference practices sit across the
-  architecture.
-
-See [`docs/security-methodology.md`](docs/security-methodology.md) for the public-safe methodology.
-
-## The three layers
-
-```
-   operator (host)        ┌────────────────────────────────────────────────┐
-   dry-run by default ───►│  PROMOTION CONTROL PLANE                       │
-                          │  immutable releases · drift detection ·        │
-                          │  state-as-truth · 2 deployment models          │
-                          └───────────────┬────────────────────────────────┘
-                                          │ promote exact commit (ssh, verified)
-                          ┌───────────────▼────────────────────────────────┐
-                          │  ISOLATION SUBSTRATE  (golden VM, as code)     │
-                          │  Tier-1 long-running service                   │
-                          │    cosign-signed · digest-pinned · reconciled  │
-                          │  Tier-2 ephemeral microVM sandbox (Kata)       │
-                          │    default-deny egress · timeout · teardown    │
-                          └───────────────┬────────────────────────────────┘
-                                          │ per-profile, isolated
-                          ┌───────────────▼────────────────────────────────┐
-                          │  GATEWAY RUNTIME LAYOUT                        │
-                          │  agent-gateway@<profile> · one runtime source  │
-                          │  per profile · restart isolation               │
-                          └────────────────────────────────────────────────┘
-   governance overlay:  risk tiers L0–L5 · SLO/canary · MCP tool allowlist (fail-closed)
-                        · secrets-by-reference · signed supply chain · audit · rollback proof
-```
-
-1. **Isolation substrate** — a nested-virt golden VM defined as code, hosting tiered workloads:
-   **Tier-1** long-running services (cosign-**signed**, **digest-pinned**, reconciled to a manifest)
-   and **Tier-2** ephemeral **microVM sandboxes** (Kata + containerd, **default-deny egress**, hard
-   timeout, verified teardown). → [`docs/architecture/01-isolation-substrate.md`](docs/architecture/01-isolation-substrate.md), [`platform/`](platform/)
-2. **Promotion control plane** — immutable, exact-commit releases shipped with provenance; mutations
-   are **dry-run by default**; status tools **re-derive live truth and flag drift**. Exercised for
-   the immutable-release archetype and captured for the package-install archetype. → [`docs/architecture/02-promotion-control-plane.md`](docs/architecture/02-promotion-control-plane.md), [`control-plane/`](control-plane/)
-3. **Gateway runtime layout** — one systemd **template** per agent runtime; each profile is an
-   explicit, independently-restartable service with **exactly one** declared runtime source. →
-   [`docs/architecture/03-gateway-runtime-layout.md`](docs/architecture/03-gateway-runtime-layout.md), [`deploy/agent-gateway/`](deploy/agent-gateway/)
-
-A **production-governance** overlay sits across all three: workload risk tiers, SLO/canary delivery,
-fail-closed tool/data gates, secrets-by-reference, signed artifacts, audit, and tested rollback. →
-[`docs/architecture/04-production-governance.md`](docs/architecture/04-production-governance.md)
-
-The same governance posture applies to previews: agent/dev preview services should sit behind a
-temporary, revocable, least-privilege, auditable access gate rather than a public or standing tunnel.
-→ [`docs/architecture/05-secure-gated-agent-preview-access.md`](docs/architecture/05-secure-gated-agent-preview-access.md)
-
-## What's been validated
-
-A working "walking skeleton" exercises the substrate end-to-end: nested-KVM golden VM provisioned as
-code; a Tier-1 signed, digest-pinned service with reconcile/align and proven promote+rollback; a
-Tier-2 Kata microVM that boots, is denied egress by default, honors a hard timeout, and tears down;
-acceptance suite green. See [`platform/`](platform/), [`docs/verification.md`](docs/verification.md),
-and [`docs/evidence/substrate-validation-receipt.md`](docs/evidence/substrate-validation-receipt.md).
-
-## Repository map
+## Repository Map
 
 | Path | What it is |
 |---|---|
-| `docs/architecture/` | The design, layer by layer (agnostic). Start at `00-overview.md`. |
-| `docs/reference-workloads/` | The two abstract agent archetypes (A immutable-release, B package-install). |
-| `docs/decisions/` | Architecture decision records. |
-| `docs/operations/` | Operator quickstart and safe runbook entry points. |
-| `docs/evidence/` | Sanitized validation receipts, evidence packets, and the governed workload case study. |
-| `docs/security-methodology.md` | Public-safe security methodology and operating principles. |
-| `docs/architecture/05-secure-gated-agent-preview-access.md` | Reference pattern for temporary, revocable, least-privilege preview access. |
-| `docs/verification.md` | Claim discipline and verification gates. |
-| `docs/threat-model.md` | Threat model, trust boundaries, and current limitations. |
-| `SECURITY.md` | Public security policy and reporting guidance. |
-| `platform/` | The substrate as code: VM provisioning, signed image pipeline, reconcile/align, sandbox runner, acceptance. |
-| `control-plane/` | Promotion / status / rollback scripts — **dry-run by default**, `--apply` to act. |
-| `deploy/agent-gateway/` | The templated multi-profile gateway (unit + launcher + example envs). |
-| `examples/` | Illustrative manifests and state-as-truth files (not live). |
-| `examples/reference-cell/` | Fake policy and evidence examples for the public reference cell. |
-| `scripts/public-safety-scan` | Local scan for common public-boundary mistakes in a branch diff. |
+| `site/` | Static public site for `agent-vm.sabe.dev`. |
+| `docs/index.md` | Public documentation index and reading order. |
+| `docs/architecture/00-overview.md` | Current public case-study architecture. |
+| `docs/architecture/01-isolation-substrate.md` | Reference acceptance-suite substrate, retained as illustrative lab material. |
+| `docs/architecture/02-promotion-control-plane.md` | Dry-run-first promotion and rollback discipline, described at public control-objective level. |
+| `docs/architecture/03-gateway-runtime-layout.md` | Legacy gateway fixture, retained as reference acceptance-suite history. |
+| `docs/architecture/04-production-governance.md` | Risk tiers, canaries, fail-closed tools, audit, rollback, and evidence gates. |
+| `docs/evidence/` | Sanitized public evidence summaries and claim discipline. |
+| `docs/operations/` | Public-safe operator orientation; host-dependent lab commands are explicitly illustrative. |
+| `platform/` | Older/generic reference acceptance suite for VM, image, reconcile/align, and microVM checks. |
+| `examples/` | Fictional manifests and policy examples. |
+| `scripts/public-safety-scan` | Public safety scan for common leak classes. |
 
-## Design principles
+## Design Principles
 
-- **Agent-agnostic** — agents are workloads, not the architecture.
-- **Immutable & verifiable** — exact commits, signed digests, explicit verification gates, no editing live; reconcile-time signature verification remains a hardening item.
-- **Review before mutation** — promotion and rollback preview before `--apply`; broader lab-host operations print context for operator review.
-- **Least authority, fail-closed** — default-deny egress, explicit tool allowlists, refuse to serve on policy-load failure.
-- **Evidence over assertion** — status re-derives ground truth; deploys carry provenance; rollback is proven, not assumed.
+- **Agents are untrusted workloads** - model output, tool arguments, external data, and retrieved
+  content are treated as inputs that can be compromised or misdirected.
+- **Policy before execution** - changes move through explicit gates, dry-run/review posture, and
+  rollback expectations before stronger claims are made.
+- **Rootless runtime posture** - the public case study avoids a privileged Docker daemon and favors
+  rootless Podman for least-privilege execution.
+- **Secrets by reference** - examples use references such as `secret://demo/...`; raw values do not
+  belong in public docs, manifests, images, logs, or receipts.
+- **Evidence over assertion** - each public claim names its evidence level and what it does not prove.
+- **Public/private boundary first** - public docs are newly written with placeholders, never copied
+  down from private topology or raw operational logs.
 
-## Status & license
+## Safety Checks
 
-Reference architecture plus a validated substrate skeleton — a demonstration of secure multi-agent
-platform design, not a turnkey product. Licensed under **MIT** (see `LICENSE`).
+Before publishing a branch, run:
+
+```bash
+make ci
+scripts/public-safety-scan
+git diff --check
+```
+
+Then do a manual declassification review for raw IPs, host aliases, VM names, SSH key names, NAS paths,
+messaging identifiers, provider tokens, private repo paths, and live incident details. The scanner is
+necessary but not sufficient.
+
+## Status And License
+
+BoundaryKit is a public case study plus a reference acceptance suite. It is a demonstration of
+security architecture and evidence discipline for AI-agent workloads, not a turnkey product. Licensed
+under **MIT** (see `LICENSE`).

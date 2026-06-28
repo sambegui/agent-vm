@@ -1,12 +1,13 @@
-# Archetype A — immutable-release agent (Python orchestrator)
+# Archetype A - reference immutable-release agent
 
-A representative agent whose runtime is a Python application versioned by **git commit** and deployed
-as an **immutable release** selected by a `current` symlink. It validates the immutable-release path.
+This is a reference acceptance-suite workload, not the current public Agent VM runtime story. It
+models a Python application versioned by **git commit** and deployed as an **immutable release**
+selected by a `current` symlink.
 
 ## Shape
 
 - Source: a git repository; a release is an exact commit.
-- Runtime selection: `/opt/agent/current -> /opt/agent/releases/<sha>-<label>`.
+- Runtime selection: `/srv/demo-agent/current -> /srv/demo-agent/releases/<sha>-<label>`.
 - Services: `agentd.service` runs the orchestrator; additional surfaces run as gateway profiles —
   `agent-gateway@core` (`cli` mode), `agent-gateway@mcp` (`script` mode).
 
@@ -14,7 +15,7 @@ as an **immutable release** selected by a `current` symlink. It validates the im
 
 - **Promote** an exact commit:
   `control-plane/promote-agent --sha <sha> --label <l> --worktree <p>` → `git archive` ship →
-  `.release.json` provenance → atomic symlink flip → restart → verify (active · symlink · source SHA).
+	  `.release.json` provenance -> atomic symlink flip -> restart -> verify (active, symlink, source SHA).
 - **Status / drift:** `control-plane/status-agent` re-derives the live source SHA (3-tier) and flags
   drift against the recorded truth.
 - **Rollback:** `control-plane/rollback-agent --to <prev-release>` (the previous `current` target is

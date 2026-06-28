@@ -1,9 +1,9 @@
-# Illustrative per-profile capability contract (Ring 1 conversation-plane example). Fictional values.
+# Illustrative per-profile capability contract for the reference gateway fixture. Fictional values.
 # Every production profile declares what it may do; acceptance proves it before the profile is trusted.
 profile: mcp
 ring: 1
 linux_user: agent-mcp
-home: /opt/agent/gateways/mcp/home
+home: /srv/demo-agent/gateways/mcp/home
 service_unit: agent-gateway@mcp.service
 gateways:
   - mcp_sse
@@ -23,11 +23,11 @@ egress:
   direct_private_network: false
 files:
   read_write:
-    - /opt/agent/gateways/mcp/home
-    - /opt/agent/gateways/mcp/logs
+    - /srv/demo-agent/gateways/mcp/home
+    - /srv/demo-agent/gateways/mcp/logs
   denied_examples:
-    - /opt/agent/gateways/core/home
-    - /opt/agent/gateways/api/home
+    - /srv/demo-agent/gateways/core/home
+    - /srv/demo-agent/gateways/api/home
 secrets:
   injection: file_or_systemd_credential   # refs only; never values
   values_in_git: false

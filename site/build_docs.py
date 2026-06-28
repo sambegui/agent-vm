@@ -438,17 +438,20 @@ def main():
     
     # Exact documentation chain in sequence: (rel_src_path, rel_dest_path, back_depth, display_title)
     files_to_compile = [
+        ('index.md', 'docs/index.html', '../', 'Documentation Index'),
         ('architecture/00-overview.md', 'docs/architecture/00-overview.html', '../../', '00 — Overview'),
-        ('architecture/01-isolation-substrate.md', 'docs/architecture/01-isolation-substrate.html', '../../', '01 — Isolation Substrate'),
+        ('architecture/01-isolation-substrate.md', 'docs/architecture/01-isolation-substrate.html', '../../', '01 — Reference Acceptance Substrate'),
         ('architecture/02-promotion-control-plane.md', 'docs/architecture/02-promotion-control-plane.html', '../../', '02 — Promotion Control Plane'),
-        ('architecture/03-gateway-runtime-layout.md', 'docs/architecture/03-gateway-runtime-layout.html', '../../', '03 — Gateway Runtime Layout'),
-        ('architecture/04-production-governance.md', 'docs/architecture/04-production-governance.html', '../../', '04 — Production Governance'),
+        ('architecture/03-gateway-runtime-layout.md', 'docs/architecture/03-gateway-runtime-layout.html', '../../', '03 — Reference Gateway Fixture'),
+        ('architecture/04-production-governance.md', 'docs/architecture/04-production-governance.html', '../../', '04 — Governance And Claim Discipline'),
         ('architecture/05-secure-gated-agent-preview-access.md', 'docs/architecture/05-secure-gated-agent-preview-access.html', '../../', '05 — Gated Preview Access'),
         ('security-methodology.md', 'docs/security-methodology.html', '../', 'Security Methodology'),
         ('threat-model.md', 'docs/threat-model.html', '../', 'Threat Model'),
         ('verification.md', 'docs/verification.html', '../', 'Verification Model'),
         ('evidence/governed-agent-workload-case-study.md', 'docs/evidence/governed-agent-workload-case-study.html', '../../', 'Governed Workload Case Study'),
-        ('evidence/substrate-validation-receipt.md', 'docs/evidence/substrate-validation-receipt.html', '../../', 'Evidence Receipt')
+        ('evidence/substrate-validation-receipt.md', 'docs/evidence/substrate-validation-receipt.html', '../../', 'Reference Acceptance Receipt'),
+        ('evidence/boundary-receipt-01-inner-sandbox.md', 'docs/evidence/boundary-receipt-01-inner-sandbox.html', '../../', 'Boundary Receipt #1 — Inner Sandbox'),
+        ('evidence/boundary-receipt-02-inference-boundary.md', 'docs/evidence/boundary-receipt-02-inference-boundary.html', '../../', 'Boundary Receipt #2 — Inference Boundary')
     ]
     
     for i, (rel_src, rel_dest, depth, display_title) in enumerate(files_to_compile):

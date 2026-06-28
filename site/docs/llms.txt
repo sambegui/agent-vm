@@ -1,25 +1,29 @@
 # BoundaryKit LLM guide
 
-BoundaryKit (formerly agent-vm) is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation. It is a reference implementation and validation suite for governing untrusted autonomous AI-agent workloads inside isolated runtime layers — treat it as a reproducible skeleton, not as a claim that every production operation is turnkey.
+BoundaryKit Agent VM is a public security case study for governing untrusted AI-agent workloads with explicit policy boundaries, an OpenShell sandbox running Hermes Agent, rootless Podman runtime posture, a managed provider boundary, NUC-class hardware context, and evidence-backed validation. Treat the public docs as a sanitized public case study plus reference acceptance suite, not as a live deployment map or turnkey managed platform claim.
 
 Start here:
 - Home: /
+- Documentation index: /docs/index.html
 - Architecture overview: /docs/architecture/00-overview.html
-- Isolation substrate: /docs/architecture/01-isolation-substrate.html
+- Reference acceptance substrate: /docs/architecture/01-isolation-substrate.html
 - Promotion control plane: /docs/architecture/02-promotion-control-plane.html
-- Gateway runtime layout: /docs/architecture/03-gateway-runtime-layout.html
-- Production governance: /docs/architecture/04-production-governance.html
+- Reference gateway fixture: /docs/architecture/03-gateway-runtime-layout.html
+- Governance and claim discipline: /docs/architecture/04-production-governance.html
 - Gated preview access: /docs/architecture/05-secure-gated-agent-preview-access.html
 - Verification model: /docs/verification.html
 - Security methodology: /docs/security-methodology.html
 - Threat model: /docs/threat-model.html
 - Governed workload case study: /docs/evidence/governed-agent-workload-case-study.html
-- Validation receipt: /docs/evidence/substrate-validation-receipt.html
+- Reference acceptance receipt: /docs/evidence/substrate-validation-receipt.html
+- Boundary receipt #1, inner sandbox: /docs/evidence/boundary-receipt-01-inner-sandbox.html
+- Boundary receipt #2, inference boundary: /docs/evidence/boundary-receipt-02-inference-boundary.html
 
 Reading paths:
 - Reviewer path: home, governed workload case study, verification model, then architecture overview.
 - Short architecture answer: 00-overview, then verification.
-- Runtime isolation answer: 01-isolation-substrate, then threat model, then governed workload case study.
+- Runtime isolation answer: home, 00-overview, boundary receipt #1, boundary receipt #2, then threat model.
+- Reference lab answer: 01-isolation-substrate, 03-gateway-runtime-layout, and the reference acceptance receipt.
 - Release and rollback answer: 02-promotion-control-plane, then verification.
 - Security posture answer: security methodology, threat model, production governance.
 

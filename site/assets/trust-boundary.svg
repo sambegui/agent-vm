@@ -1,143 +1,97 @@
 <svg width="980" height="720" viewBox="0 0 980 720" role="img" xmlns="http://www.w3.org/2000/svg">
-  <title>BoundaryKit trust-boundary architecture</title>
-  <desc>Grounded trust boundary flow from host operators to control plane and isolation substrate with governance gates.</desc>
+  <title>BoundaryKit Agent VM layered reference architecture</title>
+  <desc>Abstract public reference architecture showing public input, policy boundary, an OpenShell sandbox running a Hermes Agent workload, rootless runtime isolation, managed provider access, evidence receipts, and a NUC-class VM substrate. The diagram intentionally omits live topology.</desc>
   <defs>
     <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#142233" />
-      <stop offset="1" stop-color="#080d13" />
+      <stop offset="1" stop-color="#0a1018" />
     </linearGradient>
-    <linearGradient id="cyan" x1="0" x2="1">
+    <linearGradient id="accent" x1="0" x2="1">
       <stop offset="0" stop-color="#8ef6ff" />
-      <stop offset="1" stop-color="#38bdf8" />
+      <stop offset="1" stop-color="#f5c16f" />
     </linearGradient>
-    <linearGradient id="copper" x1="0" x2="1">
-      <stop offset="0" stop-color="#f5c16f" />
-      <stop offset="1" stop-color="#c76d3a" />
-    </linearGradient>
-    <filter id="soft-glow" x="-18%" y="-18%" width="136%" height="136%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.42 0 0 0 0 0.91 0 0 0 0 1 0 0 0 .28 0" />
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
       <feMerge>
-        <feMergeNode />
+        <feMergeNode in="blur" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,1 L10,5 L0,9 L2,5 Z" fill="#8ef6ff" />
-    </marker>
-    <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,1 L10,5 L0,9 L2,5 Z" fill="#f5c16f" />
-    </marker>
+    <style>
+      .mono { font-family: SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace; }
+      .body { font-family: Aptos, Segoe UI, ui-sans-serif, system-ui, sans-serif; }
+      .label { fill: #f8fbff; font-size: 23px; font-weight: 800; }
+      .small { fill: #b7c8d8; font-size: 13px; }
+      .tiny { fill: #7f93a8; font-size: 11px; letter-spacing: .4px; }
+      .chip { fill: #8ef6ff; font-size: 11px; font-weight: 700; letter-spacing: .7px; }
+    </style>
   </defs>
 
-  <!-- Background and Ambient Light -->
-  <rect width="980" height="720" rx="34" fill="url(#panel)" />
-  <circle cx="150" cy="180" r="220" fill="#38bdf8" opacity="0.05" />
-  <circle cx="800" cy="500" r="240" fill="#f5c16f" opacity="0.04" />
+  <rect width="980" height="720" rx="28" fill="#070b10" />
+  <rect x="1" y="1" width="978" height="718" rx="28" fill="none" stroke="rgba(142,246,255,.22)" />
+  <circle cx="112" cy="96" r="180" fill="#38bdf8" opacity=".13" filter="url(#glow)" />
+  <circle cx="870" cy="610" r="210" fill="#f5c16f" opacity=".1" filter="url(#glow)" />
 
-  <!-- Diagram Headers -->
-  <g font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" fill="#b7c8d8">
-    <text x="40" y="55" font-size="16" letter-spacing="1.5" font-weight="bold">TRUST BOUNDARY MAP</text>
-    <text x="940" y="55" font-size="14" fill="#f5c16f" text-anchor="end">production architecture</text>
+  <g class="mono">
+    <text x="44" y="58" fill="#8ef6ff" font-size="16" font-weight="800" letter-spacing="1.4">BOUNDARYKIT AGENT VM</text>
+    <text x="936" y="58" text-anchor="end" fill="#f5c16f" font-size="13" font-weight="700">reference architecture - not live topology</text>
   </g>
 
-  <!-- Box 1: Host — Operator Trust Domain -->
-  <rect x="40" y="80" width="560" height="170" rx="16" fill="rgba(16, 26, 39, 0.4)" stroke="#20344c" stroke-width="1.5" />
-  <text x="56" y="105" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-weight="700" font-size="12" fill="#8ef6ff" letter-spacing="1">HOST — OPERATOR TRUST DOMAIN</text>
-
-  <!-- Operator Node -->
-  <g transform="translate(56, 120)">
-    <rect width="160" height="110" rx="10" fill="#0c121a" stroke="rgba(142, 246, 255, 0.3)" stroke-width="1.5" />
-    <text x="20" y="34" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="16" fill="#f8fbff">Operator</text>
-    <text x="20" y="60" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#8ef6ff">dry-run</text>
-    <text x="20" y="78" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#8ef6ff">by default</text>
+  <g transform="translate(54 94)">
+    <rect x="0" y="0" width="872" height="76" rx="18" fill="url(#panel)" stroke="#244258" />
+    <text class="mono chip" x="28" y="26">PUBLIC EDGE</text>
+    <text class="body label" x="28" y="54">Public input / operator intent</text>
+    <text class="mono small" x="842" y="44" text-anchor="end">untrusted by default</text>
   </g>
 
-  <!-- Archetype A Node -->
-  <g transform="translate(236, 120)">
-    <rect width="160" height="110" rx="10" fill="#0c121a" stroke="rgba(142, 246, 255, 0.2)" stroke-width="1" />
-    <text x="20" y="34" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="16" fill="#f8fbff">Archetype A</text>
-    <text x="20" y="60" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#b7c8d8">persistent worker</text>
-    <text x="20" y="78" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#7f93a8">immutable release</text>
+  <g transform="translate(54 190)">
+    <rect x="0" y="0" width="872" height="92" rx="18" fill="rgba(14,24,36,.9)" stroke="#8ef6ff" stroke-width="2" />
+    <text class="mono chip" x="28" y="28">PROMOTION GATE</text>
+    <text class="body label" x="28" y="60">Policy and promotion boundary</text>
+    <text class="mono small" x="842" y="38" text-anchor="end">dry-run first</text>
+    <text class="mono small" x="842" y="62" text-anchor="end">fail closed</text>
   </g>
 
-  <!-- Archetype B Node -->
-  <g transform="translate(416, 120)">
-    <rect width="160" height="110" rx="10" fill="#0c121a" stroke="rgba(142, 246, 255, 0.2)" stroke-width="1" />
-    <text x="20" y="34" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="16" fill="#f8fbff">Archetype B</text>
-    <text x="20" y="60" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#b7c8d8">ephemeral pool</text>
-    <text x="20" y="78" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#7f93a8">on-demand package</text>
+  <g transform="translate(54 302)">
+    <rect x="0" y="0" width="872" height="104" rx="18" fill="url(#panel)" stroke="#324960" />
+    <text class="mono chip" x="28" y="30">EXECUTION BOUNDARY</text>
+    <text class="body label" x="28" y="64">OpenShell sandbox + Hermes Agent</text>
+    <text class="mono small" x="842" y="40" text-anchor="end">tool and data gates</text>
+    <text class="mono small" x="842" y="66" text-anchor="end">measured public summary</text>
   </g>
 
-  <!-- Box 2: Governance Overlay -->
-  <rect x="620" y="80" width="320" height="170" rx="16" fill="rgba(245, 193, 111, 0.05)" stroke="url(#copper)" stroke-width="2" stroke-dasharray="6 4" />
-  <text x="640" y="112" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="800" font-size="16" fill="#f5c16f" letter-spacing="0.5">GOVERNANCE OVERLAY</text>
-  <g font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#ffd790">
-    <text x="640" y="142">• Risk tiers L0–L5 controls</text>
-    <text x="640" y="164">• SLO/canary promotion</text>
-    <text x="640" y="186">• Fail-closed tool allowlists</text>
-    <text x="640" y="208">• Secrets-by-reference gates</text>
-    <text x="640" y="230">• Signed supply chain &amp; audit</text>
+  <g transform="translate(54 426)">
+    <rect x="0" y="0" width="420" height="92" rx="18" fill="rgba(9,35,45,.86)" stroke="#38bdf8" />
+    <text class="mono chip" x="24" y="29">ROOTLESS RUNTIME</text>
+    <text class="body label" x="24" y="61">Rootless Podman runtime</text>
+    <text class="mono tiny" x="24" y="80">least-privilege execution posture</text>
   </g>
 
-  <!-- Box 3: Promotion Control Plane -->
-  <g transform="translate(180, 310)">
-    <rect width="280" height="95" rx="16" fill="#0f1c28" opacity="0.82" filter="url(#soft-glow)" />
-    <rect width="280" height="95" rx="16" fill="#0f1c28" stroke="#54d6ed" stroke-width="2.5" />
-    <text x="24" y="32" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="800" font-size="16" fill="#f8fbff">Promotion control plane</text>
-    <text x="24" y="55" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#8ef6ff">exact-commit releases</text>
-    <text x="24" y="75" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#b7c8d8">drift detection · state-as-truth</text>
+  <g transform="translate(506 426)">
+    <rect x="0" y="0" width="420" height="92" rx="18" fill="rgba(38,28,12,.86)" stroke="#f5c16f" />
+    <text class="mono chip" x="24" y="29" fill="#f5c16f">PROVIDER BOUNDARY</text>
+    <text class="body label" x="24" y="61">Managed inference access</text>
+    <text class="mono tiny" x="24" y="80">credentials resolved outside the sandbox</text>
   </g>
 
-  <!-- Box 4: Golden VM Substrate -->
-  <rect x="40" y="470" width="900" height="210" rx="16" fill="rgba(16, 26, 39, 0.3)" stroke="#324960" stroke-width="1.5" />
-  <text x="56" y="495" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-weight="700" font-size="12" fill="#b7c8d8" letter-spacing="1">GOLDEN VM ISOLATION SUBSTRATE</text>
-
-  <!-- Tier-1 Service Node (Moved up slightly to create larger vertical spacing for paths) -->
-  <g transform="translate(360, 495)">
-    <rect width="260" height="65" rx="10" fill="#0a1219" stroke="#8ef6ff" stroke-width="1.5" />
-    <text x="20" y="24" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="13" fill="#ffffff">Tier-1 long-running service</text>
-    <text x="20" y="45" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#b7c8d8">cosign-signed · digest-pinned · align</text>
+  <g transform="translate(54 538)">
+    <rect x="0" y="0" width="872" height="84" rx="18" fill="rgba(16,26,39,.7)" stroke="#324960" />
+    <text class="mono chip" x="28" y="30">SUBSTRATE + EVIDENCE</text>
+    <text class="body label" x="28" y="62">NUC-class VM substrate and receipts</text>
+    <text class="mono small" x="842" y="48" text-anchor="end">public summaries only</text>
   </g>
 
-  <!-- agent-gateway@<profile> Node -->
-  <g transform="translate(56, 595)">
-    <rect width="360" height="65" rx="10" fill="#050910" stroke="rgba(142, 246, 255, 0.4)" stroke-width="1" />
-    <text x="20" y="24" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="13" fill="#f8fbff">agent-gateway@&lt;profile&gt;</text>
-    <text x="20" y="45" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#b7c8d8">one runtime source per profile · user isolation</text>
+  <g fill="none" stroke="url(#accent)" stroke-width="3" stroke-linecap="round" opacity=".92">
+    <path d="M490 171 L490 189" />
+    <path d="M490 282 L490 301" />
+    <path d="M490 406 L282 425" />
+    <path d="M490 406 L718 425" />
+    <path d="M282 518 L490 537" />
+    <path d="M718 518 L490 537" />
   </g>
 
-  <!-- Tier-2 Ephemeral Kata microVM Node -->
-  <g transform="translate(480, 595)">
-    <rect width="444" height="65" rx="10" fill="#0c121a" stroke="url(#copper)" stroke-width="1.5" stroke-dasharray="4 2" />
-    <text x="20" y="24" font-family="SF Pro Text, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="13" fill="#f5c16f">Tier-2 ephemeral Kata microVM</text>
-    <text x="20" y="45" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#b7c8d8">default-deny egress · hard timeout · teardown</text>
+  <g class="mono" fill="#7f93a8" font-size="11" letter-spacing=".4">
+    <text x="44" y="664">OMITTED BY DESIGN: hostnames, IP addresses, VM names, ports, routes, live service names, key names, mount paths, logs, incidents, and recovery paths.</text>
+    <text x="44" y="688">PUBLIC CLAIM DISCIPLINE: measured boundaries get receipts; deeper containment remains separately scoped.</text>
   </g>
-
-  <!-- ========================================== -->
-  <!-- CONNECTION PATHS (Rendered last so they draw on top of all boxes) -->
-  <!-- ========================================== -->
-
-  <!-- Host Operators to Control Plane -->
-  <path d="M136 230 L230 310" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
-  <path d="M316 230 L320 300" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
-  <path d="M496 230 L410 310" stroke="url(#cyan)" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.8" />
-
-  <!-- Governance Overlay Left Curve (Curves BELOW the Host Operator rounded box and enters Control Plane on its RIGHT side) -->
-  <path d="M620 220 C 620 310, 520 340, 460 350" stroke="#f5c16f" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#arrow-gold)" />
-  <text x="510" y="362" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#f5c16f">gates</text>
-
-  <!-- Governance Overlay Bottom Line (Straight down to Tier-2 microVM) -->
-  <path d="M780 250 L780 585" stroke="#f5c16f" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#arrow-gold)" />
-  <text x="792" y="380" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="11" fill="#f5c16f">gates</text>
-
-  <!-- Control Plane to Substrate -->
-  <path d="M320 405 C320 455 410 465 450 485" stroke="url(#cyan)" stroke-width="3" fill="none" marker-end="url(#arrow)" />
-  <text x="90" y="440" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="12" fill="#8ef6ff" font-weight="bold">promote commit (ssh, verified)</text>
-
-  <!-- Substrate Connections (Connecting bottom of Tier-1 to gateways with flat/gentle curves and separated text) -->
-  <path d="M490 560 C490 580 350 575 300 595" stroke="url(#cyan)" stroke-width="1.5" fill="none" opacity="0.6" />
-  <path d="M490 560 C 520 560, 630 570, 680 595" stroke="#f5c16f" stroke-width="1.5" fill="none" stroke-dasharray="2 2" opacity="0.6" />
-  <text x="510" y="588" font-family="SFMono-Regular, Cascadia Code, Liberation Mono, ui-monospace, monospace" font-size="10" fill="#f5c16f">escalate higher-risk</text>
-
 </svg>

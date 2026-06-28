@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The control plane is a host-side set of small, idempotent scripts plus versioned Markdown &quot;truth&quot; files. It deploys agent runtimes over ssh against immutable releases — live...">
-  <title>02 — Promotion control plane · BoundaryKit specs</title>
+  <meta name="description" content="The promotion boundary is the public control pattern that sits between operator intent and agent execution. It is not a live deployment runbook. Its job is to make mutation...">
+  <title>02 - Policy and promotion boundary · BoundaryKit specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -285,100 +285,93 @@
     <header class="site-header">
       <a class="back-link" href="../../index.html">← Back to Console</a>
       <div class="top-nav-group">
-        <a href="../../docs/architecture/01-isolation-substrate.html" class="top-nav-link" title="01 — Isolation Substrate">← Prev</a>
+        <a href="../../docs/architecture/01-isolation-substrate.html" class="top-nav-link" title="01 — Reference Acceptance Substrate">← Prev</a>
         <span class="top-nav-separator">|</span>
-        <a href="../../docs/architecture/03-gateway-runtime-layout.html" class="top-nav-link" title="03 — Gateway Runtime Layout">Next →</a>
+        <a href="../../docs/architecture/03-gateway-runtime-layout.html" class="top-nav-link" title="03 — Reference Gateway Fixture">Next →</a>
       </div>
     </header>
     <main>
-      <h1 id="02-promotion-control-plane">02 — Promotion control plane</h1>
-<p>The control plane is a <strong>host-side</strong> set of small, idempotent scripts plus versioned Markdown
-"truth" files. It deploys agent runtimes <strong>over ssh against immutable releases</strong> — live services are
-never run from a writable host mount, and live paths are never edited in place.</p>
+      <h1 id="02-policy-and-promotion-boundary">02 - Policy and promotion boundary</h1>
+<p>The promotion boundary is the public control pattern that sits between operator intent and agent
+execution. It is not a live deployment runbook. Its job is to make mutation reviewable, reversible,
+and tied to evidence before stronger claims are made.</p>
+<h2 id="control-objectives">Control objectives</h2>
+<ul>
+<li><strong>Dry-run first:</strong> mutation tools print what they would change before any apply path exists.</li>
+<li><strong>Exact revision or artifact:</strong> the promoted thing is named precisely by commit, version, digest, or
+  equivalent immutable identifier.</li>
+<li><strong>Rollback target captured first:</strong> the previous known-good target is recorded before a change is
+  applied.</li>
+<li><strong>State re-derived:</strong> status tools re-read current state instead of trusting the last deployment note.</li>
+<li><strong>Fail closed:</strong> missing policy, unknown tools, broken provider routing, or failed verification stops
+  the claim from advancing.</li>
+</ul>
 <pre><code class="language-mermaid">flowchart TB
-    A[&quot;Archetype A · git-release&quot;] --&gt; WT[&quot;worktree @ exact SHA&quot;]
-    WT --&gt; GATE{&quot;--apply ?&quot;}
-    GATE --&gt;|&quot;no · default&quot;| DRY[&quot;print plan&lt;br/&gt;changes nothing&quot;]
-    GATE --&gt;|yes| SHIP[&quot;git archive → ssh&lt;br/&gt;/opt/agent/releases/&amp;lt;sha&amp;gt;&quot;]
-    SHIP --&gt; PROV[&quot;write .release.json&quot;]
-    PROV --&gt; FLIP[&quot;atomic current symlink flip&quot;]
-    FLIP --&gt; RST[&quot;restart service&quot;]
-    RST --&gt; VER[&quot;verify active · symlink&quot;]
-    VER --&gt; PREV[&quot;record previous target&lt;br/&gt;rollback-ready&quot;]
-    VER --&gt; TRU[&quot;state-as-truth&quot;]
-    STAT[&quot;status-agent · read-only&quot;] -.-&gt;|&quot;re-derive live SHA&quot;| TRU
-    STAT -.-&gt;|&quot;mismatch&quot;| DRIFT[&quot;flag drift&quot;]
-    B[&quot;Archetype B · package-pin&quot;] -.-&gt;|&quot;capture-first&quot;| TRU
+    INTENT[&quot;operator intent&quot;]
+    PLAN[&quot;dry-run plan&quot;]
+    REVIEW{&quot;reviewed?&quot;}
+    APPLY[&quot;apply controlled change&quot;]
+    VERIFY[&quot;verify runtime boundary&quot;]
+    RECEIPT[&quot;receipt + rollback target&quot;]
+    STOP[&quot;stop / revise&quot;]
+
+    INTENT --&gt; PLAN --&gt; REVIEW
+    REVIEW --&gt;|&quot;yes&quot;| APPLY --&gt; VERIFY --&gt; RECEIPT
+    REVIEW --&gt;|&quot;no&quot;| STOP
+    VERIFY --&gt;|&quot;fails&quot;| STOP
 </code></pre>
-<p><em>Solid = verified promotion flow; dotted = read-only drift detection and capture-first archetype.</em></p>
-<h2 id="immutable-exact-commit-releases">Immutable, exact-commit releases</h2>
-<p>Promotion ships an <strong>exact commit</strong>, not a working tree:</p>
-<pre><code>git archive &lt;sha&gt;  →  stream over ssh  →  unpack into /opt/agent/releases/&lt;sha&gt;-&lt;label&gt;
-                   →  write &lt;release&gt;/.release.json  (sha, label, source, promoter, timestamp)
-                   →  atomic `ln -sfn` flip of /opt/agent/current
-                   →  restart the service  →  verify (active · symlink)
-</code></pre>
-<p>The <code>.release.json</code> provenance stamp means a release is <strong>self-describing</strong>. <code>status-agent</code> and
-<code>agent-pr verify</code> re-read the release metadata/source path after promotion so the source SHA is a
-fact you can check, not a guess. The previous <code>current</code> target is recorded as the <strong>rollback target</strong>
-<em>before</em> the flip.</p>
-<pre><code>control-plane/promote-agent  --sha &lt;sha&gt; --label &lt;l&gt; --worktree &lt;path&gt; [--apply]
-control-plane/rollback-agent --to &lt;release-dirname|abs-path&gt; [--apply]
-</code></pre>
-<h2 id="dry-run-by-default">Dry-run by default</h2>
-<p>Promotion and rollback scripts preview their plan and change nothing unless <code>--apply</code> is passed. The
-exact commit, release path, symlink, and service they will touch are printed first. Platform
-lifecycle/bootstrap/reconcile commands are lab-host operations and should be reviewed with their
-printed context or <code>--print-config</code> path before use.</p>
-<h2 id="drift-detection-state-as-truth-re-derived">Drift detection (state-as-truth, re-derived)</h2>
-<p><code>state/*.md</code> records the durable truth (topology, runtimes, releases). But a live symlink can be
-re-pointed by another actor, so status tools <strong>re-derive ground truth on demand and flag drift</strong>
-rather than trusting the recorded value:</p>
-<pre><code>control-plane/status-agent           # live symlink → release, source SHA (3-tier), service state, drift vs state/
-control-plane/status-agent --update  # rewrite the host-local truth markers (never the runtime)
-control-plane/smoke-agent            # read-only post-promote sanity checks
-</code></pre>
-<p>Source-SHA resolution is <strong>3-tier</strong>: <code>&lt;release&gt;/.release.json</code> → in-release <code>git rev-parse</code> → recover
-from the <code>&lt;sha&gt;-&lt;label&gt;</code> directory name — so truth survives releases built by other tooling.</p>
-<h2 id="two-deployment-models-the-agnosticism-proof">Two deployment models = the agnosticism proof</h2>
-<p>The same control-plane discipline wraps <strong>two deliberately different</strong> runtimes:</p>
+<h2 id="public-case-study-usage">Public case-study usage</h2>
+<p>In the current Agent VM story, the promotion boundary is expressed as:</p>
+<ul>
+<li>policy gates before an OpenShell/Hermes workload is treated as approved;</li>
+<li>rootless runtime posture and sandbox checks before stronger claims;</li>
+<li>managed provider routing that fails closed when misconfigured;</li>
+<li>public receipts that separate measured boundaries from pending boundaries;</li>
+<li>rollback/recovery expectations before production-readiness language.</li>
+</ul>
+<p>The public docs intentionally avoid live hostnames, release paths, VM names, SSH aliases, key names,
+service names, and incident-specific recovery details.</p>
+<h2 id="reference-acceptance-suite-usage">Reference acceptance-suite usage</h2>
+<p>The older reference acceptance suite contains host-side scripts that demonstrate the same ideas with
+fictional lab values. Those scripts are useful for static review and local lab experimentation, but
+they are not evidence that a private deployment was validated.</p>
+<p>Examples of public-safe concepts those scripts demonstrate:</p>
 <table>
 <thead>
 <tr>
-<th></th>
-<th>Archetype A (immutable release)</th>
-<th>Archetype B (package install)</th>
+<th>Concept</th>
+<th>Public-safe meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Source</td>
-<td>git commit</td>
-<td>package version</td>
+<td><code>--apply</code> gate</td>
+<td>default is review-only until a human chooses mutation</td>
 </tr>
 <tr>
-<td>Ship</td>
-<td><code>git archive</code> → release dir</td>
-<td>install pinned version</td>
+<td>release identifier</td>
+<td>a promoted artifact is named precisely</td>
 </tr>
 <tr>
-<td>Select</td>
-<td><code>current</code> symlink flip</td>
-<td>binary/symlink version pin</td>
+<td>status check</td>
+<td>current state is re-derived rather than assumed</td>
 </tr>
 <tr>
-<td>Scripts</td>
-<td><code>promote-agent</code> / <code>rollback-agent</code></td>
-<td><code>promote-pkg</code> / <code>rollback-pkg</code> (capture-first)</td>
+<td>rollback command</td>
+<td>recovery is part of the promotion contract</td>
 </tr>
 </tbody>
 </table>
-<p><code>promote-pkg</code>/<code>rollback-pkg</code> are intentional <strong>documented stubs</strong> until a package distribution is
-confirmed — the platform captures and audits Archetype B before it automates it.</p>
-<h2 id="library">Library</h2>
-<p><code>control-plane/lib/common.sh</code> is sourced by every script: the ssh target, <code>guest_ssh</code>/<code>guest_sudo</code>
-helpers, logging, the dry-run gate (<code>APPLY</code> + <code>applying</code>), and <code>print_context</code> (every script prints
-exactly what it operates on).</p>
+<h2 id="evidence-expected-before-stronger-claims">Evidence expected before stronger claims</h2>
+<p>A promotion or policy-change receipt should name:</p>
+<ul>
+<li>the revision, version, digest, or policy identifier;</li>
+<li>the dry-run output reviewed before apply;</li>
+<li>the rollback target captured before apply;</li>
+<li>the post-change boundary checks;</li>
+<li>the non-claims and remaining pending boundaries.</li>
+</ul>
+<p>Without that evidence, the public wording should stay at design or static-validation level.</p>
     </main>
 
     <footer>

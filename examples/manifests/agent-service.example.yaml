@@ -1,17 +1,17 @@
-# Illustrative Tier-1 production-cell manifest for an agent service.
+# Illustrative reference acceptance-suite service manifest.
 # Digest-pinned image, secret REFERENCES only, default-deny egress, tool policy, audit. Fictional values.
 service: agent-mcp
 risk_tier: L1-internal-read-only
-owner: platform-operator
-image: registry.local/agent-mcp@sha256:0000000000000000000000000000000000000000000000000000000000000000  # pinned by digest; cosign-signed
+owner: demo-operator
+image: demo-registry.example/agent-mcp@sha256:0000000000000000000000000000000000000000000000000000000000000000  # pinned by digest; cosign-signed
 resources:
   cpu: "1"
   memory: 1Gi
 state:
-  volume: /opt/agent/gateways/mcp/home   # isolated; no broad host or sibling-runtime mount
+  volume: /srv/demo-agent/gateways/mcp/home   # isolated; no broad host or sibling-runtime mount
 secrets:
   - name: mcp-bearer-token
-    ref: secret://agent-platform/mcp/bearer-token   # REFERENCE only — never a value
+    ref: secret://demo/mcp/bearer-token   # REFERENCE only; never a value
     mount: file
 egress:
   default: deny

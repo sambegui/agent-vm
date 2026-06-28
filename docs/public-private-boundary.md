@@ -1,8 +1,8 @@
 # Public / Private Boundary
 
-`BoundaryKit` is a public reference architecture for governed, untrusted AI-agent workloads. It is meant
-to show the control pattern: trust boundaries, explicit capability contracts, promotion gates,
-rollback, auditability, and evidence-backed operations.
+`BoundaryKit` is a public case study plus reference acceptance suite for governed, untrusted AI-agent
+workloads. It is meant to show the control pattern: trust boundaries, explicit capability contracts,
+promotion gates, rollback, auditability, and evidence-backed operations.
 
 It is not a copy of any private operational deployment. Public material must be newly written,
 illustrative, and safe to inspect without access to private infrastructure.
@@ -11,10 +11,13 @@ illustrative, and safe to inspect without access to private infrastructure.
 
 Public material may include:
 
-- generic architecture docs for isolation, promotion, gateway layout, and governance;
+- current architecture docs for the OpenShell/Hermes case study;
+- reference acceptance-suite docs for older or portable isolation and gateway fixtures;
 - toy workloads that run with fake tools and local-only behavior;
 - fake policies with placeholder tools, fake schema hashes, and example-only secret references;
 - fake evidence receipts that show the shape of build/sign/verify, rollback, and audit records;
+- sanitized public summaries of privately held evidence, when they are newly written from the
+  generalizable lesson and contain no raw logs, private values, live topology, or operator details;
 - scripts that scan public diffs for common leak classes;
 - diagrams with placeholder hosts, clients, registries, and audit sinks.
 
@@ -40,8 +43,9 @@ Private operational repos remain the place for:
   to actual systems;
 - raw transcripts, operator approvals, runtime truth, incident notes, and audit data.
 
-Do not sanitize these artifacts in place and publish them. Recreate public examples from scratch with
-fake values.
+Do not sanitize these artifacts in place and publish them. Recreate public examples and public
+evidence summaries from scratch with fake values, scoped claims, and no raw transcripts or command
+logs.
 
 ## Trust Boundaries
 
@@ -65,7 +69,9 @@ The public examples should preserve that shape:
 
 The public repo may document a promotion flow, but it must not imply that example files are production
 evidence. A public example can show the receipt format; it cannot claim that a private deployment was
-validated.
+validated. A public sanitized summary can say that a named class of boundary was measured only when
+the summary is regenerated from the lesson, strips private values, and clearly states what the
+measurement does not prove.
 
 Allowed public progression:
 

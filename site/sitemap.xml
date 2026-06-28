@@ -13,6 +13,9 @@
     <loc>https://agent-vm.sabe.dev/docs/llms-full.txt</loc>
   </url>
   <url>
+    <loc>https://agent-vm.sabe.dev/docs/index.html</loc>
+  </url>
+  <url>
     <loc>https://agent-vm.sabe.dev/docs/architecture/00-overview.html</loc>
   </url>
   <url>
@@ -44,5 +47,11 @@
   </url>
   <url>
     <loc>https://agent-vm.sabe.dev/docs/evidence/substrate-validation-receipt.html</loc>
+  </url>
+  <url>
+    <loc>https://agent-vm.sabe.dev/docs/evidence/boundary-receipt-01-inner-sandbox.html</loc>
+  </url>
+  <url>
+    <loc>https://agent-vm.sabe.dev/docs/evidence/boundary-receipt-02-inference-boundary.html</loc>
   </url>
 </urlset>

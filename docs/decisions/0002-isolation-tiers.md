@@ -1,10 +1,12 @@
 # ADR 0002 — Workload tiers and risk tiers
 
 ## Status
-Accepted.
+Accepted for reference acceptance-suite vocabulary. The current public Agent VM case study uses
+OpenShell/Hermes, rootless Podman, managed provider boundary, NUC-class substrate, and receipt language
+as the primary public architecture.
 
 ## Context
-Not every agent workload needs the same controls. Over-controlling the lab wastes effort;
+Not every reference-lab workload needs the same controls. Over-controlling the lab wastes effort;
 under-controlling a production, client-facing, or money-touching workload is dangerous.
 
 ## Decision

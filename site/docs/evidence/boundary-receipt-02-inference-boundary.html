@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="This is a sanitized public summary of a privately held boundary receipt. It records the second adversarially relevant boundary in the BoundaryKit reference architecture: the...">
+  <title>Boundary receipt #2 — inference boundary, measured · BoundaryKit specs</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #070b10;
+      --ink-2: #0b111a;
+      --panel: rgba(14, 24, 36, 0.78);
+      --panel-strong: #101a27;
+      --line: rgba(142, 246, 255, 0.22);
+      --text: #f8fbff;
+      --muted: #b7c8d8;
+      --dim: #7f93a8;
+      --cyan: #8ef6ff;
+      --font-body: "SF Pro Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
+    }
+
+    body {
+      background-color: var(--ink);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: clamp(1rem, 4vw, 3rem) 1.5rem;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 16px;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.7rem 1.4rem;
+      border: 1px solid rgba(142, 246, 255, 0.18);
+      border-radius: 999px;
+      background: rgba(7, 11, 16, 0.74);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      margin-bottom: 3.5rem;
+    }
+
+    .top-nav-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .top-nav-link {
+      color: var(--dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      border-bottom: none !important;
+    }
+
+    .top-nav-link:hover:not(.disabled) {
+      color: var(--cyan);
+    }
+
+    .top-nav-link.disabled {
+      color: rgba(127, 147, 168, 0.3);
+      cursor: not-allowed;
+    }
+
+    .top-nav-separator {
+      color: rgba(142, 246, 255, 0.15);
+    }
+
+    .back-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+      border-bottom: none !important;
+    }
+
+    .back-link:hover {
+      color: var(--text);
+      border-bottom: none !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-top: 0;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      border-bottom: 1px solid rgba(142, 246, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(142, 246, 255, 0.4);
+    }
+
+    a:hover {
+      color: var(--text);
+      border-bottom-style: solid;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--cyan);
+    }
+
+    pre {
+      background-color: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 1.2rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    pre code {
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(142, 246, 255, 0.05);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    blockquote {
+      border-left: 4px solid var(--cyan);
+      margin: 1.5rem 0;
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      background-color: rgba(142, 246, 255, 0.02);
+      border-radius: 0 4px 4px 0;
+    }
+
+    blockquote p {
+      margin: 0;
+      font-style: italic;
+    }
+
+    /* Pagination CSS */
+    .pagination-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 2rem;
+    }
+
+    .nav-prev, .nav-next {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      border-bottom: none !important;
+    }
+
+    .nav-next {
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .nav-label {
+      font-size: 0.75rem;
+      color: var(--dim);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      margin-bottom: 0.35rem;
+    }
+
+    .nav-title {
+      font-size: 1.05rem;
+      color: var(--cyan);
+      font-weight: 600;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .nav-prev:hover .nav-title {
+      color: var(--text);
+      transform: translateX(-4px);
+    }
+
+    .nav-next:hover .nav-title {
+      color: var(--text);
+      transform: translateX(4px);
+    }
+
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.5rem;
+      text-align: center;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 720px) {
+      .site-header {
+        top: 12px;
+        padding: 0.55rem 1.1rem;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+      }
+      .back-link {
+        font-size: 0.8rem;
+      }
+      .top-nav-group {
+        font-size: 0.75rem;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="site-header">
+      <a class="back-link" href="../../index.html">← Back to Console</a>
+      <div class="top-nav-group">
+        <a href="../../docs/evidence/boundary-receipt-01-inner-sandbox.html" class="top-nav-link" title="Boundary Receipt #1 — Inner Sandbox">← Prev</a>
+        <span class="top-nav-separator">|</span>
+        <span class="top-nav-link disabled">Next →</span>
+      </div>
+    </header>
+    <main>
+      <h1 id="boundary-receipt-2-inference-boundary-measured">Boundary receipt #2 — inference boundary, measured</h1>
+<p>This is a sanitized public summary of a privately held boundary receipt. It records the second
+<strong>adversarially relevant</strong> boundary in the <code>BoundaryKit</code> reference architecture: the <strong>inference
+boundary</strong>, the governed path an agent runtime uses to reach a model provider. As with the first
+receipt, no private hosts, addresses, image digests, credentials, or command transcripts appear here.</p>
+<p>Receipt #1 measured the inner sandbox and was deliberately honest about one gap: its
+credential-non-leakage check ran <em>without</em> a real provider credential attached, so the meaningful
+claim — "a real credential resolves only at the boundary and never lands inside the sandbox" — was
+named as a follow-on. <strong>This receipt is that follow-on.</strong> It is partial and narrowly scoped, and it
+upgrades exactly one previously-weak claim by one notch: from <em>designed</em> to <em>measured</em>.</p>
+<h2 id="scope">Scope</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boundary measured</td>
+<td>The inference path: an agent runtime's access to a model provider</td>
+</tr>
+<tr>
+<td>Mediation</td>
+<td>Model calls traverse a managed inference boundary; the sandbox has no direct upstream route</td>
+</tr>
+<tr>
+<td>Credential handling</td>
+<td>The provider credential inside the sandbox is a non-functional <strong>placeholder</strong>; the real credential is resolved only at the boundary, at request time</td>
+</tr>
+<tr>
+<td>Method</td>
+<td>Configuration inspection inside the sandbox + a negative behavior test (deliberately misroute the inference API mode and observe the failure shape)</td>
+</tr>
+<tr>
+<td>Mutating production systems</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Secrets included</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Claim supported</td>
+<td>Inside the sandbox the agent holds no working provider credential and has no ungoverned path to the model — <strong>not</strong> that the mediating proxy is itself unbreakable</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-was-measured">What was measured</h2>
+<p>Two properties, both observed directly rather than assumed from design.</p>
+<ol>
+<li>
+<p><strong>Credential placeholder, resolved at the boundary.</strong> The agent's model configuration <em>inside</em> the
+   sandbox carries a non-functional placeholder and points at the governed inference route, not the
+   upstream provider directly. The real credential is resolved at the boundary at request time; it is
+   absent from the sandbox's configuration file and from the agent process environment. This is the
+   credential-placement test Receipt #1 could not make by itself.</p>
+</li>
+<li>
+<p><strong>Fail-closed on misroute.</strong> When the governed route is deliberately misconfigured — the inference
+   API mode set to a value the upstream path cannot satisfy — the agent does <strong>not</strong> silently fall back
+   to an ungoverned connection, and does <strong>not</strong> proceed on a partial result. It fails closed: the run
+   stops rather than emitting an unverified success. The security-relevant reading is that a <em>broken</em>
+   governed path produces a <em>stopped</em> agent,
+   not one that quietly finds another way out.</p>
+</li>
+</ol>
+<p><strong>Headline:</strong> the model credential the agent depends on is not present in the agent's own trust zone.
+The agent reaches the model only by traversing a boundary that holds the credential and applies policy,
+and when that boundary is disrupted the agent stops instead of degrading to an ungoverned path.</p>
+<h2 id="what-this-receipt-does-not-claim">What this receipt does NOT claim</h2>
+<p>This remains the most important section, and the discipline is unchanged from Receipt #1: unproven
+boundaries are named, not implied.</p>
+<ul>
+<li><strong>It does not prove the mediating proxy is unbreakable.</strong> The pattern <em>moves</em> trust from "every
+  sandbox" to "one audited boundary component" — a real and useful reduction in attack surface — but it
+  does not prove that component is non-bypassable against a determined in-sandbox attacker who can
+  reach it. That is a separate, harder receipt.</li>
+<li><strong>It does not prove the upstream credential is unrecoverable.</strong> The credential is shown absent from
+  the sandbox config and environment; a stronger test would attempt <em>active</em> extraction at the boundary
+  under load, not merely confirm static absence.</li>
+<li><strong>This is configuration + behavior evidence, not a formal proof.</strong> The fail-closed behavior was
+  observed for one class of misroute; it is a strong signal, not an exhaustive guarantee that no
+  misconfiguration can ever yield an ungoverned success.</li>
+<li><strong>This is the inference boundary, not an outer containment boundary.</strong> A VM, hypervisor, or
+  host-management-plane boundary needs its own public summary before it is described as measured here.</li>
+</ul>
+<h2 id="why-this-matters-the-design-choice-it-records">Why this matters — the design choice it records</h2>
+<p>The generalizable lesson, stated so others can adopt it without any of our coordinates:</p>
+<blockquote>
+<p><strong>Secrets live outside the sandbox, not inside it.</strong> An agent should hold a placeholder, not a key.
+Put the real credential behind a single mediating boundary that injects it at egress, pair it with
+deny-by-default egress, and prefer designs where disrupting the governed path <em>stops</em> the agent
+rather than letting it find an ungoverned one.</p>
+</blockquote>
+<p>This is the property a multi-profile agent substrate wants: workloads traverse a mediating boundary
+instead of holding each other's credentials, and a compromised agent cannot simply read a working key
+from its own sandbox because it never held one.</p>
+<h2 id="evidence-level">Evidence level</h2>
+<p>Read this against the <a href="../verification.html">verification model</a>. This receipt is a <strong>boundary
+measurement</strong>: stronger than a design assertion because both properties were observed inside a running
+sandbox, weaker than a production canary because no real workload, SLO, or active-extraction adversary
+is in scope. It sits alongside Receipt #1 and covers exactly one additional boundary — the credential
+and inference path — and it explicitly retires one of Receipt #1's named gaps to <em>measured</em>.</p>
+<p>Read alongside <a href="boundary-receipt-01-inner-sandbox.html">boundary receipt #1 — inner sandbox</a>, the
+<a href="governed-agent-workload-case-study.html">governed-agent-workload case study</a>, and the
+<a href="substrate-validation-receipt.html">substrate validation receipt</a>.</p>
+    </main>
+
+    <footer>
+      BoundaryKit security substrate · open-source verification receipt
+    </footer>
+  </div>
+</body>
+</html>

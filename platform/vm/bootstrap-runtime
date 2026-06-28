@@ -67,7 +67,7 @@ if [ -z "$hello_digest" ]; then
   echo "ERROR: build-sign-push did not print DIGEST=..." >&2
   exit 1
 fi
-sed -i -E "s#image: 127\\.0\\.0\\.1:5000/hello-agent@sha256:[a-f0-9]+#image: $hello_digest#" "$HOME/platform/manifests/hello.service.yaml"
+sed -i -E "s#image: [^[:space:]]*/hello-agent@sha256:[a-f0-9]+#image: $hello_digest#" "$HOME/platform/manifests/hello.service.yaml"
 
 podman pull docker.io/library/busybox:latest
 podman tag docker.io/library/busybox:latest "$REG/busybox:probe"

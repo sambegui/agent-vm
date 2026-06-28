@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="BoundaryKit is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation."
+      content="BoundaryKit Agent VM is a public security case study for governing untrusted AI-agent workloads with explicit policy boundaries, rootless runtime isolation, and evidence-backed validation."
     />
     <link rel="canonical" href="https://agent-vm.sabe.dev/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="BoundaryKit — governed runtime boundaries for autonomous agent workloads" />
-    <meta property="og:description" content="BoundaryKit is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation." />
+    <meta property="og:title" content="BoundaryKit Agent VM - governed sandboxing for untrusted AI-agent workloads" />
+    <meta property="og:description" content="A static public case study showing policy boundaries, rootless runtime isolation, upstream credits, and sanitized evidence receipts for agent workload governance." />
     <meta property="og:url" content="https://agent-vm.sabe.dev/" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="BoundaryKit — governed runtime boundaries for autonomous agent workloads" />
-    <meta name="twitter:description" content="BoundaryKit is a public reference architecture for governing untrusted autonomous workloads with explicit runtime boundaries, promotion controls, rollback paths, and evidence-backed validation." />
-    <title>BoundaryKit — governed runtime boundaries for autonomous agent workloads</title>
+    <meta name="twitter:title" content="BoundaryKit Agent VM - governed sandboxing for untrusted AI-agent workloads" />
+    <meta name="twitter:description" content="A static public case study showing policy boundaries, rootless runtime isolation, upstream credits, and sanitized evidence receipts for agent workload governance." />
+    <title>BoundaryKit Agent VM - governed sandboxing for untrusted AI-agent workloads</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" href="favicon-32x32.png" type="image/png" />
@@ -61,27 +61,38 @@
     <main id="main">
       <section id="top" class="hero section-grid" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow">governed agent workloads · trust-boundary evidence</p>
-          <h1 id="hero-title">Govern untrusted AI-agent workloads with explicit boundaries and evidence.</h1>
+          <p class="eyebrow">Agent VM case study · governed sandboxing · public evidence</p>
+          <h1 id="hero-title">A governed sandbox for untrusted AI-agent workloads.</h1>
           <p class="hero-lede">
-            <strong>BoundaryKit</strong> (formerly agent-vm) is a public reference architecture for treating autonomous AI agents as probabilistic workloads that process untrusted input. It demonstrates how promotion controls, isolation, default-deny access, audit trails, rollback, and reproducible validation fit together without claiming a turnkey security product.
+            <strong>BoundaryKit Agent VM</strong> is a public security case study for running probabilistic workloads behind explicit policy boundaries, rootless runtime isolation, promotion controls, and evidence-backed validation. It is designed to show what can be measured on NUC-class hardware without exposing a live deployment map or claiming a turnkey managed platform.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#architecture">See the boundary</a>
             <a class="button secondary" href="#validated">View validation scope</a>
           </div>
-          <div class="mobile-boundary-map" aria-label="Compact trust boundary flow">
-            <span>Operator</span>
-            <span>Control plane</span>
-            <span>Isolation substrate</span>
-            <span>Governance overlay</span>
+          <div class="credit-rail" aria-label="Public tools credited in this architecture">
+            <span class="credit-label">Public architecture line:</span>
+            <a href="https://github.com/NVIDIA/openshell" rel="noopener noreferrer" target="_blank">NVIDIA OpenShell</a>
+            <span class="credit-hop" aria-hidden="true">-&gt;</span>
+            <span>Hermes Agent</span>
+            <span class="credit-hop" aria-hidden="true">-&gt;</span>
+            <span>rootless Podman</span>
+            <span class="credit-hop" aria-hidden="true">-&gt;</span>
+            <span>NUC-class hardware</span>
+            <a class="credit-lineage" href="https://docs.nvidia.com/nemoclaw/" rel="noopener noreferrer" target="_blank">NemoClaw blueprint</a>
+          </div>
+          <div class="mobile-boundary-map" aria-label="Compact current public trust boundary flow">
+            <span>Operator intent</span>
+            <span>Policy gate</span>
+            <span>OpenShell + Hermes</span>
+            <span>Evidence overlay</span>
           </div>
           <div class="trust-route" aria-label="Primary trust boundary flow">
-            <a href="#architecture">operator</a>
+            <a href="#architecture">public input</a>
             <span aria-hidden="true">→</span>
-            <a href="#layers">control plane</a>
+            <a href="#layers">policy gate</a>
             <span aria-hidden="true">→</span>
-            <a href="#validated">substrate</a>
+            <a href="#validated">sandbox receipts</a>
           </div>
         </div>
 
@@ -94,13 +105,16 @@
           <button class="diagram-trigger" id="diagram-trigger" aria-label="Expand trust boundary map">
             <img
               src="assets/trust-boundary.svg"
-              alt="Operator requests pass through a promotion control plane into an isolation substrate, with governance gates for signed services and teardown jobs."
+              alt="Reference architecture diagram showing public input, a policy boundary, an OpenShell sandbox running a Hermes Agent workload, rootless runtime isolation, managed inference access, evidence receipts, and a NUC-class VM substrate without live topology details."
             />
             <span class="expand-indicator">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
               Expand
             </span>
           </button>
+          <p class="diagram-note">
+            Reference architecture only. The diagram intentionally omits hostnames, IP addresses, VM names, ports, routes, live service names, and recovery paths.
+          </p>
         </aside>
       </section>
 
@@ -161,67 +175,67 @@
           <article>
             <span class="risk-code">04</span>
             <h3>Containment policy enforcement</h3>
-            <p>Enforces default-deny network egress, deterministic runtime timeouts, and credential-by-reference access gates, with negative tests and receipts required before stronger claims are made.</p>
+            <p>Enforces default-deny network egress, deterministic runtime timeouts, and credential-by-reference access gates. The first egress, SSRF, and lateral-movement boundary is now adversarially measured; deeper boundaries stay pending until their own receipts exist.</p>
           </article>
         </div>
       </section>
 
       <section id="layers" class="layers" aria-labelledby="layers-title">
         <div class="section-heading narrow">
-          <p class="eyebrow">three layers + governance</p>
+          <p class="eyebrow">current public architecture</p>
           <h2 id="layers-title">Each layer assumes the one above can fail.</h2>
         </div>
         <div class="layer-stack">
           <article class="layer-card control">
             <span class="layer-number">01</span>
-            <h3>Promotion control plane</h3>
+            <h3>Policy and promotion boundary</h3>
             <p>
-              Immutable exact-commit releases, dry-run-by-default mutation, drift detection, state as
-              truth, and recorded rollback targets.
+              Operator-approved changes move through explicit policy, dry-run/review expectations,
+              fail-closed defaults, and recorded recovery evidence before stronger claims are made.
             </p>
             <ul>
-              <li>exact commit promotion</li>
-              <li>dry-run before apply</li>
-              <li>drift-aware status</li>
+              <li>operator-approved changes</li>
+              <li>dry-run/review posture</li>
+              <li>fail-closed defaults</li>
             </ul>
           </article>
           <article class="layer-card substrate">
             <span class="layer-number">02</span>
-            <h3>Isolation substrate</h3>
+            <h3>OpenShell sandbox runtime</h3>
             <p>
-              Nested-virt golden VM with Tier-1 cosign-signed, digest-pinned services and Tier-2
-              ephemeral Kata microVM jobs.
+              Hermes Agent runs inside an OpenShell sandbox with least-privilege runtime settings,
+              rootless Podman isolation, and denied-by-default access outside the approved path.
             </p>
             <ul>
-              <li>reconcile → align</li>
-              <li>default-deny egress</li>
-              <li>verified teardown</li>
+              <li>non-root workload</li>
+              <li>no broad host socket access</li>
+              <li>default-deny egress posture</li>
             </ul>
           </article>
           <article class="layer-card gateway">
             <span class="layer-number">03</span>
-            <h3>agent-gateway@&lt;profile&gt;</h3>
+            <h3>Managed provider boundary</h3>
             <p>
-              Per-profile runtime layout with one declared runtime source, OS-level profile isolation,
-              and independently restartable hardened systemd units.
+              Model and tool-provider access is mediated outside the sandbox. Public evidence focuses
+              on placeholder-in-sandbox credentials and fail-closed behavior on misroutes.
             </p>
             <ul>
-              <li>one service per profile</li>
-              <li>Linux user isolation</li>
-              <li>restart blast-radius control</li>
+              <li>secrets by reference</li>
+              <li>managed inference path</li>
+              <li>credential boundary receipt</li>
             </ul>
           </article>
           <article class="layer-card governance">
             <span class="layer-number">04</span>
-            <h3>Governance overlay</h3>
+            <h3>Evidence and recovery overlay</h3>
             <p>
-              Risk tiers L0–L5, SLO/canary, fail-closed tool allowlists, secrets-by-reference,
-              signed supply chain, audit trails, and proven rollback.
+              Receipts, public-safe summaries, rollback expectations, and manual declassification
+              review keep the architecture honest about what is measured versus still pending.
             </p>
             <ul>
-              <li>risk-tier gates</li>
-              <li>canary before promotion</li>
-              <li>audit evidence</li>
+              <li>sanitized receipts</li>
+              <li>claim discipline</li>
+              <li>recovery evidence</li>
             </ul>
           </article>
         </div>
@@ -229,21 +243,32 @@
 
       <section id="validated" class="validated section-grid" aria-labelledby="validated-title">
         <div>
-          <p class="eyebrow">what is actually validated</p>
+          <p class="eyebrow">from designed to measured</p>
           <h2 id="validated-title">Honest proof, not production theater.</h2>
           <p class="section-lede">
-            The evidence proves the substrate walking skeleton and selected control-plane flows. It does
-            not claim a turnkey managed platform or a production migration.
+            The substrate skeleton is host-validated in a lab, and two boundary summaries are now
+            measured in public form: the inner sandbox and the governed inference path. The sequence is
+            still not finished, and it does not claim a turnkey managed platform, a production migration,
+            or that every deeper containment boundary is proven.
           </p>
         </div>
         <div class="validation-card">
+          <p class="eyebrow">Host-validated · current public shape</p>
           <ul class="validation-list">
-            <li><span class="val-emoji">🖥️</span> Golden VM provisioned from code.</li>
-            <li><span class="val-emoji">🔑</span> Tier-1 service signed, digest-pinned, and aligned.</li>
-            <li><span class="val-emoji">🔄</span> Promotion and rollback path exercised.</li>
-            <li><span class="val-emoji">🌐</span> Tier-2 microVM boots with default-deny egress.</li>
-            <li><span class="val-emoji">🧹</span> Timeout and teardown are verified.</li>
+            <li><span class="val-emoji">🖥️</span> NUC-class VM substrate hosts the sandboxed workload.</li>
+            <li><span class="val-emoji">📦</span> OpenShell sandbox runs the Hermes Agent workload behind policy gates.</li>
+            <li><span class="val-emoji">🔒</span> Rootless Podman posture keeps the runtime aligned with least privilege.</li>
+            <li><span class="val-emoji">🔄</span> Recovery and rollback expectations are treated as evidence requirements.</li>
           </ul>
+          <p class="eyebrow">Boundary-measured · adversarial</p>
+          <ul class="validation-list">
+            <li><span class="val-emoji">🛡️</span> Inner sandbox: egress refused at the proxy <em>and</em> under a raw-socket bypass.</li>
+            <li><span class="val-emoji">🚫</span> SSRF, lateral movement, and external DNS refused; filesystem read-only; process non-root.</li>
+            <li><span class="val-emoji">🔐</span> Inference boundary: provider credential stays outside the sandbox; misroutes fail closed.</li>
+          </ul>
+          <p class="val-note">⏳ Deeper containment claims remain separately scoped until their own public summaries exist.</p>
+          <a class="val-receipt-link" href="docs/evidence/boundary-receipt-01-inner-sandbox.html">Read boundary receipt&nbsp;#1 →</a>
+          <a class="val-receipt-link" href="docs/evidence/boundary-receipt-02-inference-boundary.html">Read boundary receipt&nbsp;#2 →</a>
         </div>
       </section>
 
@@ -282,7 +307,7 @@
               "A minimal device model that excludes all non-essential functionality and reduces the attack surface."
             </blockquote>
             <p>
-              Tier-2 microVMs use stripped-down, isolated virtual devices with hardware-enforced boundaries and fast teardown.
+              The public architecture keeps VM containment as a separate backstop so the sandbox boundary is not the only line of defense.
             </p>
             <a href="https://firecracker-microvm.github.io/" class="citation-link" target="_blank" rel="noopener">AWS Firecracker microVM →</a>
           </article>
@@ -310,29 +335,36 @@
 
       <section id="docs" class="docs" aria-labelledby="docs-title">
         <div class="section-heading">
-          <p class="eyebrow">read the evidence trail</p>
-          <h2 id="docs-title">Fully documented specifications and verifiable receipts.</h2>
+          <p class="eyebrow">public docs and receipts</p>
+          <h2 id="docs-title">Current evidence first, reference specs clearly labeled.</h2>
         </div>
         <div class="doc-grid">
+          <a href="docs/index.html">Documentation index</a>
           <a href="docs/architecture/00-overview.html">00 — Overview</a>
-          <a href="docs/architecture/01-isolation-substrate.html">01 — Isolation substrate</a>
+          <a href="docs/architecture/01-isolation-substrate.html">01 — Reference acceptance substrate</a>
           <a href="docs/architecture/02-promotion-control-plane.html">02 — Promotion control plane</a>
-          <a href="docs/architecture/03-gateway-runtime-layout.html">03 — Gateway runtime layout</a>
-          <a href="docs/architecture/04-production-governance.html">04 — Production governance</a>
+          <a href="docs/architecture/03-gateway-runtime-layout.html">03 — Reference gateway fixture</a>
+          <a href="docs/architecture/04-production-governance.html">04 — Governance and claim discipline</a>
           <a href="docs/architecture/05-secure-gated-agent-preview-access.html">05 — Gated preview access</a>
           <a href="docs/security-methodology.html">Security methodology</a>
           <a href="docs/threat-model.html">Threat model</a>
           <a href="docs/verification.html">Verification model</a>
           <a href="docs/evidence/governed-agent-workload-case-study.html">Governed workload case study</a>
-          <a href="docs/evidence/substrate-validation-receipt.html">Evidence receipt</a>
+          <a href="docs/evidence/substrate-validation-receipt.html">Reference acceptance receipt</a>
+          <a href="docs/evidence/boundary-receipt-01-inner-sandbox.html">Boundary receipt #1 — inner sandbox</a>
+          <a href="docs/evidence/boundary-receipt-02-inference-boundary.html">Boundary receipt #2 — inference boundary</a>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
       <p>
-        A reference architecture for governing untrusted autonomous agent workloads through
-        containment boundaries, promotion controls, evidence, and rollback.
+        A static public case study for governing untrusted AI-agent workloads through policy
+        boundaries, rootless runtime isolation, promotion controls, evidence, and rollback.
+      </p>
+      <p class="footer-credit">
+        Architecture credits: NVIDIA OpenShell, NVIDIA NemoClaw, Hermes Agent, rootless Podman,
+        and NUC-class hardware. Public diagrams are reference models, not live deployment maps.
       </p>
       <a href="https://github.com/sambegui/agent-vm">View repository</a>
     </footer>

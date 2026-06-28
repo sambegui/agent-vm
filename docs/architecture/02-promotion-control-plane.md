@@ -1,87 +1,72 @@
-# 02 — Promotion control plane
+# 02 - Policy and promotion boundary
 
-The control plane is a **host-side** set of small, idempotent scripts plus versioned Markdown
-"truth" files. It deploys agent runtimes **over ssh against immutable releases** — live services are
-never run from a writable host mount, and live paths are never edited in place.
+The promotion boundary is the public control pattern that sits between operator intent and agent
+execution. It is not a live deployment runbook. Its job is to make mutation reviewable, reversible,
+and tied to evidence before stronger claims are made.
+
+## Control objectives
+
+- **Dry-run first:** mutation tools print what they would change before any apply path exists.
+- **Exact revision or artifact:** the promoted thing is named precisely by commit, version, digest, or
+  equivalent immutable identifier.
+- **Rollback target captured first:** the previous known-good target is recorded before a change is
+  applied.
+- **State re-derived:** status tools re-read current state instead of trusting the last deployment note.
+- **Fail closed:** missing policy, unknown tools, broken provider routing, or failed verification stops
+  the claim from advancing.
 
 ```mermaid
 flowchart TB
-    A["Archetype A · git-release"] --> WT["worktree @ exact SHA"]
-    WT --> GATE{"--apply ?"}
-    GATE -->|"no · default"| DRY["print plan<br/>changes nothing"]
-    GATE -->|yes| SHIP["git archive → ssh<br/>/opt/agent/releases/&lt;sha&gt;"]
-    SHIP --> PROV["write .release.json"]
-    PROV --> FLIP["atomic current symlink flip"]
-    FLIP --> RST["restart service"]
-    RST --> VER["verify active · symlink"]
-    VER --> PREV["record previous target<br/>rollback-ready"]
-    VER --> TRU["state-as-truth"]
-    STAT["status-agent · read-only"] -.->|"re-derive live SHA"| TRU
-    STAT -.->|"mismatch"| DRIFT["flag drift"]
-    B["Archetype B · package-pin"] -.->|"capture-first"| TRU
+    INTENT["operator intent"]
+    PLAN["dry-run plan"]
+    REVIEW{"reviewed?"}
+    APPLY["apply controlled change"]
+    VERIFY["verify runtime boundary"]
+    RECEIPT["receipt + rollback target"]
+    STOP["stop / revise"]
+
+    INTENT --> PLAN --> REVIEW
+    REVIEW -->|"yes"| APPLY --> VERIFY --> RECEIPT
+    REVIEW -->|"no"| STOP
+    VERIFY -->|"fails"| STOP
 ```
 
-*Solid = verified promotion flow; dotted = read-only drift detection and capture-first archetype.*
+## Public case-study usage
 
-## Immutable, exact-commit releases
+In the current Agent VM story, the promotion boundary is expressed as:
 
-Promotion ships an **exact commit**, not a working tree:
+- policy gates before an OpenShell/Hermes workload is treated as approved;
+- rootless runtime posture and sandbox checks before stronger claims;
+- managed provider routing that fails closed when misconfigured;
+- public receipts that separate measured boundaries from pending boundaries;
+- rollback/recovery expectations before production-readiness language.
 
-```
-git archive <sha>  →  stream over ssh  →  unpack into /opt/agent/releases/<sha>-<label>
-                   →  write <release>/.release.json  (sha, label, source, promoter, timestamp)
-                   →  atomic `ln -sfn` flip of /opt/agent/current
-                   →  restart the service  →  verify (active · symlink)
-```
+The public docs intentionally avoid live hostnames, release paths, VM names, SSH aliases, key names,
+service names, and incident-specific recovery details.
 
-The `.release.json` provenance stamp means a release is **self-describing**. `status-agent` and
-`agent-pr verify` re-read the release metadata/source path after promotion so the source SHA is a
-fact you can check, not a guess. The previous `current` target is recorded as the **rollback target**
-*before* the flip.
+## Reference acceptance-suite usage
 
-```
-control-plane/promote-agent  --sha <sha> --label <l> --worktree <path> [--apply]
-control-plane/rollback-agent --to <release-dirname|abs-path> [--apply]
-```
+The older reference acceptance suite contains host-side scripts that demonstrate the same ideas with
+fictional lab values. Those scripts are useful for static review and local lab experimentation, but
+they are not evidence that a private deployment was validated.
 
-## Dry-run by default
+Examples of public-safe concepts those scripts demonstrate:
 
-Promotion and rollback scripts preview their plan and change nothing unless `--apply` is passed. The
-exact commit, release path, symlink, and service they will touch are printed first. Platform
-lifecycle/bootstrap/reconcile commands are lab-host operations and should be reviewed with their
-printed context or `--print-config` path before use.
+| Concept | Public-safe meaning |
+|---|---|
+| `--apply` gate | default is review-only until a human chooses mutation |
+| release identifier | a promoted artifact is named precisely |
+| status check | current state is re-derived rather than assumed |
+| rollback command | recovery is part of the promotion contract |
 
-## Drift detection (state-as-truth, re-derived)
+## Evidence expected before stronger claims
 
-`state/*.md` records the durable truth (topology, runtimes, releases). But a live symlink can be
-re-pointed by another actor, so status tools **re-derive ground truth on demand and flag drift**
-rather than trusting the recorded value:
+A promotion or policy-change receipt should name:
 
-```
-control-plane/status-agent           # live symlink → release, source SHA (3-tier), service state, drift vs state/
-control-plane/status-agent --update  # rewrite the host-local truth markers (never the runtime)
-control-plane/smoke-agent            # read-only post-promote sanity checks
-```
+- the revision, version, digest, or policy identifier;
+- the dry-run output reviewed before apply;
+- the rollback target captured before apply;
+- the post-change boundary checks;
+- the non-claims and remaining pending boundaries.
 
-Source-SHA resolution is **3-tier**: `<release>/.release.json` → in-release `git rev-parse` → recover
-from the `<sha>-<label>` directory name — so truth survives releases built by other tooling.
-
-## Two deployment models = the agnosticism proof
-
-The same control-plane discipline wraps **two deliberately different** runtimes:
-
-| | Archetype A (immutable release) | Archetype B (package install) |
-|---|---|---|
-| Source | git commit | package version |
-| Ship | `git archive` → release dir | install pinned version |
-| Select | `current` symlink flip | binary/symlink version pin |
-| Scripts | `promote-agent` / `rollback-agent` | `promote-pkg` / `rollback-pkg` (capture-first) |
-
-`promote-pkg`/`rollback-pkg` are intentional **documented stubs** until a package distribution is
-confirmed — the platform captures and audits Archetype B before it automates it.
-
-## Library
-
-`control-plane/lib/common.sh` is sourced by every script: the ssh target, `guest_ssh`/`guest_sudo`
-helpers, logging, the dry-run gate (`APPLY` + `applying`), and `print_context` (every script prints
-exactly what it operates on).
+Without that evidence, the public wording should stay at design or static-validation level.

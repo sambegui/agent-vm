@@ -1,12 +1,12 @@
-# Runtimes — live truth (ILLUSTRATIVE EXAMPLE)
+# Runtimes - reference fixture truth (ILLUSTRATIVE EXAMPLE)
 
 > Example of the control plane's state-as-truth file. **All values are fictional.** A real deployment
 > regenerates the markers with `control-plane/status-agent --update` (which re-derives live truth and
 > rewrites this host-local file only — never the runtime).
 
-## archetype-a (immutable-release agent)
+## archetype-a (reference immutable-release agent)
 - service: agentd.service
-- current_link: /opt/agent/current
+- current_link: /srv/demo-agent/current
 - current_release: 1a2b3c4d5-feature-x
 - current_sha: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b
 - rollback_target: 0f9e8d7c6-prev-stable

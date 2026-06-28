@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Most enterprise AI usage still happens through isolated browser tabs or ad hoc automation. That model fragments context, hides execution state, and gives reviewers little...">
-  <title>00 — Architecture overview · BoundaryKit specs</title>
+  <meta name="description" content="Autonomous AI-agent workloads are probabilistic actors. They can be misdirected by untrusted input, tool descriptions, retrieved documents, package behavior, model output, or...">
+  <title>00 - Architecture overview · BoundaryKit specs</title>
   <style>
     :root {
       color-scheme: dark;
@@ -285,31 +285,23 @@
     <header class="site-header">
       <a class="back-link" href="../../index.html">← Back to Console</a>
       <div class="top-nav-group">
-        <span class="top-nav-link disabled">← Prev</span>
+        <a href="../../docs/index.html" class="top-nav-link" title="Documentation Index">← Prev</a>
         <span class="top-nav-separator">|</span>
-        <a href="../../docs/architecture/01-isolation-substrate.html" class="top-nav-link" title="01 — Isolation Substrate">Next →</a>
+        <a href="../../docs/architecture/01-isolation-substrate.html" class="top-nav-link" title="01 — Reference Acceptance Substrate">Next →</a>
       </div>
     </header>
     <main>
-      <h1 id="00-architecture-overview">00 — Architecture overview</h1>
-<h2 id="shifting-from-chatbot-tabs-to-governed-persistent-agent-workloads">Shifting from chatbot tabs to governed, persistent agent workloads</h2>
-<p>Most enterprise AI usage still happens through isolated browser tabs or ad hoc automation. That model
-fragments context, hides execution state, and gives reviewers little evidence about what ran, what
-authority was available, or how recovery would work.</p>
-<p><code>BoundaryKit</code> presents a governed runtime architecture for autonomous AI-agent workloads that are
-treated as untrusted. Agents can process approved messages, attached documents, external links,
-transcripts, API responses, and structured outputs, but the platform does not trust the agent or the
-inputs it receives.</p>
-<p>The VM is one implementation substrate. The deeper architecture is about trust boundaries: every
-workload may be <strong>compromised or misdirected at runtime</strong>, so the platform limits what that costs
-with promotion controls, isolation, fail-closed policy, audit evidence, and rollback.</p>
-<p>Traditional services are mostly deterministic and operator-controlled. AI agents are not. They:</p>
-<ul>
-<li>execute <strong>tool calls</strong> (shell, files, network, API calls, content-processing tools) under model control,</li>
-<li>may act through <strong>credentials or secret references</strong> on behalf of an organization,</li>
-<li>ingest <strong>untrusted input</strong> (including external documents, links, and transcripts) — and that input can <em>redirect their behavior</em> (prompt injection, tool poisoning, cross-agent shadowing, excessive agency).</li>
-</ul>
-<h2 id="layered-defense">Layered defense</h2>
+      <h1 id="00-architecture-overview">00 - Architecture overview</h1>
+<h2 id="from-agent-execution-to-governed-sandboxing">From agent execution to governed sandboxing</h2>
+<p>Autonomous AI-agent workloads are probabilistic actors. They can be misdirected by untrusted input,
+tool descriptions, retrieved documents, package behavior, model output, or operator workflow. The
+architecture therefore does not treat the agent as trusted just because it is useful.</p>
+<p><code>BoundaryKit</code> presents a public case study for governing one such workload behind explicit trust
+boundaries. The public story is intentionally sanitized: it preserves the architecture, claim
+discipline, and evidence shape without publishing private hostnames, IP addresses, VM names, routes,
+ports, key names, NAS paths, service names, incident details, or recovery paths.</p>
+<h2 id="current-public-shape">Current public shape</h2>
+<p>The current public architecture is:</p>
 <table>
 <thead>
 <tr>
@@ -320,50 +312,96 @@ with promotion controls, isolation, fail-closed policy, audit evidence, and roll
 </thead>
 <tbody>
 <tr>
-<td><strong>Substrate</strong> (<code>01</code>)</td>
-<td>an agent process can be exploited</td>
-<td>VM boundary; Tier-2 jobs get an ephemeral microVM + default-deny egress + teardown; Tier-1 services run from signed, digest-pinned, reconciled images</td>
+<td><strong>Public input / operator intent</strong></td>
+<td>external messages, files, and prompts can misdirect the agent</td>
+<td>the request is treated as untrusted until it passes policy</td>
 </tr>
 <tr>
-<td><strong>Control plane</strong> (<code>02</code>)</td>
-<td>live state drifts and operators fat-finger</td>
-<td>immutable exact-commit releases; dry-run-by-default mutation; drift detection; recorded rollback target</td>
+<td><strong>Policy and promotion boundary</strong></td>
+<td>operators can make mistakes and live state can drift</td>
+<td>dry-run/review posture, fail-closed defaults, rollback expectations, state-as-truth checks</td>
 </tr>
 <tr>
-<td><strong>Gateway layout</strong> (<code>03</code>)</td>
-<td>many profiles share a runtime and get confused</td>
-<td>one explicit service per profile; exactly one runtime source per profile; restart isolation</td>
+<td><strong>OpenShell sandbox + Hermes Agent</strong></td>
+<td>the agent process or its tools can be compromised</td>
+<td>isolated execution boundary with tool/data gates and public boundary receipts</td>
 </tr>
 <tr>
-<td><strong>Governance</strong> (<code>04</code>)</td>
-<td>capability grows over time</td>
-<td>risk tiers gate controls; tool allowlists fail closed; secrets by reference; audit; tested rollback; canary before promotion</td>
+<td><strong>Rootless Podman runtime</strong></td>
+<td>a privileged container daemon increases blast radius</td>
+<td>least-privilege runtime posture without relying on a rootful Docker socket</td>
+</tr>
+<tr>
+<td><strong>Managed provider boundary</strong></td>
+<td>model/tool credentials must not land in the sandbox</td>
+<td>placeholder-in-sandbox configuration, provider credentials resolved outside the sandbox, fail-closed misroutes</td>
+</tr>
+<tr>
+<td><strong>NUC-class VM substrate</strong></td>
+<td>the sandbox boundary should not be the only line of defense</td>
+<td>modest hardware backstop and public summaries without live topology</td>
+</tr>
+<tr>
+<td><strong>Evidence and recovery overlay</strong></td>
+<td>claims drift unless they are tested and recorded</td>
+<td>sanitized receipts, non-claims, rollback expectations, and declassification review</td>
 </tr>
 </tbody>
 </table>
-<h2 id="agent-agnosticism-concretely">Agent-agnosticism, concretely</h2>
-<p>Nothing in the substrate, control plane, or governance names a specific agent framework. The two
-reference archetypes exist only to prove generality across <em>opposite</em> deployment models:</p>
-<ul>
-<li><strong>Archetype A</strong> — Python orchestrator, <strong>immutable git-release</strong> model (<code>control-plane/promote-agent</code>,
-  <code>agent-gateway@core</code>).</li>
-<li><strong>Archetype B</strong> — Node backend agent-pool, <strong>versioned package-install</strong> model
-  (<code>control-plane/promote-pkg</code>, capture-first).</li>
-</ul>
-<p>If a new agent arrives, it is classified into a <strong>risk tier</strong> and a <strong>deployment archetype</strong>, given a
-<strong>workload contract</strong> and a <strong>manifest</strong>, and hosted — without changing the platform.</p>
+<pre><code class="language-mermaid">flowchart TB
+    IN[&quot;public input / operator intent&quot;]
+    POL[&quot;policy and promotion boundary&quot;]
+    RUN[&quot;OpenShell sandbox&lt;br/&gt;Hermes Agent workload&quot;]
+    POD[&quot;rootless Podman runtime&quot;]
+    PROV[&quot;managed provider boundary&quot;]
+    VM[&quot;NUC-class VM substrate&quot;]
+    REC[&quot;evidence receipts&lt;br/&gt;recovery discipline&quot;]
+
+    IN --&gt; POL --&gt; RUN
+    RUN --&gt; POD
+    RUN --&gt; PROV
+    POD --&gt; VM
+    PROV --&gt; VM
+    VM --&gt; REC
+</code></pre>
+<p>NVIDIA OpenShell is credited for the sandbox boundary, Hermes Agent for the agent workload, rootless
+Podman for the least-privilege runtime posture, and NUC-class hardware for the modest local substrate.
+NVIDIA NemoClaw is credited as blueprint/control-lineage material where relevant; it should not be
+read as a separate live runtime stage in the public diagram.</p>
+<h2 id="what-is-measured-today">What is measured today</h2>
+<p>The current public evidence centers two measured boundaries:</p>
+<ol>
+<li><a href="../evidence/boundary-receipt-01-inner-sandbox.html">Boundary receipt #1 - inner sandbox</a> summarizes
+   egress refusal, SSRF refusal, lateral movement refusal, external DNS refusal, read-only filesystem
+   behavior, and non-root execution checks.</li>
+<li><a href="../evidence/boundary-receipt-02-inference-boundary.html">Boundary receipt #2 - inference boundary</a>
+   summarizes placeholder-in-sandbox credential handling and fail-closed behavior on the governed
+   model path.</li>
+</ol>
+<p>These receipts prove only the named boundary behavior they describe. They do not prove every outer
+containment layer, every future workload, or production readiness.</p>
+<h2 id="reference-acceptance-suite">Reference acceptance suite</h2>
+<p>The repository also retains an older/generic reference acceptance suite in <code>platform/</code> and selected
+architecture pages. That suite demonstrates portable ideas such as a fictional golden VM, signed or
+digest-pinned artifacts, reconcile/align checks, and microVM-style higher-risk job isolation.</p>
+<p>Those pages are useful as lab fixtures, but they are not the primary public architecture for the
+current Agent VM case study:</p>
+<ol>
+<li><code>01-isolation-substrate.html</code> - reference acceptance substrate.</li>
+<li><code>03-gateway-runtime-layout.html</code> - legacy per-profile gateway fixture.</li>
+<li><code>../evidence/substrate-validation-receipt.md</code> - sanitized receipt for that reference suite.</li>
+</ol>
+<p>When the current case study and the reference acceptance suite differ, the current public case-study
+language wins for <code>agent-vm.sabe.dev</code>.</p>
 <h2 id="how-to-read-this-directory">How to read this directory</h2>
 <ol>
-<li><code>01-isolation-substrate.html</code> — where workloads actually run, and the Tier-1/Tier-2 boundary.</li>
-<li><code>02-promotion-control-plane.html</code> — how code becomes a running release, safely and reversibly.</li>
-<li><code>03-gateway-runtime-layout.html</code> — how one runtime serves many profiles without ambiguity.</li>
-<li><code>04-production-governance.html</code> — the controls that gate a workload from lab to production.</li>
-<li><code>05-secure-gated-agent-preview-access.html</code> — how to expose agent/dev previews behind a temporary,
-   revocable, auditable access gate without turning preview access into broad network access.</li>
-<li><code>../evidence/governed-agent-workload-case-study.md</code> — a concrete vendor-neutral scenario that shows
-   how prompt injection, secret access, egress, audit, and rollback expectations map to evidence.</li>
+<li>Read this overview for the current public architecture.</li>
+<li>Read <code>../verification.html</code> for claim levels and non-claims.</li>
+<li>Read the two boundary receipts for measured public behavior.</li>
+<li>Read <code>02-promotion-control-plane.html</code> and <code>04-production-governance.html</code> for control objectives.</li>
+<li>Treat <code>01-isolation-substrate.html</code> and <code>03-gateway-runtime-layout.html</code> as reference acceptance
+   fixtures unless a page explicitly says otherwise.</li>
 </ol>
-<p>Then <code>../reference-workloads/</code> for the two archetypes and <code>../decisions/</code> for key choices.</p>
     </main>
 
     <footer>

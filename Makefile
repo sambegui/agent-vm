@@ -28,9 +28,7 @@ syntax:
 lint:
 	@if ! command -v shellcheck >/dev/null 2>&1; then \
 		echo "shellcheck not installed; skipping shell lint"; \
-		exit 0; \
-	fi
-	@if [ -z "$(BASH_SCRIPTS)" ]; then \
+	elif [ -z "$(BASH_SCRIPTS)" ]; then \
 		echo "No bash scripts found"; \
 	else \
 		shellcheck -x -P control-plane $(BASH_SCRIPTS); \
