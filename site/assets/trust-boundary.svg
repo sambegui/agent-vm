@@ -91,7 +91,8 @@
   </g>
 
   <g class="mono" fill="#7f93a8" font-size="11" letter-spacing=".4">
-    <text x="44" y="664">OMITTED BY DESIGN: hostnames, IP addresses, VM names, ports, routes, live service names, key names, mount paths, logs, incidents, and recovery paths.</text>
-    <text x="44" y="688">PUBLIC CLAIM DISCIPLINE: measured boundaries get receipts; deeper containment remains separately scoped.</text>
+    <text x="44" y="650">OMITTED BY DESIGN: hostnames, IP addresses, VM names, ports, routes, live service names, key names,</text>
+    <text x="44" y="674">mount paths, logs, incidents, and recovery paths.</text>
+    <text x="44" y="700">PUBLIC CLAIM DISCIPLINE: measured boundaries get receipts; deeper containment remains separately scoped.</text>
   </g>
 </svg>
